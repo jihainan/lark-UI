@@ -1,7 +1,6 @@
 // import Vue from 'vue'
 import { DEVICE_TYPE } from '@/utils/device'
 import { mapState } from 'vuex'
-import { SECRETLEVEL_ENUM } from './constants'
 
 // const mixinsComputed = Vue.config.optionMergeStrategies.computed
 // const mixinsMethods = Vue.config.optionMergeStrategies.methods
@@ -51,19 +50,4 @@ const mixinDevice = {
   }
 }
 
-// 根据密级编码获取密级的过滤器
-const mixinSecret = {
-  filters: {
-    // 人员密级
-    peopleSecret: (code) => {
-      const codeNumber = Number.parseInt(code)
-      return codeNumber ? SECRETLEVEL_ENUM.get(codeNumber).people : SECRETLEVEL_ENUM.get('default')
-    },
-    // 资源密级
-    fileSecret: (code) => {
-      const codeNumber = Number.parseInt(code)
-      return codeNumber ? SECRETLEVEL_ENUM.get(codeNumber).file : SECRETLEVEL_ENUM.get('default')
-    }
-  }
-}
-export { mixin, mixinDevice, mixinSecret }
+export { mixin, mixinDevice }

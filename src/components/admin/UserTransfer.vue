@@ -45,6 +45,7 @@
 import { getUserList, getOrgTree } from '@/api/admin'
 
 export default {
+  name: 'UserTransfer',
   data () {
     return {
       orgTree: [],
@@ -72,8 +73,9 @@ export default {
   },
   created () {
     // 获取树形组织信息
-    getOrgTree().then(res => {
-      this.orgTree = res.result
+    getOrgTree({ 'parentTreeId': 'root' }).then(res => {
+      const treeData = this.handleVal(res.result.data)
+      this.orgTree = Object.assign(this.orgTree, treeData)
     })
   },
   props: {
@@ -83,15 +85,16 @@ export default {
      * 打开人员选择器
      * keys 非必填 已选择人员id
      *      类型：字符串 多个人员id半角逗号隔开
-     * oinfo 非必填 临时记录父组件传值，作为组件的标志区分，用于一个页多次不同场景调用子组件的场景
+     * oinfo 非必填 临时记录父组件传值，作为组件的标志区分，用于一个模块多次不同场景调用子组件的场景
      *      类型：字符串
      */
     beginChoose: function (keys, oinfo) {
-      this.queryparamter = { 'id': keys }
-      this.initUsers()
-      console.log('openChooseP', keys)
-      const keyarr = keys.split(',')
-      this.targetKeys = keyarr
+      if (keys !== undefined) {
+        this.queryparamter = { 'id': keys }
+        this.initUsers()
+        const keyarr = keys === undefined ? [] : keys.split(',')
+        this.targetKeys = keyarr
+      }
       this.pdata = oinfo
       this.memberVisible = true
     },
@@ -100,12 +103,11 @@ export default {
      */
     handleClick (item, e) {
       this.tLoading = true
-      console.log('item', item, e)
       // 限制点击根节点触发后台请求操作
       if (item.length > 0 && item[0] === 'key-01') {
         return
       }
-      this.queryparamter = { 'orgid': item[0] }
+      this.queryparamter = { 'orgCode': item[0] }
       // 获取组织节点对应的人员信息
       this.getUsers()
     },
@@ -134,7 +136,7 @@ export default {
      */
     getUsers () {
       this.tLoading = true
-      const orgid = this.queryparamter.orgid
+      const orgid = this.queryparamter.orgCode
       getUserList(this.queryparamter).then((res) => {
         const members = res.result.data
         let arr = []
@@ -162,19 +164,21 @@ export default {
      * 根据父组件传值，显示已选中信息
      */
     initUsers () {
-      this.tLoading = true
-      getUserList(this.queryparamter).then((res) => {
-        const members = res.result.data
-        const arr = []
-        members.forEach((item) => {
-          item.key = item.id
-          item.title = item.name
-          arr.push(item)
-          this.userMap.set(item.key, item)
+      if (this.queryparamter !== {}) {
+        this.tLoading = true
+        getUserList(this.queryparamter).then((res) => {
+          const members = res.result.data
+          const arr = []
+          members.forEach((item) => {
+            item.key = item.id
+            item.title = item.name
+            arr.push(item)
+            this.userMap.set(item.key, item)
+          })
+          this.tLoading = false
+          this.ds = arr
         })
-        this.tLoading = false
-        this.ds = arr
-      })
+      }
     },
     /**
      * 选中条目的事件
@@ -227,16 +231,27 @@ export default {
     handleCancel () {
       this.close()
     },
+    // TODO 如需在人员信息上拼接其他人员信息 {item.title} - {item.orgname} - {item.secretLevel}
     renderItem (item) {
       const customLabel = (
         <span class="custom-item">
-          {item.title} - {item.orgname} - {item.slevel}
+          {item.title}
         </span>
       )
       return {
-        label: customLabel, // for displayed item
-        value: item.title // for title and filter matching
+        // for displayed item
+        label: customLabel,
+        // for title and filter matching
+        value: item.title
       }
+    },
+    /**
+     * 处理后台返回值 替换名字 id=>key label=>title
+     */
+    handleVal (value) {
+      let str = JSON.stringify(value)
+      str = str.replace(/id/g, 'key').replace(/label/g, 'title')
+      return JSON.parse(str)
     }
   }
 }

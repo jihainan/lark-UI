@@ -2,9 +2,9 @@
   <div style="margin-bottom: 64px">
     <div class="antd-pro-pages-dashboard-analysis-twoColLayout" :class="isDesktop() ? 'desktop' : ''">
       <grid-layout
-        :layout.sync="layout"
+        :layout.sync="cardList"
         :col-num="2"
-        :row-height="52"
+        :row-height="61"
         :max-rows="12"
         :is-draggable="true"
         :is-resizable="false"
@@ -14,8 +14,8 @@
         :use-css-transforms="true"
       >
         <grid-item
-          v-for="grid in layout"
-          dragIgnoreFrom=".card-content"
+          v-for="grid in cardList"
+          dragAllowFrom=".ant-card-head"
           :minH="cardSize.minH"
           :maxH="cardSize.maxH"
           :minW="cardSize.minW"
@@ -25,44 +25,31 @@
           :w="grid.w"
           :h="grid.h"
           :i="grid.i">
-          <a-card
-            :headStyle="headStyle"
-            :loading="loading"
-            :bordered="true"
-            :title="grid.title"
-            :style="{ minHeight: '300px' }">
-            <a-popover
-              placement="left"
-              slot="extra"
-              trigger="click">
-              <template slot="content">
-                <a slot="content">移除卡片</a>
-              </template>
-              <a href="#"><a-icon type="ellipsis" /></a>
-            </a-popover>
-
-            <div v-if="talkData.length!=0" class="card-content">
-              <a-list
-                bordered
-                :dataSource="talkData"
-              >
-                <a-list-item slot="renderItem" slot-scope="item">{{ item }}</a-list-item>
-                <div slot="header">Header</div>
-                <div slot="footer">Footer</div>
-              </a-list>
-            </div>
-            <div v-else style="margin: 40px auto 0 auto;text-align: center;" class="card-content">
-              <a-icon type="file-exclamation" theme="twoTone" :style="fontSize" />
-              <p class="description">卡片暂无内容</p>
-            </div>
-          </a-card>
+          <l-card :cardData="grid"></l-card>
         </grid-item>
       </grid-layout>
     </div>
     <!--这个地方放置最近访问-->
 
-    <footer-tool-bar :style="{height:'64px', width: isSideMenu() && isDesktop() ? `calc(100% - ${sidebarOpened ? 256 : 80}px)` : '100%'}">
-
+    <footer-tool-bar :style="{height:'72px', width: isSideMenu() && isDesktop() ? `calc(100% - ${sidebarOpened ? 256 : 80}px)` : '100%'}">
+      <div class="tool-list">
+        <div class="tool-item">
+          <img src="/tools/Icon-PDM.png" width="40" height="40" alt="PDM" title="项目数据管理系统"/>
+          <div class="tool-name">项目数据管理系统</div>
+        </div>
+        <div class="tool-item">
+          <img src="/tools/Icon-MPM.png" width="40" height="40" alt="MPM" title="项目管理系统"/>
+          <div class="tool-name">项目管理系统</div>
+        </div>
+        <div class="tool-item">
+          <img src="/tools/Icon-OA.png" width="40" height="40" alt="OA" title="协同办公系统"/>
+          <div class="tool-name">协同办公系统</div>
+        </div>
+        <div class="tool-item">
+          <img src="/tools/Icon-TDM.png" width="40" height="40" alt="TDM" title="试验数据管理系统"/>
+          <div class="tool-name">试验数据管理系统</div>
+        </div>
+      </div>
     </footer-tool-bar>
   </div>
 </template>
@@ -70,49 +57,39 @@
 <script>
 import { mixin, mixinDevice } from '@/utils/mixin'
 import FooterToolBar from '@/components/FooterToolbar'
-// import { Container, Draggable } from 'vue-smooth-dnd'
-// import { applyDrag, generateItems } from './utils'
 import VueGridLayout from 'vue-grid-layout'
-const talkData = [
-]
-// 工作台看板模拟数据
-var layoutCards = [
-  { 'x': 0, 'y': 0, 'w': 1, 'h': 5, 'i': '0', 'title': '消息提醒' },
-  { 'x': 1, 'y': 0, 'w': 1, 'h': 5, 'i': '1', 'title': '待办事项' },
-  { 'x': 0, 'y': 5, 'w': 1, 'h': 5, 'i': '2', 'title': '我的收藏' },
-  { 'x': 1, 'y': 5, 'w': 1, 'h': 5, 'i': '3', 'title': '工作热图' }
-]
+import LCard from '@/views/dashboard/Card'
+
 export default {
   name: 'Monitor',
   mixins: [mixin, mixinDevice],
   data () {
     return {
-      loading: true,
-      headStyle: { height: '52px', 'border-top': '4px solid #1890ff', 'border-bottom': 'none' },
-      fontSize: { fontSize: '52px' },
-      talkData: talkData,
-      visible: false,
-      layout: layoutCards,
+
+      cardList: [],
       cardSize: { maxH: 5, minH: 5, maxW: 1, minW: 1 }
       // items: generateItems(50, i => ({ id: i, data: 'Draggable' + i }))
     }
   },
   components: {
+    LCard,
     FooterToolBar,
-    // Container,
-    // Draggable,
     GridLayout: VueGridLayout.GridLayout,
     GridItem: VueGridLayout.GridItem
   },
   created () {
-    setTimeout(() => {
-      this.loading = !this.loading
-    }, 1000)
+    this.getSelfWorkplace()
+  },
+  mounted () {
+
   },
   methods: {
-    // onDrop (dropResult) {
-    //   this.items = applyDrag(this.items, dropResult)
-    // }
+    getSelfWorkplace () {
+      this.$http.get('/workplace/myself')
+        .then(res => {
+          this.cardList = res.result.data
+        })
+    }
   }
 }
 </script>
@@ -129,6 +106,7 @@ export default {
       height: 100%;
     }
   }
+
   .description{
     margin-top: 24px;
     color: gray;
@@ -169,5 +147,22 @@ export default {
         }
     }
   }
+.tool-list{
+  margin-left: 64px;
+  .tool-item{
+    width: 52px;
+    margin-left: 12px;
+    text-align:center;
+    font-size:8px;
+    text-overflow: ellipsis;
+    float: left;
+    .tool-name{
+      overflow: hidden;/*超出部分隐藏*/
+      white-space: nowrap;/*不换行*/
+      text-overflow:ellipsis;/*超出部分文字以...显示*/
+      margin-top:-26px;
+    }
+  }
+}
 
 </style>

@@ -83,17 +83,13 @@ class SocketApi {
         case 1:
           // 接收到群组消息
           // 更新最近联系人列表
-          store.dispatch('UpdateRecentContacts', { item: received.data.contactInfo, reOrder: true, addUnreaNum: true })
+          store.dispatch('UpdateRecentContacts', { ...received.data.contactInfo, reOrder: true, addUnread: true })
           // 更新消息缓存
           store.dispatch('UpdateTalkMap', received.data)
           break
         default:
           break
       }
-      // 更新最近联系人列表
-      // store.dispatch('UpdateRecentContacts', JSON.parse(messageEvent.data).contactInfo)
-      // 消息体的处理逻辑
-      // ···
 
       self.lastInteractionTime(time.getTime())
     }

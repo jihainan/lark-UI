@@ -60,7 +60,7 @@
 </template>
 
 <script>
-import { getContactsInfo } from '@/api/chat'
+import { getContactsInfo } from '@/api/talk'
 
 export default {
   name: 'ContactsInfo',

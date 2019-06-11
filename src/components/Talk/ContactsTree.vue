@@ -22,7 +22,7 @@
 
 <script>
 export default {
-  name: 'Contacts',
+  name: 'ContactsTree',
   props: {
     /**
      * 联系人结构树

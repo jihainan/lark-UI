@@ -1,6 +1,6 @@
 // eslint-disable-next-line
 import { UserLayout, BasicLayout, RouteView, BlankLayout, PageView, GeneralView } from '@/components/layouts'
-// import { bxAnaalyse } from '@/core/icons'
+import { RecentContact } from '@/utils/talk'
 
 export const asyncRouterMap = [
 
@@ -39,7 +39,7 @@ export const asyncRouterMap = [
         name: 'talk',
         component: GeneralView,
         redirect: '/talk/ChatPanel',
-        meta: { title: '研讨中心', icon: 'message', hideHeader: true, keepAlive: true, permission: [ 'talk' ] },
+        meta: { title: '研讨', icon: 'message', hideHeader: true, keepAlive: true, permission: [ 'talk' ] },
         hideChildrenInMenu: true,
         children: [
           {
@@ -52,8 +52,8 @@ export const asyncRouterMap = [
                 path: '/talk/ChatPanel/ChatBox',
                 name: 'ChatBox',
                 component: () => import('@/views/talk/ChatBox'),
-                meta: { title: '研讨页', keepAlive: true, permission: ['talk'], hidden: true },
-                props: (route) => ({ currentTalk: route.query })
+                meta: { title: '研讨面板', keepAlive: true, permission: ['talk'], hidden: true },
+                props: (route) => ({ currentTalk: new RecentContact(route.query) })
               }
             ]
           }]
@@ -225,7 +225,13 @@ export const asyncRouterMap = [
                 path: '/account/settings/workplace',
                 name: 'WorkPlaceSettings',
                 component: () => import('@/views/account/settings/Workplace'),
-                meta: { title: '工作台设置', hidden: true, keepAlive: true, permission: [ 'user' ] }
+                meta: { title: '卡片设置', hidden: true, keepAlive: true, permission: [ 'user' ] }
+              },
+              {
+                path: '/account/settings/commontool',
+                name: 'CommonToolSettings',
+                component: () => import('@/views/account/settings/CommonTool'),
+                meta: { title: '常用工具设置', hidden: true, keepAlive: true, permission: [ 'user' ] }
               }
             ]
           }

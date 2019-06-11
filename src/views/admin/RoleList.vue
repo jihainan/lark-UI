@@ -1,11 +1,12 @@
 <template>
+
   <a-card :bordered="false">
     <div class="table-page-search-wrapper">
       <a-form layout="inline">
         <a-row :gutter="8" type="flex" justify="end">
           <a-col :md="5" :sm="24">
-            <a-form-item label="角色标识">
-              <a-input placeholder="请输入" v-model="queryParam.id"/>
+            <a-form-item label="角色名称">
+              <a-input placeholder="请输入" v-model="queryParam.name"/>
             </a-form-item>
           </a-col>
           <a-col :md="5" :sm="24" :offset="1">
@@ -32,6 +33,7 @@
       :columns="columns"
       :data="loadData"
     >
+      <!--TODO 目前只提供了按角色查询权限的接口，这部分提供方法后再做
       <div
         slot="expandedRowRender"
         slot-scope="record"
@@ -50,6 +52,7 @@
           </a-col>
         </a-row>
       </div>
+      -->
       <span slot="action" slot-scope="text, record">
         <a @click="handleEdit(record)">编辑</a>
         <a-divider type="vertical" />
@@ -86,7 +89,7 @@
           :wrapperCol="wrapperCol"
           label="角色标识"
         >
-          <a-input placeholder="唯一识别码" disabled="disabled" v-decorator="['id']"/>
+          <a-input placeholder="唯一识别码" disabled="disabled" v-decorator="['code']"/>
         </a-form-item>
 
         <a-form-item
@@ -117,7 +120,7 @@
           label="描述"
           hasFeedback
         >
-          <a-textarea :rows="5" placeholder="..." v-decorator="['describe']" :disabled="detailModel"/>
+          <a-textarea :rows="5" v-decorator="['description']" :disabled="detailModel"/>
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
@@ -152,12 +155,12 @@
           label="拥有权限"
           hasFeedback
         >
-          <a-row :gutter="16" v-for="(permission, index) in mdl.permissions" :key="index">
+          <a-row :gutter="16" v-for="(permission, index) in mdl.permissions" :key="index" >
             <a-col :span="4">
               {{ permission.title }}：
             </a-col>
             <a-col :span="20">
-              <a-checkbox-group :options="permission.actionsOptions" v-model="permission.selected"/>
+              <a-checkbox-group :options="permission.actionEntitySetList" v-model="tempSelected[index]" @change="checkChange"/>
             </a-col>
           </a-row>
         </a-form-item>
@@ -168,8 +171,7 @@
 
 <script>
 import { STable } from '@/components'
-import { getRoleList, getRolePermission, updateRole, delRole, disabledRole } from '@/api/admin'
-// v-model="permission.selected"
+import { getRoleList, getRolePermission, delRole, disabledRole, updateRole, updateRolePermission } from '@/api/admin'
 export default {
   name: 'Rolelist',
   components: {
@@ -198,7 +200,7 @@ export default {
       columns: [
         {
           title: '角色标识',
-          dataIndex: 'id'
+          dataIndex: 'code'
         },
         {
           title: '角色名称',
@@ -206,7 +208,7 @@ export default {
         },
         {
           title: '角色描述',
-          dataIndex: 'describe'
+          dataIndex: 'description'
         },
         {
           title: '状态',
@@ -223,37 +225,34 @@ export default {
       loadData: parameter => {
         return getRoleList(parameter)
           .then(res => {
-            res.result.data.forEach(item => {
-              item.permissions = this.rolePermissions.filter(role => role.roleId === item.id)
-            })
             return res.result
           })
       },
       // 角色权限map <key 角色id value 角色权限 json数组>
       rolePerMap: new Map(),
       rolePermissions: [],
-      detailModel: false
+      detailModel: false,
+      tempSelected: []
     }
   },
   created () {
-    // 获取所有角色对应权限
-    getRolePermission()
-      .then(res => {
-        console.log('getRolePermission res', res)
-        const resData = res.result.data
-        this.rolePermissions = resData.map(permission => {
-          permission.actionsOptions = permission.actionEntitySet.map(option => {
-            return {
-              label: option.description,
-              value: option.method
-            }
-          })
-          return permission
-        })
-        console.log('this.rolePermissions', this.rolePermissions)
-      })
   },
   methods: {
+    /**
+     * 为了解决checkgroup无法点击的问题
+     */
+    checkChange (a) {
+      for (var i in this.tempSelected) {
+        this.mdl.permissions[i].selected = this.tempSelected[i]
+        // 遍历权限list 修改defaultChecked值
+        const setlist = this.mdl.permissions[i].actionEntitySetList
+        setlist.forEach(item => {
+          item.defaultCheck = this.tempSelected[i].some(selected => {
+            return (selected === item.method)
+          })
+        })
+      }
+    },
     /**
      * 搜索
      */
@@ -268,9 +267,9 @@ export default {
       this.mdl = Object.assign({}, record)
       setTimeout(() => {
         this.editForm.setFieldsValue({
-          id: record.id,
+          code: record.code,
           name: record.name,
-          describe: record.describe
+          describe: record.description
         })
       }, 0)
       this.editVisible = true
@@ -279,20 +278,29 @@ export default {
      * 权限分配弹出框
      */
     handlePermission (record) {
-      this.mdl = Object.assign({}, record)
-      this.mdl.permissions = this.rolePermissions.filter(role => role.roleId === record.id)
-      // 先处理要勾选的权限结构
       const permissionsAction = {}
-      this.mdl.permissions.forEach(permission => {
-        const defaultcheck = permission.actionEntitySet.filter(entity => entity.defaultCheck === 1)
-        permissionsAction[permission.menuId] = defaultcheck.map(entity => entity.method)
-      })
-      // 把权限表遍历一遍，设定要勾选的权限 action
-      this.mdl.permissions.forEach(permission => {
-        const selected = permissionsAction[permission.menuId]
-        permission.selected = selected || []
-      })
-      this.perVisible = true
+      this.mdl = Object.assign({}, record)
+      getRolePermission({ id: this.mdl.id })
+        .then(res => {
+          this.mdl.permissions = res.result.data
+          this.mdl.permissions.forEach(permission => {
+            const defaultcheck = permission.actionEntitySetList.filter(entity => entity.defaultCheck === true)
+            permissionsAction[permission.menuId] = defaultcheck.map(entity => entity.method)
+            permission.actionEntitySetList.forEach(per => {
+              per.value = per.method
+              per.label = per.description
+            })
+          })
+          // 把权限表遍历一遍，设定要勾选的权限 action
+          this.mdl.permissions.forEach(permission => {
+            const selected = permissionsAction[permission.menuId]
+            permission.selected = selected || []
+          })
+          for (var i in this.mdl.permissions) {
+            this.tempSelected.push(this.mdl.permissions[i].selected)
+          }
+          this.perVisible = true
+        })
     },
     /**
      * 编辑保存
@@ -300,11 +308,12 @@ export default {
     handleEditOk () {
       this.editForm.validateFields((err, values) => {
         if (!err) {
+          values.id = this.mdl.id
           return updateRole(
             values
           ).then(
             res => {
-              if (res.status === '200') {
+              if (res.status === 200) {
                 this.$notification['success']({
                   message: '修改成功',
                   duration: 2
@@ -320,6 +329,11 @@ export default {
                 })
               }
             }
+          ).catch(() =>
+            this.$notification['error']({
+              message: '出现异常，请联系系统管理员',
+              duration: 4
+            })
           )
         }
       })
@@ -328,24 +342,30 @@ export default {
      * 编辑权限信息保存
      */
     handlePerOk () {
-      return updateRole(
-        this.mdl.permissions
+      const _this = this
+      return updateRolePermission(
+        { 'id': this.mdl.id, 'permissionList': this.mdl.permissions }
       ).then(
         res => {
-          if (res.status === '200') {
-            this.$notification['success']({
+          if (res.status === 200) {
+            _this.$notification['success']({
               message: '修改成功',
               duration: 2
             })
             // 关闭编辑框
-            this.editVisible = false
+            _this.perVisible = false
           } else {
-            this.$notification['error']({
+            _this.$notification['error']({
               message: res.message,
               duration: 4
             })
           }
         }
+      ).catch(() =>
+        _this.$notification['error']({
+          message: '出现异常，请联系系统管理员',
+          duration: 4
+        })
       )
     },
     /**
@@ -356,9 +376,9 @@ export default {
       this.mdl = Object.assign({}, record)
       setTimeout(() => {
         this.editForm.setFieldsValue({
-          id: record.id,
+          code: record.code,
           name: record.name,
-          describe: record.describe,
+          description: record.description,
           creatorId: record.creatorId,
           createTime: record.createTime
         })
@@ -381,7 +401,7 @@ export default {
             record.id
           ).then(
             res => {
-              if (res.status === '200') {
+              if (res.status === 200) {
                 this.$notification['success']({
                   message: '禁用成功',
                   duration: 2
@@ -412,6 +432,7 @@ export default {
      * 删除用户
      */
     rolesDelete (record) {
+      const _this = this
       this.$confirm({
         title: '警告',
         content: `确认要删除 ${record.name} 吗?`,
@@ -424,13 +445,14 @@ export default {
             record.id
           ).then(
             res => {
-              if (res.status === '200') {
-                this.$notification['success']({
+              if (res.status === 200) {
+                _this.$notification['success']({
                   message: '删除成功',
                   duration: 2
                 })
+                _this.$refs.stable.refresh(true)
               } else {
-                this.$notification['error']({
+                _this.$notification['error']({
                   message: res.message,
                   duration: 4
                 })

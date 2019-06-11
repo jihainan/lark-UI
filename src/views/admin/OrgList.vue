@@ -9,7 +9,6 @@
             </a-col>
             <a-col :span="6">
               <a-icon type="plus-circle" @click="addOrg" style="font-size:20px" theme="twoTone"/>
-              <!-- <a-icon type="delete" @click="delOrg" style="margin-left:8px; font-size:20px" theme="twoTone"/> -->
             </a-col>
           </a-row>
           <a-tree
@@ -40,7 +39,7 @@
                 :wrapperCol="wrapperCol"
                 label="上级组织"
               >
-                <a-input v-decorator="['preorgname']" :disabled="disabled"/>
+                <a-input v-decorator="['parentId']" :disabled="disabled"/>
               </a-form-item>
               <a-form-item
                 :labelCol="labelCol"
@@ -49,7 +48,7 @@
               >
                 <a-input
                   placeholder="组织名称"
-                  v-decorator="['orgname',{rules: [{ required: true, message: '请输入组织名称信息' },{ max:20,message:'长度不能超过20个字'}]}]"/>
+                  v-decorator="['orgName',{rules: [{ required: true, message: '请输入组织名称信息' },{ max:20,message:'长度不能超过20个字'}]}]"/>
               </a-form-item>
               <a-form-item
                 :labelCol="labelCol"
@@ -168,8 +167,6 @@ export default {
       cardname: '组织信息',
       // 查询参数
       queryParam: {},
-      // 默认不显示编辑页面
-      visible: false,
       // 响应式布局
       labelCol: {
         xs: { span: 24 },
@@ -189,14 +186,14 @@ export default {
       people5id: '',
       // 右侧form表单默认不显示
       formvisable: false,
-      disabled: true
+      disabled: true,
+      parentId: ''
     }
   },
   created () {
     // 获取树形组织信息
-    getOrgTree().then(res => {
-      // 获取组织机构信息
-      this.orgTree = res.result
+    getOrgTree({ 'parentTreeId': 'root' }).then(res => {
+      // this.orgTree = this.handleVal(res.result.data)
       generateList(this.orgTree)
     })
     // 将树型结构信息转成列表形式，用于组织信息搜索
@@ -204,6 +201,8 @@ export default {
       for (let i = 0; i < data.length; i++) {
         const node = data[i]
         const key = node.title
+        // 用于树型搜索框添加样式（前台处理需使用递归函数遍历所有子节点，耗用资源，请在后台添加该信息）
+        node.scopedSlots = { title: 'title' }
         this.dataList.push({ key, title: key })
         if (node.children) {
           generateList(node.children, node.key)
@@ -227,7 +226,7 @@ export default {
       const value = e.target.value
       const expandedKeys = this.dataList.map((item) => {
         if (item.key.indexOf(value) > -1) {
-          return this.getParentKey(item.key, this.orgTree)
+          return this.getParentKey(item.key, this.orgTree).key
         }
         return null
       }).filter((item, i, self) => item && self.indexOf(item) === i)
@@ -238,7 +237,7 @@ export default {
       })
     },
     /**
-     * 获取父节点
+     * 获取父节点key
      */
     getParentKey (key, tree) {
       let parentKey
@@ -246,7 +245,7 @@ export default {
         const node = tree[i]
         if (node.children) {
           if (node.children.some(item => item.title === key)) {
-            parentKey = node.key
+            parentKey = node
           } else if (this.getParentKey(key, node.children)) {
             parentKey = this.getParentKey(key, node.children)
           }
@@ -260,8 +259,10 @@ export default {
     selectOrg (selectedKeys, e) {
       this.formvisable = true
       this.currentitem = e.node._props.dataRef
+      const parentNode = this.getParentNode(this.currentitem.key, this.orgTree)
+      this.parentId = parentNode === undefined ? '' : parentNode.key
       this.editForm.setFieldsValue({
-        orgname: this.currentitem.title,
+        orgName: this.currentitem.title,
         orgtype: this.currentitem.orgtype,
         people1: this.currentitem.people1name,
         people2: this.currentitem.people2name,
@@ -270,7 +271,7 @@ export default {
         people5: this.currentitem.people5name,
         description: this.currentitem.description,
         status: this.currentitem.status,
-        preorgname: this.currentitem.preorgname
+        parentId: parentNode === undefined ? '' : parentNode.title
       })
       this.cardname = '修改组织信息'
       this.people1id = this.currentitem.people1id
@@ -278,6 +279,23 @@ export default {
       this.people3id = this.currentitem.people3id
       this.people4id = this.currentitem.people4id
       this.people5id = this.currentitem.people5id
+    },
+    /**
+     * 获取父节点 用于点击树节点触发右侧form表单 获取上级组织信息
+     */
+    getParentNode (key, tree) {
+      let parentKey
+      for (let i = 0; i < tree.length; i++) {
+        const node = tree[i]
+        if (node.children) {
+          if (node.children.some(item => item.key === key)) {
+            parentKey = node
+          } else if (this.getParentNode(key, node.children)) {
+            parentKey = this.getParentNode(key, node.children)
+          }
+        }
+      }
+      return parentKey
     },
     /**
      * 点击新增按钮进入新增模式
@@ -293,7 +311,7 @@ export default {
       this.formvisable = true
       this.editForm.resetFields()
       this.editForm.setFieldsValue({
-        preorgname: this.currentitem.preorgname
+        parentId: this.currentitem.title
       })
       this.type = '1'
       this.cardname = '新增组织信息'
@@ -309,6 +327,7 @@ export default {
         })
         return
       }
+      const _this = this
       this.$confirm({
         title: '警告',
         content: `确认要删除 ${this.currentitem.title} 的组织信息吗?`,
@@ -318,30 +337,32 @@ export default {
         onOk () {
           // 在这里调用删除接口
           return delorg(
-            this.currentitem
+            _this.currentitem.key
           ).then(
             res => {
-              if (res.status === '200') {
-                this.$notification['success']({
+              if (res.status === 200) {
+                _this.$notification['success']({
                   message: '删除成功',
                   duration: 2
                 })
+                _this.formvisable = false
+                _this.refreshOrg()
               } else {
-                this.$notification['error']({
+                _this.$notification['error']({
                   message: res.message,
                   duration: 4
                 })
               }
             }
           ).catch(() =>
-            this.$notification['error']({
+            _this.$notification['error']({
               message: '删除异常，请联系系统管理员',
               duration: 4
             })
           )
         },
         onCancel: () => {
-          this.$notification['info']({
+          _this.$notification['info']({
             message: '取消删除操作',
             duration: 4
           })
@@ -352,7 +373,6 @@ export default {
      * 组件主要负责人点击保存触发
      */
     handleSaveOk (returnData, type) {
-      console.log('returning Data', returnData)
       const username = []
       const userid = []
       returnData.forEach(item => {
@@ -393,55 +413,71 @@ export default {
 
     },
     /**
+     * 组织信息增删改后强制刷新树
+     */
+    refreshOrg () {
+      getOrgTree({ 'parentTreeId': 'root' }).then(res => {
+        this.orgTree = this.handleVal(res.result.data)
+      })
+    },
+    /**
      * 保存组织表单信息
      */
     saveOrginfo () {
+      const _this = this
       this.editForm.validateFields((err, values) => {
         if (!err) {
           if (this.type === '1') {
+            values.parentId = this.currentitem.key
             // 在这里调用新增接口
             return addorg(
               values
             ).then(
               res => {
-                if (res.status === '200') {
-                  this.$notification['success']({
+                if (res.status === 200) {
+                  _this.$notification['success']({
                     message: '保存成功',
                     duration: 2
                   })
+                  this.formvisable = false
+                  _this.refreshOrg()
                 } else {
-                  this.$notification['error']({
+                  _this.$notification['error']({
                     message: res.message,
                     duration: 4
                   })
                 }
               }
             ).catch(() =>
-              this.$notification['error']({
-                message: '保存失败，出现异常',
+              _this.$notification['error']({
+                message: '保存失败111，出现异常',
                 duration: 4
               })
             )
           } else {
+            values.parentId = this.parentId
+            values.id = this.currentitem.key
             // 在这里调用修改接口
             return updateorg(
               values
             ).then(
               res => {
-                if (res.status === '200') {
-                  this.$notification['success']({
+                if (res.status === 200) {
+                  _this.$notification['success']({
                     message: '保存成功',
                     duration: 2
                   })
+                  this.formvisable = false
+                  _this.refreshOrg()
                 } else {
-                  this.$notification['error']({
+                  _this.$notification['error']({
                     message: res.message,
                     duration: 4
                   })
                 }
               }
             ).catch(() =>
-              this.$notification['error']({
+              _this.$notification['error']({
                 message: '保存失败，出现异常',
                 duration: 4
               })
@@ -450,6 +486,14 @@ export default {
         }
       })
     }
+    /**
+     * 处理后台返回值 替换名字 id=>key label=>title
+     */
+    // handleVal (value) {
+    //   let str = JSON.stringify(value)
+    //   str = str.replace(/id/g, 'key').replace(/label/g, 'title')
+    //   return JSON.parse(str)
+    // },
   }
 }
 </script>

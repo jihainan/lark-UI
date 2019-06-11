@@ -10,6 +10,8 @@ const getters = {
   userInfo: state => state.user.info,
   /** 当前用户的id */
   userId: state => state.user.info.id,
+  /** 当前用户的密级 */
+  userSecretLevel: state => state.user.info.secretLevel,
   addRouters: state => state.permission.addRouters,
   multiTab: state => state.app.multiTab,
   messageListMap: state => state.chat.messageListMap,

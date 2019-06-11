@@ -179,3 +179,13 @@ export function dateStr (date) {
     return dateTemp.getFullYear() + '/' + (dateTemp.getMonth() + 1) + '/' + dateTemp.getDate()
   }
 }
+
+/**
+ * 获取文件的扩展名
+ * @param {String} file 文件名(带扩展)
+ * @returns {String} 文件的扩展名，或者undefined
+ */
+export function extensionStr (file) {
+  const index = file.lastIndexOf('.')
+  return index < 0 ? 'undefined' : file.substr(index + 1)
+}

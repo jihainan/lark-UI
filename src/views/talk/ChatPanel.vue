@@ -3,15 +3,17 @@
   <a-layout class="talk-layout">
     <a-layout-sider class="talk-layout-sider">
       <div class="search-bar">
-        <SearchInput />
-        <a-dropdown>
+        <SearchInput/>
+        <!-- <a-dropdown>
           <a-menu slot="overlay">
             <a-menu-item key="1" @click="$refs.model.beginTalk()">发起研讨</a-menu-item>
             <a-menu-item key="2">发起会议</a-menu-item>
           </a-menu>
-          <a-button type="default" size="small" icon="plus" style="margin-left:3px;">
-          </a-button>
-        </a-dropdown>
+          <a-button type="default" size="small" icon="plus" style="margin-left:3px;"></a-button>
+        </a-dropdown> -->
+        <a-tooltip title="发起研讨" placement="bottom" :overlayStyle="{fontSize: '12px'}">
+          <a-button @click="startTalk" icon="plus" size="small" style="marginLeft: 3px"></a-button>
+        </a-tooltip>
       </div>
       <SearchArea
         :activeChat="activeChat"
@@ -27,14 +29,14 @@
         :activeKey="activeKey"
         @change="changePane"
         :tabBarGutter="0"
-        :tabBarStyle="tabStyle"
-        :animated="false">
+        :tabBarStyle="{ margin: '0 20px' }"
+        :animated="false"
+      >
         <a-tab-pane key="1" forceRender>
           <span slot="tab">
-            <a-icon type="clock-circle" style="{fontSize: 16px}" />
-            最近
+            <a-icon type="clock-circle" style="{fontSize: 16px}"/>最近
           </span>
-
+          <!-- 最近里面每一项 -->
           <div class="recent-contacts-container tab-content-container">
             <div v-for="(item, index) in recentContacts" :key="index" @click="showConvBox(item)">
               <recent-contacts-item :contactsInfo="item" :activated="item.id === activeChat"></recent-contacts-item>
@@ -44,7 +46,13 @@
             <div v-if="!recentContacts || !recentContacts.length" class="empty-tips">
               <p>
                 暂无聊天信息，
-                <a-button type="primary" ghost size="small" :loading="recentLoading" @click="getRecentContacts">重新加载</a-button>
+                <a-button
+                  type="primary"
+                  ghost
+                  size="small"
+                  :loading="recentLoading"
+                  @click="getRecentContacts"
+                >重新加载</a-button>
               </p>
             </div>
           </div>
@@ -52,8 +60,7 @@
 
         <a-tab-pane key="2">
           <span slot="tab">
-            <a-icon type="team" style="{fontSize: 16px}" />
-            群组
+            <a-icon type="team" style="{fontSize: 16px}"/>群组
           </span>
 
           <div class="group-contacts-container tab-content-container">
@@ -65,27 +72,41 @@
             <div v-if="!groupList || !groupList.length" class="empty-tips">
               <p>
                 暂无群组信息，
-                <a-button type="primary" ghost size="small" :loading="groupLoading" @click="getGroupList">重新加载</a-button>
+                <a-button
+                  type="primary"
+                  ghost
+                  size="small"
+                  :loading="groupLoading"
+                  @click="getGroupList"
+                >重新加载</a-button>
               </p>
             </div>
-
           </div>
         </a-tab-pane>
 
         <a-tab-pane key="3">
           <span slot="tab">
-            <a-icon type="user" style="{fontSize: 18px, margin: 0}" />
-            联系人
+            <a-icon type="user" style="{fontSize: 18px, margin: 0}"/>联系人
           </span>
 
           <div class="contacts-container tab-content-container">
-            <contacts-box :contactsTree="contactsTree" @SelectContacts="showContacts" style="paddingLeft: 18px;"/>
+            <contacts-tree
+              :contactsTree="contactsTree"
+              @SelectContacts="showContacts"
+              style="paddingLeft: 18px;"
+            />
 
             <!-- 获取联系人树失败时的提示信息 -->
             <div v-if="!contactsTree || !contactsTree.length" class="empty-tips">
               <p>
                 加载失败，
-                <a-button type="primary" ghost size="small" :loading="contactsLoading" @click="getContactsTree">重新加载</a-button>
+                <a-button
+                  type="primary"
+                  ghost
+                  size="small"
+                  :loading="contactsLoading"
+                  @click="getContactsTree"
+                >重新加载</a-button>
               </p>
             </div>
           </div>
@@ -94,85 +115,59 @@
     </a-layout-sider>
 
     <a-layout class="talk-layout-content">
-
       <div v-show="activeKey == '1'" class="chat-area">
         <keep-alive>
-          <router-view />
+          <router-view/>
         </keep-alive>
-        <!-- <user-chat :chatInfo="currentTalk"/> -->
       </div>
       <div v-show="activeKey == '2'" class="info-area">
-        <group-info :selected="activeGroup"></group-info>
+        <group-info :selected="activeGroup" @t="s"></group-info>
       </div>
 
       <div v-show="activeKey == '3'" class="info-area">
         <contacts-info :selected="activeContacts"></contacts-info>
       </div>
-
     </a-layout>
 
-    <member-model ref="model" @ok="handleSaveOk" @close="handleSaveClose"/>
+    <!-- 创建新的研讨模态框 -->
+    <CreateTalk :showModal="showCreateModal" />
     <SearchRecordModal :searchRecordModalVisible="searchRecordModalVisible"/>
   </a-layout>
 </template>
 
 <script>
 import {
-  Chat as UserChat,
-  Contacts as ContactsBox,
+  ContactsTree,
   ContactsInfo,
   GroupInfo,
   RecentContactsItem,
-  MemberBox as MemberModel,
-  GroupItem
+  GroupItem,
+  CreateTalk
 } from '@/components/Talk'
 
 import SearchInput from './SearchInput'
 import SearchArea from './SearchArea'
 import SearchRecordModal from './SearchRecordModal'
 
-// import WebsocketHeartbeatJs from '../../utils/talk/WebsocketHeartbeatJs'
-import {
-  ChatListUtils
-  // Chat,
-  // imageLoad,
-  // MessageInfoType,
-  // MessageTargetType
-  // timeoutFetch
-} from '../../utils/talk/chatUtils'
-// import { ErrorType } from '@/utils/constants'
-import conf from '@/api/index'
-// import HttpApiUtils from '../../utils/talk/HttpApiUtils'
-
-// import Utils from '../../../src/utils/utils.js'
-
 export default {
   name: 'ChatPanel',
   components: {
-    ContactsBox,
+    ContactsTree,
     ContactsInfo,
     GroupInfo,
-    UserChat,
-    MemberModel,
     RecentContactsItem,
     GroupItem,
+    CreateTalk,
     SearchInput,
     SearchArea,
     SearchRecordModal
   },
   data () {
     return {
+      // 当前选中的标签页
       activeKey: '1',
-      // tab标签页的样式
-      tabStyle: { margin: '0 6px 0', paddingLeft: '10px' },
-      data: [],
-      loading: false,
-      busy: false,
-      host: conf.getHostUrl(),
-      isShowPanel: false,
-      isShowWelcome: true,
-      memberVisible: false,
-      active: '',
+      // 是否显示创建研讨的模态框
+      showCreateModal: () => false,
       searchObj: {
         searchValue: ''
       },
@@ -191,13 +186,8 @@ export default {
     }
   },
   computed: {
-    currentTalk: {
-      get: function () {
-        return this.$store.state.talk.currentTalk
-      },
-      set: function (currentTalk) {
-        this.$store.commit('SET_CURRENT_TALK', currentTalk)
-      }
+    currentTalk () {
+      return this.$store.state.talk.currentTalk
     },
     recentContacts: {
       get: function () {
@@ -215,7 +205,7 @@ export default {
     },
     showSearchContent () {
       if (this.$store.state.chat.showSearchContent === null) {
-        return true
+        return true/*  */
       } else {
         return this.$store.state.chat.showSearchContent
       }
@@ -230,22 +220,33 @@ export default {
       return this.$store.state.chat.searchContactsResultList
     }
   },
+  watch: {
+    currentTalk (newValue) {
+      // 监听当前研讨的变化，更新最近联系人选中状态
+      this.activeChat = newValue.id
+    }
+  },
   created () {
     // 页面创建时获取列表信息
     this.getRecentContacts()
     this.getContactsTree()
     this.getGroupList()
   },
-  beforeRouteEnter (to, from, next) {
-    console.log(to.query)
-    next(vm => vm.showConvBox(to.query))
-  },
   methods: {
+    s (val) {
+      this.activeKey = '1'
+      // console.log('0202', val)
+      this.activeChat = val
+    },
     /* 切换面板 */
     changePane (activeKey) {
       this.activeKey = activeKey
     },
     handleSaveOk () {},
+    /** 发起研讨 */
+    startTalk () {
+      this.showCreateModal = () => true
+    },
     handleSaveClose () {},
     /**
      * 展示研讨对话框
@@ -256,42 +257,14 @@ export default {
       // 未读消息置为0
       currentTalk.unreadNum = 0
       // 初始化sotre中的当前会话
-      this.currentTalk = currentTalk
-      // TODO: 向服务端发一条已读的消息，同步消息状态
-      // ···
-      // TODO: 更新最近联系人列表，待优化
-      // this.recentContacts[index] = currentTalk
-      this.$store.dispatch('UpdateRecentContacts', { item: currentTalk, reOrder: false, addUnreaNum: false })
+      // this.currentTalk = currentTalk
+      this.$store.dispatch('UpdateRecentContacts', { ...currentTalk, reOrder: false, addUnread: false })
 
       // 路由跳转
       this.$router.push({
         path: '/talk/ChatPanel/ChatBox',
         query: currentTalk
       })
-
-      // const self = this
-      // self.isShowWelcome = false
-      // self.isShowPanel = true
-      // const recentContacts = ChatListUtils.getChatList(self.$store.state.user.info.id)
-
-      // // 重新添加会话，放到第一个
-      // const firstChat = new Chat(chat.id, chat.name, conf.getHostUrl() + chat.avatar, 0, '', '', '', MessageTargetType.CHAT_GROUP)
-
-      // // 存储到localStorage 的 recentContacts
-      // ChatListUtils.setChatList(self.$store.state.user.info.id, recentContacts)
-
-      // this.$store.commit('RESET_UNREAD')
-      // this.currentTalk = chat
-      // // 当前聊天室
-      // if (firstChat) {
-      //   self.$store.commit('SET_CURRENT_CHAT', firstChat)
-      // }
-      // // 重新设置chatList
-      // self.$store.commit('SET_RECENT_CHAT_LIST', ChatListUtils.getChatList(self.$store.state.user.info.id))
-      // // Chat会话框中的研讨信息每次滚动到最底部
-      // this.$nextTick(() => {
-      //   // imageLoad('message-box')
-      // })
     },
     delChat (chat) {
       this.$store.commit('DEL_CHAT', chat)
@@ -327,13 +300,11 @@ export default {
      */
     getRecentContacts () {
       this.recentLoading = true
-      this.$store.dispatch('GetRecentContacts').then(res => {
-        if (this.$store.state.user.info.id) {
-          ChatListUtils.setChatList(this.$store.state.user.info.id, res.result.data)
-        }
-      }).finally(() => {
-        this.recentLoading = false
-      })
+      this.$store
+        .dispatch('GetRecentContacts')
+        .finally(() => {
+          this.recentLoading = false
+        })
     },
     handleOpenSearchRecordModal () {
       this.searchRecordModalVisible = true
@@ -342,95 +313,78 @@ export default {
       this.searchRecordModalVisible = false
     }
   },
-  activated: function () {
-    // const self = this
-    // if (this.$route.query.chat) {
-    //   self.isShowPanel = true
-    //   self.isShowWelcome = false
-    // }
-    // // 当前研讨室
-    // if (self.$route.query.chat) {
-    //   self.$store.commit('SET_CURRENT_CHAT', this.$route.query.chat)
-    // }
-    // // 重新设置chatList
-    // self.$store.commit('SET_RECENT_CHAT_LIST', ChatListUtils.getChatList(self.$store.state.user.info.id))
-    // // 每次滚动到最底部
-    // this.$nextTick(() => {
-    //   imageLoad('message-box')
-    // })
-  }
+  activated: function () {}
 }
 </script>
 
 <style lang="less" scoped>
-  .talk-layout{
-    // height: calc(100vh - 64px);
-    overflow-y: hidden;
+.talk-layout {
+  // height: calc(100vh - 64px);
+  overflow-y: hidden;
+}
+
+.talk-layout-sider {
+  // 覆盖默认样式
+  max-width: 280px !important;
+  flex: 0 0 280px !important;
+
+  background: rgb(230, 232, 235);
+  border-right: 1px solid #dcdee0;
+
+  // 聊天搜索栏样式 该部分高度为48px
+  .search-bar {
+    display: flex;
+    margin: 16px 27px 8px;
   }
 
-  .talk-layout-sider {
-    // 覆盖默认样式
-    max-width: 280px !important;
-    flex: 0 0 280px !important;
-
-    background: rgb(230, 232, 235);
-    border-right: 1px solid #dcdee0;
-
-    // 聊天搜索栏样式 该部分高度为48px
-    .search-bar {
-      display: flex;
-      margin: 16px 12px 8px;
-    }
-
-    // 调整tabs标签样式
-    .ant-tabs-nav .ant-tabs-tab .anticon {
-      margin-right: 0px;
-    }
-
-    // 最近消息标签页样式
-    .recent-contacts-container {
-      flex: 1;
-      display: flex;
-      position: relative;
-      flex-direction: column;
-      border-top: 1px solid #ebebeb;
-    }
-
-    // 群组标签页样式
-    .group-contacts-container {
-    }
-
-    // 联系人标签页样式
-    .contacts-container {
-    }
-
-    // 让最近 群组 联系人tab页的内容可以滚动的样式
-    .tab-content-container {
-      overflow: hidden;
-
-      // 视窗高度-头部导航栏高度-搜索框高度-tab页高度
-      height: calc(100vh - 64px - 48px - 46px);
-
-      &:hover {
-        overflow-y: overlay;
-      }
-
-    }
-
-    // 加载失败或列表为空的提示信息样式
-    .empty-tips {
-      text-align: center;
-      padding: 32px;
-    }
+  // 调整tabs标签样式
+  .ant-tabs-nav .ant-tabs-tab .anticon {
+    margin-right: 0px;
   }
 
-  .talk-layout-content {
+  // 最近消息标签页样式
+  .recent-contacts-container {
+    flex: 1;
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    border-top: 1px solid #ebebeb;
+  }
+
+  // 群组标签页样式
+  .group-contacts-container {
+  }
+
+  // 联系人标签页样式
+  .contacts-container {
+  }
+
+  // 让最近 群组 联系人tab页的内容可以滚动的样式
+  .tab-content-container {
     overflow: hidden;
-    z-index: 8;
-    background-color: rgb(242, 243, 245);
-    .chat-area, .info-area {
-      height: 100%;
+
+    // 视窗高度-头部导航栏高度-搜索框高度-tab页高度
+    height: calc(100vh - 64px - 48px - 46px);
+
+    &:hover {
+      overflow-y: overlay;
     }
   }
 
+  // 加载失败或列表为空的提示信息样式
+  .empty-tips {
+    text-align: center;
+    padding: 32px;
+  }
+}
+
+.talk-layout-content {
+  overflow: hidden;
+  z-index: 8;
+  background-color: rgb(242, 243, 245);
+  .chat-area,
+  .info-area {
+    height: 100%;
+  }
+}
 </style>
