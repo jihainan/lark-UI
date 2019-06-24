@@ -4,8 +4,108 @@
  */
 import modules from './conf'
 import router from '@/router'
+import Vue from 'vue'
 import { getGroupList, getContactsTree, getRecentContacts, getTalkMap } from '@/api/talk'
-import { Tweet, RecentContact } from '@/utils/talk'
+import { Tweet, RecentContact, SocketMessage } from '@/utils/talk'
+import { LandingStatus } from '@/utils/constants'
+import { format } from '@/utils/util'
+
+/**
+ * 设置置顶状态
+ * @param {String} id 联系人id
+ * @param {Array} recentContacts 最近联系人列表
+ * @returns {Boolean}
+ */
+function setIsTop (recentContacts, id) {
+  const contactItems = recentContacts.filter(item => item.id === id)
+  if (contactItems.length) return contactItems[0].isTop
+  else return false
+}
+
+/**
+ * 设置免打扰状态
+ * @param {String} id 联系人id
+ * @param {Boolean} isGroup 是否为群组
+ * @param {Array} groupList 群组列表
+ * @returns {Boolean}
+ */
+function setIsMute (groupList, isGroup, id) {
+  if (isGroup) {
+    const groupItem = groupList.filter(item => item.id === id)
+    if (groupItem.length) return groupItem[0].isMute
+    else return false
+  } else return false
+}
+
+/**
+ * 设置未读消息数量
+ * @param {Array} recentContacts 最近联系人
+ * @param {String} id 联系人id
+ * @param {Boolean} addUnread 增加未读消息数
+ * @param {String} currentId 当前联系人id
+ * @returns {Boolean}
+ */
+function setUnreadNum (recentContacts, id, addUnread, currentId) {
+  if (id === currentId) return 0
+  if (addUnread) {
+    const recentItem = recentContacts.filter(item => item.id === id)
+    if (recentItem.length) {
+      return recentItem[0].unreadNum + 1
+    } else return 1
+  } else return 0
+}
+
+/**
+ * 设置消息相关信息
+ * @param {Map} talkMap 存储研讨消息的Map
+ * @param {String} id 联系人id
+ * @param {Object} recentContact 要处理的项
+ */
+function setMessageInfo (id, talkMap, recentContact) {
+  if (talkMap.has(id)) {
+    const talkList = talkMap.get(id)
+    if (talkList.length) {
+      recentContact.time = format(
+        new Date(talkList[talkList.length - 1].time),
+        'hh:mm')
+      recentContact.sender = talkList[talkList.length - 1].username
+      recentContact.lastMessage = talkList[talkList.length - 1].content
+
+      // TODO: @功能以后再说
+      recentContact.atMe = false
+    } else {
+      recentContact.time = ''
+      recentContact.lastMessage = {}
+      recentContact.sender = ''
+      recentContact.atMe = false
+    }
+  } else {
+    recentContact.time = ''
+    recentContact.lastMessage = {}
+    recentContact.sender = ''
+    recentContact.atMe = false
+  }
+}
+
+/**
+ * 向研讨服务同步未读消息数
+ * @param {Boolean} online 是否在线
+ * @param {String} reviser 接收者
+ * @param {String} sender 发送者
+ */
+function syncUnread2Server (newUnreasNum, online, reviser, sender) {
+  // TODO: 连接断开，添加提醒
+  if (!online || newUnreasNum !== 0) return
+  const socketMessage = new SocketMessage({
+    code: 9,
+    data: {
+      reviser: reviser,
+      sender: sender
+    }
+  }).toString()
+  console.log(socketMessage)
+  Vue.prototype.SocketGlobal.send(socketMessage)
+}
 
 const talk = {
   state: {
@@ -23,10 +123,15 @@ const talk = {
     talkMap: new Map(),
     /** 当前正在进行的研讨 */
     currentTalk: {},
-    /** 当前正在进行研讨的消息列表 */
-    curMessageList: [],
     /** 草稿Map */
-    draftMap: new Map()
+    draftMap: new Map(),
+
+    // ***********************************
+    // 是否显示搜索结果
+    showSearchContent: null,
+    searchResultList: [],
+    searchGroupResultList: [],
+    searchContactsResultList: []
   },
 
   mutations: {
@@ -44,19 +149,28 @@ const talk = {
     },
     /**
      * 更新talkMap
-     * @param {Object} state talk状态
-     * @param {Array} talkMapList 赋值数组
+     * @param {Object} talkMapObject 赋值数组
+     * {
+     *    fromServer: true,
+     *    talkMapData: [['123', {}, {}], ['123', {}, {}]] 或者
+     *                 [['123', [{}, {}]], ['123', [{}, {}]]]
+     * }
      */
-    SET_TALK_MAP (state, talkMapList) {
-      talkMapList.forEach(function (item) {
-        state.talkMap.set(item[0], item[1])
-      })
+    SET_TALK_MAP (state, talkMapObject) {
+      if (talkMapObject.fromServer) {
+        talkMapObject.talkMapData.forEach(function (item) {
+          state.talkMap.set(item[0], item.slice(1))
+        })
+      } else {
+        talkMapObject.talkMapData.forEach(function (item) {
+          if (item[1] instanceof Array) {
+            state.talkMap.set(item[0], item[1])
+          }
+        })
+      }
     },
     SET_CURRENT_TALK (state, currentTalk) {
       state.currentTalk = currentTalk
-    },
-    SET_CUR_MESSAGE_LIST (state, curMessageList) {
-      state.curMessageList = curMessageList
     },
     /**
      * 更新draftMap
@@ -65,6 +179,20 @@ const talk = {
      */
     SET_DRAFT_MAP (state, draft) {
       state.draftMap.set(draft[0], draft[1])
+    },
+
+    // ***********************************
+    SET_SHOW_SEARCH_CONTENT: function (state, showSearchContent) {
+      state.showSearchContent = showSearchContent
+    },
+    SET_SEARCH_RESULT_LIST: function (state, searchResultList) {
+      state.searchResultList = searchResultList
+    },
+    SET_SEARCH_GROUP_RESULT_LIST: function (state, searchGroupResultList) {
+      state.searchGroupResultList = searchGroupResultList
+    },
+    SET_SEARCH_CONTACTS_RESULT_LIST: function (state, searchContactsResultList) {
+      state.searchContactsResultList = searchContactsResultList
     }
   },
 
@@ -72,9 +200,9 @@ const talk = {
     /**
      * 获取群组列表
      */
-    GetGroupList ({ commit }) {
+    GetGroupList ({ commit, rootGetters }) {
       return new Promise((resolve, reject) => {
-        getGroupList().then(response => {
+        getGroupList(rootGetters.userId).then(response => {
           if (response.status === 200) {
             commit('SET_GROUP_LIST', [ ...response.result.data ])
           } else {
@@ -90,8 +218,9 @@ const talk = {
      * 获取联系人树
      */
     GetContactsTree ({ commit }) {
+      const root = 'root'
       return new Promise((resolve, reject) => {
-        getContactsTree().then(response => {
+        getContactsTree(root).then(response => {
           if (response.status === 200) {
             commit('SET_CONTACTS_TREE', [ ...response.result.data ])
           } else {
@@ -106,9 +235,9 @@ const talk = {
     /**
      * 获取最近联系人列表(用于初始化最近联系人列表)
      */
-    GetRecentContacts ({ commit }) {
+    GetRecentContacts ({ commit, rootGetters }) {
       return new Promise((resolve, reject) => {
-        getRecentContacts().then(response => {
+        getRecentContacts(rootGetters.userId).then(response => {
           if (response.status === 200) {
             commit('SET_RECENT_CONTACTS', [ ...response.result.data ])
           } else {
@@ -121,36 +250,37 @@ const talk = {
       })
     },
     /**
-     * 跟新最近联系人列表
-     * @param {RecentContact,reOrder,addUnread} freshItem
-     * {{...RecentContact}, reOrder: true, addUnread: true}
-     * 将要处理的数据，结构为最近联系人的结构加上reOrder和addUnread属性
+     * 更新最近联系人列表
+     * @param {...Tweet.contactInfo, reOrder, addUnread} freshItem
+     * { id, name, avatar, secretLevel, memberNum, isGroup, reOrder, addUnread }
+     * reOrder: 重新排序
+     * addUnread: 增加未读消息数量
      */
-    //  将index中的constructor 传进来  直接生成最近联系人列表
-    UpdateRecentContacts ({ commit, state }, freshItem) {
-      const recentContacts = state.recentContacts
-      // 从payload中生成最近联系人项
+    UpdateRecentContacts ({ commit, state, rootGetters }, freshItem) {
+      const { recentContacts, groupList, talkMap } = state
+      const index = recentContacts.findIndex(element => element.id === freshItem.id)
       const newItem = new RecentContact(freshItem)
-      // 判断该联系人是否已经存在于最近联系人列表
-      const index = recentContacts.findIndex(element => element.id === newItem.id)
-      // 原未读消息数
-      let oUnread = 0
-      // 若已存在，先删除
+      // 设置状态
+      newItem.isTop = setIsTop(recentContacts, freshItem.id)
+      newItem.isMute = setIsMute(groupList, freshItem.isGroup, freshItem.id)
+      setMessageInfo(freshItem.id, talkMap, newItem)
+      newItem.unreadNum = setUnreadNum(
+        recentContacts,
+        freshItem.id,
+        freshItem.addUnread,
+        router.currentRoute.query.id)
+      // 告知服务器未读消息的状态
+      // TODO: 告知服务器的条件还要再加判断
+      if (newItem.unreadNum === 0) {
+        syncUnread2Server(
+          rootGetters.onlineState === LandingStatus.ONLINE,
+          rootGetters.userId,
+          freshItem.id)
+      }
       if (index > -1) {
-        oUnread = recentContacts[index].unreadNum
         this._vm.$delete(recentContacts, index)
       }
-      // 查询置顶联系人数量
       const TopNum = recentContacts.filter(element => element.isTop).length
-
-      // 设置未读消息数
-      if (freshItem.addUnread && router.currentRoute.query.id !== newItem.id) {
-        newItem.unreadNum = oUnread + 1
-      } else {
-        newItem.unreadNum = 0
-        // TODO: 告知服务器消息的状态
-        // ···
-      }
       // 更新列表顺序
       if (freshItem.reOrder) {
         newItem.isTop
@@ -165,17 +295,19 @@ const talk = {
             : recentContacts.splice(TopNum, 0, newItem)
         }
       }
-      // 更新，实际在操作的过程中已经更新了
       commit('SET_RECENT_CONTACTS', recentContacts)
     },
     /**
      * 获取所有未读消息的map(初始化缓存中的消息列表)
      */
-    GetTalkMap ({ commit }) {
+    GetTalkMap ({ commit, rootGetters }) {
       return new Promise((resolve, reject) => {
-        getTalkMap().then(response => {
+        getTalkMap(rootGetters.userId).then(response => {
           if (response.status === 200) {
-            commit('SET_TALK_MAP', [ ...response.result.data ])
+            commit('SET_TALK_MAP', {
+              fromServer: true,
+              talkMapData: response.result.data
+            })
           } else {
             reject(new Error('getTalkMap: 服务器发生错误'))
           }
@@ -189,10 +321,14 @@ const talk = {
      * 更新缓存中的消息map
      * @param {Tweet} newMessage 新消息
      */
-    UpdateTalkMap ({ state, commit }, newMessage) {
+    UpdateTalkMap ({ state, commit, rootGetters }, newMessage) {
+      if (newMessage.fromId === rootGetters.userId) return
       const tempMessageList = state.talkMap.get(newMessage.contactInfo.id) || []
       tempMessageList.push(new Tweet(newMessage))
-      commit('SET_TALK_MAP', [newMessage.contactInfo.id, tempMessageList])
+      commit('SET_TALK_MAP', {
+        fromServer: false,
+        talkMapData: [[newMessage.contactInfo.id, tempMessageList]]
+      })
     },
     /**
      * 更新缓存中的草稿信息

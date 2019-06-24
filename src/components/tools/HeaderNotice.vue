@@ -9,37 +9,27 @@
     :overlayStyle="{ width: '300px', top: '50px' }">
     <template slot="content">
       <a-spin :spinning="loadding">
-        <a-tabs>
-          <a-tab-pane tab="通知" key="1">
-            <a-list>
-              <a-list-item>
-                <a-list-item-meta title="你收到了 14 份预先承诺" description="一天前">
-                  <a-avatar style="background-color: white" slot="avatar" src="https://gw.alipayobjects.com/zos/rmsportal/ThXAXghbEsBCCSDihZxY.png"/>
-                </a-list-item-meta>
-              </a-list-item>
-              <a-list-item>
-                <a-list-item-meta title="你有 1 项工作逾期" description="一年前">
-                  <a-avatar style="background-color: white" slot="avatar" src="https://gw.alipayobjects.com/zos/rmsportal/OKJXDXrmkNshAMvwtvhu.png"/>
-                </a-list-item-meta>
-              </a-list-item>
-              <a-list-item>
-                <a-list-item-meta title="这种模板可以区分多种通知类型" description="一年前">
-                  <a-avatar style="background-color: white" slot="avatar" src="https://gw.alipayobjects.com/zos/rmsportal/kISTdvpyTAhtGxpovNWd.png"/>
-                </a-list-item-meta>
-              </a-list-item>
-            </a-list>
-          </a-tab-pane>
-          <a-tab-pane tab="消息" key="2">
-            123
-          </a-tab-pane>
-          <a-tab-pane tab="待办" key="3">
-            123
-          </a-tab-pane>
-        </a-tabs>
+        <a-list>
+          <a-list-item v-for="msg in msglist.slice(0,6)" :key="msg.id">
+            <router-link :to="{ name: 'MsgList' }">
+              <!-- TODO 接口暂未提供发布时间 -->
+              <!-- <a-list-item-meta :description="msg.date|timeFormat" :title="msg.title"> -->
+              <a-list-item-meta :title="msg.title">
+                <a-avatar style="background-color: white" slot="avatar" :src="getImgPath(msg.type)"/>
+              </a-list-item-meta>
+            </router-link>
+          </a-list-item>
+          <a-list-item key="item-all" style="margin-left:45px;margin-top:10px">
+            <router-link :to="{ name: 'MsgList' }">
+              <a-list-item-meta title="查看全部" @click="visible = false">
+              </a-list-item-meta>
+            </router-link>
+          </a-list-item>
+        </a-list>
       </a-spin>
     </template>
     <span @click="fetchNotice" class="header-notice">
-      <a-badge count="12">
+      <a-badge :count="msgNum">
         <a-icon style="font-size: 16px; padding: 4px" type="bell" />
       </a-badge>
     </span>
@@ -47,25 +37,49 @@
 </template>
 
 <script>
+import { getNotice } from '@/api/workplace'
+import { toWeiXinString } from '@/utils/util'
 export default {
   name: 'HeaderNotice',
   data () {
     return {
       loadding: false,
-      visible: false
+      visible: false,
+      msglist: [],
+      msgNum: 0
     }
   },
+  computed: {
+    userInfo () {
+      return this.$store.getters.userInfo
+    }
+  },
+  filters: { timeFormat: toWeiXinString },
   methods: {
     fetchNotice () {
       if (!this.visible) {
         this.loadding = true
-        setTimeout(() => {
-          this.loadding = false
-        }, 2000)
+        return getNotice({ 'orgCode': this.userInfo.orgCode }).then(res => {
+          if (res.status === 200) {
+            this.msglist = res.result.data
+            this.msgNum = res.result.count
+            this.loadding = false
+          }
+        })
       } else {
         this.loadding = false
       }
       this.visible = !this.visible
+    },
+    /**
+     * 根据消息类型获取消息图标
+     */
+    getImgPath (item) {
+      if (item === 'admin') {
+        return '/tools/Icon-msg-admin.png'
+      } else {
+        return '/tools/Icon-msg-sys.png'
+      }
     }
   }
 }

@@ -142,7 +142,7 @@ export default {
   data () {
     return {
       scale,
-      height: 400,
+      height: 330,
       padding,
       axis1Opts,
       axis2Opts

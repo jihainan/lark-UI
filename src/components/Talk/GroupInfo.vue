@@ -37,7 +37,7 @@
         <div class="info-list">
           <div>
             <p class="attr">密级</p>
-            <p class="val">{{ groupInfo.securityClass }}</p>
+            <p class="val">{{ groupInfo.securityClass | fileSecret }}</p>
           </div>
           <div>
             <p class="attr">主题</p>
@@ -70,17 +70,7 @@ export default {
     selected: {
       type: String,
       default: '',
-      required: true,
-      id: '111',
-      name: 'sss',
-      time: '时间',
-      lastMessage: '阿斯顿',
-      avater: 'sss',
-      atMe: false,
-      unreadNum: '0',
-      isTop: false,
-      isMute: false,
-      isGroup: true
+      required: true
     }
   },
   data () {
@@ -100,12 +90,11 @@ export default {
   methods: {
     /** 通过id获取联系人信息 */
     getData (groupId) {
-      ;[this.groupInfo, this.loadingState] = [{}, true]
-      /*  */
+      [this.groupInfo, this.loadingState] = [{}, true]
       getGroupInfo(groupId).then(
         res => {
           if (res.status === 200) {
-            this.groupInfo = res.result.data
+            this.groupInfo = res.result
           }
 
           this.loadingState = false
@@ -116,30 +105,23 @@ export default {
       )
     },
     sendMessage (event) {
-      console.log('这里应该跳转到聊天页')
-      // let ss = RecentContact.constructor
-      // console.log('120', ss)
-      const sen = this.groupInfo
-      // const sen = {
-      //   id: '111',
-      //   name: 'sas',
-      //   time: '时间',
-      //   lastMessage: '阿斯顿',
-      //   avater: '',
-      //   atMe: false,
-      //   unreadNum: '0',
-      //   isTop: false,
-      //   isMute: false,
-      //   isGroup: true
-      // }
-      // console.log('22', this.groupInfo)
-      this.$emit('t', sen.id)
-
+      const { id, name, avatar, securityClass, memberNum } = this.groupInfo
+      const groupItem = {
+        id: id,
+        name: name,
+        avatar: avatar,
+        secretLevel: JSON.parse(securityClass),
+        memberNum: memberNum,
+        isGroup: true
+      }
+      this.$emit('clickSend')
       this.$router.push({
         path: '/talk/ChatPanel/ChatBox',
-        query: new RecentContact(sen)
+        query: new RecentContact(groupItem)
       })
-      this.$store.dispatch('UpdateRecentContacts', sen)
+      groupItem.reOrder = true
+      groupItem.addUnread = false
+      this.$store.dispatch('UpdateRecentContacts', groupItem)
     }
   }
 }

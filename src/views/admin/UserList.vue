@@ -3,22 +3,18 @@
     <a-row :gutter="8">
       <a-col :span="5">
         <a-card :bordered="true" title="组织树" v-show="cardvisible">
-          <a-row>
-            <a-col :span="6">
-              <a-tree
-                ref="orgtree"
-                :treeData="orgTree"
-                @select="handleClick"
-              />
-            </a-col>
-          </a-row>
+          <a-tree
+            ref="orgtree"
+            :treeData="orgTree"
+            @select="handleClick"
+          />
         </a-card>
       </a-col>
       <a-col :span="19">
         <a-card :bordered="true" title="人员信息列表" v-show="cardvisible">
           <div class="table-page-search-wrapper">
             <a-form layout="inline">
-              <a-row :gutter="32">
+              <a-row :gutter="8">
                 <a-col :span="6">
                   <a-form-item label="姓名">
                     <a-input v-model="queryParam.name"/>
@@ -48,8 +44,8 @@
                 <a-col :span="6">
                   <span class="table-page-search-submitButtons">
                     <a-button type="primary" @click="searchUser">查询</a-button>
-                    <a-button type="primary" style="margin-left: 8px" @click="openEditModal('','1')">新增用户</a-button>
                     <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
+                    <a-button type="primary" style="margin-left: 8px" @click="openEditModal('','1')">新增用户</a-button>
                   </span>
                 </a-col>
               </a-row>
@@ -154,15 +150,14 @@
               :wrapperCol="wrapperCol"
               label="所属组织"
             >
-              <!--:dataSource="orgTree" <org-treeSelect :values="userinfo.orgName" :dataSource="dataSource"></org-treeSelect>-->
               <a-tree-select
                 :dropdownStyle="{ maxHeight: '200px', overflow: 'auto' }"
                 :treeData="OrgTreeSelects"
                 treeDefaultExpandAll
                 allowClear
-                :value="orgid"
                 @change="onChange"
                 style="width:100%"
+                :value="orgid"
               ></a-tree-select>
             </a-form-item>
           </a-col>
@@ -281,8 +276,9 @@ export default {
       dataSource: [],
       // 绑定树选择的值
       orgid: '',
-      // 用于解决冲突值，截取select剩余值
-      orgId: ''
+      orgname: ''
+      // // 用于解决冲突值，截取select剩余值
+      // orgId: ''
     }
   },
   created () {
@@ -354,13 +350,45 @@ export default {
       )
     },
     /**
+     * 保存人员组织信息
+     */
+    // saveUserOrg (userId) {
+    //   console.log('this.orgname', this.orgname,this.orgname[0])
+    //   return saveUserOrg(
+    //     { 'userId': userId, 'orgCode': this.orgid, 'orgName': this.orgname[0]||'' }
+    //   ).then(
+    //     res => {
+    //       if (res.status === 200) {
+    //         this.editvisible = false
+    //         this.cardvisible = true
+    //         this.$notification['success']({
+    //           message: '新增成功',
+    //           duration: 2
+    //         })
+    //         // 关闭编辑框
+    //         this.editvisible = false
+    //         this.cardvisible = true
+    //         // 刷新员工列表
+    //         this.$refs.stable.refresh(true)
+    //       } else {
+    //         this.$notification['error']({
+    //           message: res.message,
+    //           duration: 4
+    //         })
+    //       }
+    //     }
+    //   )
+    // },
+    /**
      * 保存修改内容
+     * TODO 三个请求不在前台嵌套调用，无法做事务处理，是否由后台统一接口
      */
     saveUserInfo () {
       const _this = this
       this.editForm.validateFields((err, values) => {
         // 除了用户基础信息必填项限制，在这里加，且需要有对应的提醒信息
-        values.orgCode = this.orgId
+        values.orgCode = this.orgid.replace('select', '')
+        values.orgName = this.orgname[0] || ''
         if (!err) {
           if (this.editType === '1') {
             return adduser(
@@ -428,7 +456,7 @@ export default {
             status: this.userinfo.status === '启用'
           })
         }, 0)
-        this.orgid = item.orgName
+        this.orgid = item.orgCode === undefined ? '' : item.orgCode + 'select'
         this.editvisible = true
         this.cardvisible = false
         return getUserRole({ 'id': item.id }).then(res => {
@@ -447,7 +475,7 @@ export default {
             status: true
           })
         }, 0)
-        this.orgId = ''
+        this.orgid = ''
         this.rolechecked = []
         this.editvisible = true
         this.cardvisible = false
@@ -471,6 +499,7 @@ export default {
           ).then(
             res => {
               if (res.status === 200) {
+                _this.$refs.stable.refresh(true)
                 _this.$notification['success']({
                   message: '删除成功',
                   duration: 2
@@ -503,9 +532,9 @@ export default {
     /**
      * change事件
      */
-    onChange (value) {
+    onChange (value, name) {
       this.orgid = value
-      this.orgId = value.replace('select', '')
+      this.orgname = name
     }
   }
 }

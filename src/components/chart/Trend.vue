@@ -1,7 +1,7 @@
 <template>
   <div class="chart-trend">
     {{ term }}
-    <span>{{ rate }}%</span>
+    <!-- <span>{{ rate }}%</span> -->
     <span :class="['trend-icon', trend]"><a-icon :type="'caret-' + trend"/></span>
   </div>
 </template>

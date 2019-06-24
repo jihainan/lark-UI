@@ -9,7 +9,20 @@ export function welcome () {
   const index = Math.floor((Math.random() * arr.length))
   return arr[index]
 }
+/**
+ * card定位公式 i%2*width + i/2*height
+ * @param {i}
+ */
+// export function deCodeUniPostion (i) {
+//   const widthGrid = 1
+//   const heightGrid = 5
+//   return widthGrid * i % 2 + heightGrid * i / 2
+// }
 
+// export function enCodeUniPostion (code) {
+//   const widthGrid = 1
+//   const heightGrid = 5
+// }
 /**
  * 触发 window.resize
  */
@@ -188,4 +201,10 @@ export function dateStr (date) {
 export function extensionStr (file) {
   const index = file.lastIndexOf('.')
   return index < 0 ? 'undefined' : file.substr(index + 1)
+}
+/**
+ * 卡片拖拽坐标
+ */
+export function cardDrag (i) {
+  return 1(i % 2) + 5(i / 2)
 }

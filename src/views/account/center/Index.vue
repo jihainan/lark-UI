@@ -246,18 +246,18 @@ export default {
       background: url(https://gw.alipayobjects.com/zos/rmsportal/pBjWzVAHnOOtAUvZmZfy.svg);
     }
 
-    .title {
-      background-position: 0 0;
-    }
-    .group {
-      background-position: 0 -22px;
-    }
-    .address {
-      background-position: 0 -44px;
-    }
-    .phone {
-      background-position: 0 -66px;
-    }
+    // .title {
+    //   background-position: 0 0;
+    // }
+    // .group {
+    //   background-position: 0 -22px;
+    // }
+    // .address {
+    //   background-position: 0 -44px;
+    // }
+    // .phone {
+    //   background-position: 0 -66px;
+    // }
   }
 
   .account-center-tags {

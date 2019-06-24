@@ -2,40 +2,39 @@
   <a-layout v-if="Object.keys(chatInfo).length" class="conv-box">
 
     <!-- 聊天设置选项的抽屉组件 -->
-    <!-- <talk-history :activeOption="activeOption" @closeDrawer="triggerDrawer"></talk-history>
-    <group-notice :activeOption="activeOption" @closeDrawer="triggerDrawer"></group-notice>
-    <talk-setting :activeOption="activeOption" @closeDrawer="triggerDrawer"></talk-setting>
-    <talk-file :activeOption="activeOption" @closeDrawer="triggerDrawer"></talk-file>
-    <mark-message :activeOption="activeOption" @closeDrawer="triggerDrawer"></mark-message> -->
+    <talk-history :activeOption="activeOption" @closeDrawer="triggerDrawer" />
+    <group-notice :activeOption="activeOption" @closeDrawer="triggerDrawer" />
+    <talk-setting :activeOption="activeOption" @closeDrawer="triggerDrawer" />
+    <talk-file :activeOption="activeOption" @closeDrawer="triggerDrawer" />
+    <mark-message :activeOption="activeOption" @closeDrawer="triggerDrawer" />
+    <more-info :activeOption="activeOption" @closeDrawer="triggerDrawer" />
 
     <a-layout-header class="conv-box-header">
-      <a-row type="flex" justify="space-between">
-        <a-col :span="14" class="conv-title">
-          <!-- 需要对名字的字数做限制 -->
-          <span>{{ chatInfo.name }}</span>
-          <!-- 若为群组时显示成员数量 -->
-          <span v-show="chatInfo.isGroup">( {{ chatInfo.memberNum }} )</span>
-          <!-- 显示密级 -->
-          <span :class="'s-' + chatInfo.secretLevel">【{{ chatInfo.secretLevel | fileSecret }}】</span>
-        </a-col>
+      <div class="conv-title">
+        <!-- 需要对名字的字数做限制 -->
+        <span>{{ chatInfo.name }}</span>
+        <!-- 若为群组时显示成员数量 -->
+        <span v-show="chatInfo.isGroup">( {{ chatInfo.memberNum }} )</span>
+        <!-- 显示密级 -->
+        <span :class="'s-' + chatInfo.secretLevel">【{{ chatInfo.secretLevel | fileSecret }}】</span>
+      </div>
 
-        <a-col :span="10" class="conv-option">
-          <div v-if="!isPopup" style="float: right">
-            <!-- 需要判断是否为群聊，操作选项不同 -->
-            <a-tooltip
-              v-for="(item, index) in optionFilter(chatInfo.isGroup)"
-              :key="index"
-              placement="bottom"
-              :overlayStyle="{fontSize: '12px'}"
-            >
-              <template slot="title">
-                <span>{{ item.message }}</span>
-              </template>
-              <a-icon @click="triggerDrawer(item.name)" style="marginLeft: 20px" :type="item.type" />
-            </a-tooltip>
-          </div>
-        </a-col>
-      </a-row>
+      <div class="conv-option">
+        <div v-if="!isPopup">
+          <!-- 需要判断是否为群聊，操作选项不同 -->
+          <a-tooltip
+            v-for="(item, index) in optionFilter(chatInfo.isGroup)"
+            :key="index"
+            placement="bottom"
+            :overlayStyle="{fontSize: '12px'}"
+          >
+            <template slot="title">
+              <span>{{ item.message }}</span>
+            </template>
+            <a-icon @click="triggerDrawer(item.name)" style="marginLeft: 20px" :type="item.type" />
+          </a-tooltip>
+        </div>
+      </div>
     </a-layout-header>
 
     <a-layout-content class="conv-box-message">
@@ -78,31 +77,30 @@
           <!-- 上传文件 -->
           <a-upload
             name="file"
-            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+            :action="fileUploadUrl"
             listType="picture"
             class="upload-list-inline"
             :showUploadList="false"
             :headers="headers"
             @change="handleUpload"
+            :beforeUpload="beforeUpload"
             :openFileDialogOnClick="!Object.keys(fileUpload).length">
-
+            <!-- :customRequest="customRequest" -->
             <a-tooltip
               placement="top"
               :title="Object.keys(fileUpload).length ? '有未发送文件' : '选择文件'"
               :overlayStyle="{fontSize: '12px'}">
               <a-icon :style="{fontSize: '20px', color: Object.keys(fileUpload).length ? '#00000033' : ''}" type="folder" />
             </a-tooltip>
-
           </a-upload>
         </div>
       </div>
-
       <div class="editor-area">
         <div class="draft-input">
           <!-- 输入框 -->
           <textarea
             v-show="!Object.keys(fileUpload).length"
-            v-focus
+
             size="large"
             class="textarea-input"
             v-model="messageContent"
@@ -161,17 +159,15 @@
 </template>
 
 <script>
-import { MessagePiece, TalkHistory, GroupNotice, TalkSetting, MarkMessage, TalkFile } from '@/components/Talk'
+import { MessagePiece, TalkHistory, MoreInfo, GroupNotice, TalkSetting, MarkMessage, TalkFile } from '@/components/Talk'
 import { LandingStatus } from '@/utils/constants'
+import api from '@/api/talk'
 import { SocketMessage, Tweet } from '@/utils/talk'
-import { format, extensionStr } from '@/utils/util'
-import { getTalkHistory } from '@/api/talk'
 import VEmojiPicker from 'v-emoji-picker'
 import packData from 'v-emoji-picker/data/emojis.json'
 import { mapGetters } from 'vuex'
 // 生成随机uuid
 import uuidv4 from 'uuid/v4'
-
 export default {
   name: 'ConvBox',
   components: {
@@ -181,10 +177,11 @@ export default {
     GroupNotice,
     TalkSetting,
     MarkMessage,
-    TalkFile
+    TalkFile,
+    MoreInfo
   },
   props: {
-    /** 聊天对话框的基本信息 */
+    /** 聊天对话框的基本信息--结构同最近联系人 */
     chatInfo: {
       type: Object,
       default: () => ({}),
@@ -208,13 +205,13 @@ export default {
       // 输入框内容
       messageContent: '',
       // 发送消息的密级，默认为非密
-      sendSecretLevel: 60,
+      sendSecretLevel: 30,
       // 发送键的可选密级选项
       sendMenuList: [],
       // 控制表情选择框不自动关闭
       emojisVisible: false,
       // 文件上传时的请求头部
-      headers: { authorization: 'authorization-text', 'Access-Control-Allow-Origin': '*' },
+      headers: {},
       // 上传的文件
       fileUpload: {},
       // 文件上传状态对应表
@@ -223,21 +220,14 @@ export default {
         'done': 'success',
         'error': 'exception'
       },
+      messageList: [],
 
       imgFormat: ['jpg', 'jpeg', 'png', 'gif'],
       fileFormat: ['doc', 'docx', 'jpg', 'jpeg', 'png', 'gif', 'xls', 'xlsx', 'pdf', 'gif', 'exe', 'msi', 'swf', 'sql', 'apk', 'psd']
     }
   },
   computed: {
-    ...mapGetters(['onlineState', 'userInfo']),
-    messageList: {
-      get: function () {
-        return this.$store.state.talk.curMessageList
-      },
-      set: function (messageList) {
-        this.$store.commit('SET_CUR_MESSAGE_LIST', messageList)
-      }
-    },
+    ...mapGetters(['onlineState', 'userSecretLevel', 'userId', 'avatar', 'nickname', 'token']),
     emojisNative () {
       return packData
     },
@@ -246,6 +236,9 @@ export default {
       if (this.onlineState === LandingStatus.ONLINE) {
         return this.fileUpload.status && this.fileUpload.status !== 'done'
       } else return true
+    },
+    fileUploadUrl () {
+      return api.fileUpload
     }
   },
   watch: {
@@ -274,8 +267,10 @@ export default {
       immediate: true
     },
     messageList: function (newValue) {
-      // 消息列表发生变化，更新缓存
-      this.$store.state.talk.talkMap.set(this.chatInfo.id, newValue)
+      this.$store.commit('SET_TALK_MAP', {
+        fromServer: false,
+        talkMapData: [[this.chatInfo.id, newValue]]
+      })
       // 滚动到最下方
       this.scrollToBottom()
     }
@@ -283,12 +278,25 @@ export default {
   mounted () {
     // 页面创建时，消息滚动到最近一条
     this.scrollToBottom()
-
-    // 每次滚动到最底部
-    this.$nextTick(() => {
-    })
   },
   methods: {
+    /**
+     * 重写上传action方法
+     */
+    // customRequest (data) {
+    //   const formData = new FormData()
+    //   formData.append('file', data.file)
+    //   data.onProgress()
+    //   uploadFile(formData).then(res => {
+    //     if (res.status === 200) {
+    //       // const imageUrl = res.result
+    //       // vue-cropper插件img绑定url时，会有跨域问题，图片类型转base64传递到子组件
+    //       this.getBase64(data.file, (imageUrl) => {
+    //         this.$refs.modal.edit(imageUrl)
+    //       })
+    //     }
+    //   })
+    // },
     /**
      * 文件上传状态变化时触发
      * @param {Object} info {file, fileList}
@@ -301,6 +309,9 @@ export default {
         this.$message.error(`${file.name} 上传失败.`)
         this.fileUpload = {}
       }
+    },
+    beforeUpload () {
+      this.headers.authorization = this.token
     },
     /**
      * 清除上传的文件
@@ -333,7 +344,6 @@ export default {
     },
     /**
      * 通过isGroup属性过滤聊天选项
-     * @author jihainan
      */
     optionFilter (isGroup) {
       // 聊天操作选项
@@ -342,12 +352,12 @@ export default {
         { group: true, name: 'markMessage', message: '标记信息', type: 'tags' },
         { group: false, name: 'talkHistory', message: '聊天内容', type: 'file-text' },
         { group: false, name: 'talkFile', message: '文件', type: 'folder-open' },
-        { group: false, name: 'moreInfo', message: '更多', type: 'ellipsis' }]
+        { group: false, name: isGroup ? 'moreInfo' : 'personMoreInfo', message: '更多', type: 'ellipsis' }]
+
       return isGroup ? optionList : optionList.filter(item => !item.group)
     },
     /**
      * 根据drawerName打开对应的抽屉
-     * @author jihainan
      */
     triggerDrawer (drawerName) {
       this.activeOption = drawerName
@@ -356,9 +366,9 @@ export default {
      * 设置发送消息的密级
      */
     handleSendSecretLevel (item) {
-      item = item ? item.key : 60
+      item = item ? item.key : 30
       // 当前用户可发送的全部密级
-      const allSendMenu = [60, 70, 80].filter(item => item <= this.userInfo.secretLevel)
+      const allSendMenu = [30, 40, 60].filter(item => item <= this.userSecretLevel)
       // 当前研讨的密级
       const talkSecretLevel = this.chatInfo.secretLevel
       // 设置发送按钮的密级
@@ -371,89 +381,158 @@ export default {
      * 获取缓存消息
      */
     getCacheMessage () {
-      const cacheMessage = this.$store.state.talk.talkMap.get(this.chatInfo.id)
-      if (cacheMessage) {
-        // 在缓存中取到历史研讨记录
-        this.messageList = cacheMessage
-      } else {
-        // 未在缓存中取到记录，向服务端请求数据
-        getTalkHistory().then(res => {
-          if (res.status === 200) this.messageList = res.result.data
+      const hasCache = this.$store.state.talk.talkMap.has(this.chatInfo.id)
+      if (!hasCache) {
+        this.$store.commit('SET_TALK_MAP', {
+          fromServer: false,
+          talkMapData: [[this.chatInfo.id, []]]
         })
       }
+      this.messageList = this.$store.state.talk.talkMap.get(this.chatInfo.id)
     },
     /**
      * 发送消息
-     * @author jihainan
      */
     sendMessage (secretLevel) {
+      if (this.sendDisabled) {
+        this.$message.warning('还不能发送消息！')
+        return
+      }
       const tweet = new Tweet()
+      /**
+       * 文件上传响应体中包含以下属性
+       * "fileId": "AAAWUHAAGAAAAxkAAG",
+       * "fileName": "api-ms-win-core-namedpipe-l1-1-0.dll",
+       * "fileExt": "",
+       * "fileType": "",
+       * "sizes": 18744,
+       * "path": "20190619",
+       * "readPath": "",
+       * "createTime": "2019-06-19 14:52:22",
+       * "creator": "登陆人id_测试",
+       * "updateTime": "2019-06-19 14:52:22",
+       * "updator": "登陆人id_测试",
+       * "groupId": "",
+       * "levels": ""
+       */
+      const { status } = this.fileUpload
       const content = this.messageContent
-      const { status, name, response } = { ...this.fileUpload }
-
-      if (status && status === 'done') {
-        // 组建图片或文件类消息
-        this.generateFileMsg(tweet, response.url, name, extensionStr(name))
-      } else if (content.replace(/\n/g, '').trim() === '') {
-        this.$message.warning('消息内容不能为空')
-      } else if (this.messageContent.length > 2000) {
-        this.$message.warning('消息内容不能超过2000个字符,以文件发送')
+      // 如果有文件消息，发送文件消息，忽略文字消息
+      if (status === 'done') {
+        const { fileId, fileName, readPath, fileExt } = this.fileUpload.response
+        this.generateFileMsg(
+          tweet,
+          fileId,
+          readPath,
+          fileExt,
+          fileName,
+          secretLevel
+        )
       } else {
-        // 组建文本类结构体
-        this.generateTextMsg(tweet, content)
-      }
-      // 判断组建消息成功，继续添加新的属性
-      if (tweet.type) {
-        tweet.id = uuidv4()
-        tweet.username = this.userInfo.name
-        tweet.avatar = this.userInfo.avatar
-        tweet.fromId = this.userInfo.id
-        tweet.toId = this.chatInfo.id
-        tweet.atId = []
-        tweet.secretLevel = secretLevel
-        tweet.time = new Date()
-        tweet.isGroup = this.chatInfo.isGroup
-
-        // 将消息加入当前消息列表(栈操作)
-        this.messageList.push(tweet)
-
-        // 更新当前联系人信息
-        if (tweet.type === 1) {
-          this.chatInfo.lastMessage = content
-          this.messageContent = ''
-        } else if (tweet.type === 2) {
-          this.chatInfo.lastMessage = '[图片]:' + tweet.content.title
-        } else if (tweet.type === 3) {
-          this.chatInfo.lastMessage = '[文件]:' + tweet.content.title
+        // 没有文件消息，验证文字消息的合法性
+        if (content.replace(/\n/g, '').trim() === '') {
+          this.$message.warning('消息内容不能为空')
+        } else if (content.length > 2000) {
+          this.$message.warning('消息内容不能超过2000个字符')
+        } else {
+          this.generateTextMsg(tweet, content, secretLevel)
         }
-
-        this.chatInfo.time = format(tweet.time, 'hh:mm')
-
-        // 添加发件人信息,发送websocket消息
-        tweet.contactInfo = this.chatInfo
-        const baseMessage = new SocketMessage({ code: this.chatInfo.isGroup ? 1 : 0, data: tweet })
-        this.SocketGlobal.send(baseMessage.toString())
-
-        // 更新最近联系人列表
-        this.$store.dispatch('UpdateRecentContacts', { ...this.chatInfo, reOrder: true, addUnread: false })
-        // 发完消息滚动到最下方
-        this.scrollToBottom()
-        this.fileUpload = {}
       }
+      // 如果消息类型属性存在，消息内容创建成功
+      if (tweet.content && tweet.content.type) {
+        this.generateBaseInfo(tweet, secretLevel)
+        // this.updateChatInfo(tweet)
+        this.addSenderInfo(tweet)
+        const baseMessage = new SocketMessage({
+          code: this.chatInfo.isGroup ? 1 : 0,
+          data: tweet
+        }).toString()
+        this.SocketGlobal.send(baseMessage)
+        // 将消息放进当前的消息列表
+        this.messageList.push(tweet)
+        this.$store.dispatch('UpdateRecentContacts', {
+          ...this.chatInfo,
+          reOrder: true,
+          addUnread: false
+        })
+
+        this.scrollToBottom()
+        tweet.content.type === 1
+          ? this.messageContent = ''
+          : this.fileUpload = {}
+      }
+    },
+    /** 添加发信人信息或者群组信息 */
+    addSenderInfo (tweet) {
+      const {
+        chatInfo,
+        userId,
+        nickname,
+        avatar,
+        userSecretLevel } = this
+      tweet.contactInfo = {}
+      if (tweet.isGroup) {
+        tweet.contactInfo.id = chatInfo.id
+        tweet.contactInfo.name = chatInfo.name
+        tweet.contactInfo.avatar = chatInfo.avatar
+        tweet.contactInfo.secretLevel = chatInfo.secretLevel
+        tweet.contactInfo.memberNum = chatInfo.memberNum
+        tweet.contactInfo.isGroup = true
+      } else {
+        tweet.contactInfo.id = userId
+        tweet.contactInfo.name = nickname
+        tweet.contactInfo.avatar = avatar
+        tweet.contactInfo.secretLevel = userSecretLevel
+        tweet.contactInfo.memberNum = 2
+        tweet.contactInfo.isGroup = false
+      }
+    },
+    /** 更新当前联系人信息 */
+    // TODO: 这个地方可以不处理，在刷新最近联系人列表处统一处理
+    updateChatInfo (tweet) {
+      // this.chatInfo.time = format(tweet.time, 'hh:mm')
+      // if (tweet.content.type === 1) {
+      //   this.chatInfo.lastMessage.title = tweet.content.title
+      //   this.messageContent = ''
+      // } else if (tweet.type === 2) {
+      //   this.chatInfo.lastMessage = '[图片]:' + tweet.content.title
+      // } else if (tweet.type === 3) {
+      //   this.chatInfo.lastMessage = '[文件]:' + tweet.content.title
+      // }
+    },
+    /** 生成消息体中的基本信息 */
+    generateBaseInfo (tweet, secretLevel) {
+      const { userId, avatar, nickname, chatInfo } = this
+      tweet.id = uuidv4()
+      tweet.username = nickname
+      tweet.avatar = avatar
+      tweet.fromId = userId
+      tweet.toId = chatInfo.id
+      tweet.atId = []
+      tweet.time = new Date()
+      tweet.isGroup = chatInfo.isGroup
     },
     /** 生成文字消息 */
-    generateTextMsg (tweet, content) {
-      tweet.type = 1
-      tweet.content = content
+    generateTextMsg (tweet, content, secretLevel) {
+      tweet.content = {
+        id: '0',
+        url: '0',
+        type: 1,
+        extension: '0',
+        title: content,
+        secretLevel: secretLevel
+      }
     },
     /** 生成图片和文件类消息 */
-    generateFileMsg (tweet, src, title, extension) {
+    generateFileMsg (tweet, id, url, extension, title, secretLevel) {
       const index = this.imgFormat.indexOf(extension)
-      tweet.type = index < 0 ? 3 : 2
       tweet.content = {
+        id: id,
+        url: '/api/chat/zzFileManage/GetFile?fileId=eVN8UWex&t=1561193135178',
+        type: index < 0 ? 3 : 2,
+        extension: extension,
         title: title,
-        src: src,
-        extension: extension
+        secretLevel: secretLevel
       }
     }
   },
@@ -477,34 +556,19 @@ export default {
     color: black;
   }
 
-  // 修改上传文件列表的样式
-  // TODO: 修改文件上传的样式
-  .upload-list-inline {
-  }
-
-  // 消息密级样式
-  .s-60, .s-undefined {
-    font-size: 14px;
-    color: #b2b2b2;
-  }
-  .s-70 {
-    font-size: 14px;
-    color: orange;
-  }
-  .s-80 {
-    font-size: 14px;
-    color: tomato;
-  }
-
   .conv-box {
-    height: 100%;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 64px);
+    overflow: hidden;
 
     // 头部区域
     &-header {
-      position: relative;
-      top: 0;
       height: 55px;
       width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
 
       line-height: 55px;
       padding: 0 20px;
@@ -525,6 +589,8 @@ export default {
       }
 
       .conv-option {
+        // 右对齐
+        overflow: hidden;
         font-size: 18px;
 
         .anticon:hover {
@@ -535,9 +601,8 @@ export default {
     // 消息展示区域
     &-message {
       display: flex;
-      position: relative;
-      overflow: hidden;
-      flex-grow: 1;
+      flex-direction: column;
+      flex: 1;
 
       .talk-main-box {
         position: relative;
@@ -547,8 +612,8 @@ export default {
           overflow: overlay;
         }
 
-        .talk-main{
-          position: absolute;
+        .talk-main {
+          // position: absolute;
           box-sizing: border-box;
           min-height: 100%;
           min-width: 360px;
@@ -556,9 +621,10 @@ export default {
           padding: 4px 16px 16px;
           background: rgba(255, 255, 255, 0);
           overflow: hidden;
-          .talk-item{
+          .talk-item {
             display: flex;
             flex-direction: row-reverse;
+            flex-shrink: 0;
           }
 
           .empty-tip {
@@ -572,17 +638,18 @@ export default {
     }
     // 文字编辑区域
     &-editor {
+      height: 185px;
       flex-shrink: 0;
       background-color: #fff;
       display: flex;
       padding: 0;
-      border-top: 1px solid #dcdee0;
       flex-direction: column;
       // 编辑器选项
       .editor-option {
         display: flex;
         height: 40px;
         line-height: 32px;
+        border-top: 1px solid #dcdee0;
         padding: 4px 20px;
         font-size: 20px;
       }
@@ -592,7 +659,7 @@ export default {
         display: flex;
         flex-direction: column;
 
-        .draft-input{
+        .draft-input {
           flex: 1 0 auto;
           width: 100%;
           display: flex;
@@ -600,7 +667,7 @@ export default {
           flex-direction: column;
           cursor: text;
           // 输入框
-          .textarea-input{
+          .textarea-input {
             height: 100px;
             width: 100%;
             line-height: 20px;
@@ -620,13 +687,13 @@ export default {
             }
           }
           // 发送键
-          .send-toolbar{
+          .send-toolbar {
             margin: 4px 0;
             display: flex;
             align-items: flex-end;
+          }
         }
       }
-    }
     }
   }
 

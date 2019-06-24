@@ -36,7 +36,7 @@
         <div class="info-list">
           <div>
             <p class="attr">密级:</p>
-            <p class="val">{{ contactsInfo.securityClass }}</p>
+            <p class="val">{{ contactsInfo.secretLevel | peopleSecret }}</p>
           </div>
           <div>
             <p class="attr">单位:</p>
@@ -61,7 +61,7 @@
 
 <script>
 import { getContactsInfo } from '@/api/talk'
-
+import { RecentContact } from '@/utils/talk'
 export default {
   name: 'ContactsInfo',
   props: {
@@ -74,12 +74,6 @@ export default {
   },
   data () {
     return {
-      data: [
-        { key: '1', attribute: '主题', value: '测试的测试的测试的测试的测试的测试的测试的测试的测试的测试的测试的测试的测试的测试的测试的测试的测试的测试的测试的测试的' },
-        { key: '2', attribute: '创建时间', value: '2018-12-20' },
-        { key: '3', attribute: '创建人', value: '谁家的小谁' },
-        { key: '4', attribute: '其他', value: '其他的内容' }
-      ],
       /** 群组信息 */
       contactsInfo: {},
       /** 加载状态 */
@@ -100,7 +94,7 @@ export default {
 
       getContactsInfo(contactsId).then(res => {
         if (res.status === 200) {
-          this.contactsInfo = res.result.data
+          this.contactsInfo = res.result
         }
 
         this.loadingState = false
@@ -108,8 +102,17 @@ export default {
         this.loadingState = false
       })
     },
-    sendMessage (event) {
-      console.log('这里应该跳转到聊天页')
+    sendMessage () {
+      this.$emit('clickSend')
+      const contactItem = this.contactsInfo
+      console.log('asdf')
+      this.$router.push({
+        path: '/talk/ChatPanel/ChatBox',
+        query: new RecentContact(contactItem)
+      })
+      contactItem.reOrder = true
+      contactItem.addUnread = false
+      this.$store.dispatch('UpdateRecentContacts', contactItem)
     }
   }
 }

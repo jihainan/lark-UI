@@ -1,396 +1,229 @@
 <template>
-  <page-layout :avatar="avatar">
-    <div slot="headerContent">
-      <div class="title">
-        {{ timeFix }}，{{ user.name }}
-        <span class="welcome-text">，{{ welcome() }}</span>
+  <div style="margin-bottom: 64px;">
+    <div class="antd-pro-pages-dashboard-analysis-twoColLayout" :class="isDesktop() ? 'desktop' : ''">
+      <grid-layout
+        :layout.sync="cardList"
+        :col-num="2"
+        :row-height="61"
+        :max-rows="12"
+        :is-draggable="true"
+        :is-resizable="false"
+        :is-mirrored="false"
+        :vertical-compact="true"
+        :margin="[10, 10]"
+        :use-css-transforms="true"
+      >
+        <grid-item
+          v-for="(grid, indexs) in cardList"
+          dragAllowFrom=".ant-card-head"
+          :minH="cardSize.minH"
+          :maxH="cardSize.maxH"
+          :minW="cardSize.minW"
+          :key="grid.id"
+          :x="grid.x"
+          :y="grid.y"
+          :w="1"
+          :h="5"
+          :i="grid.i"
+          @moved="moved"
+          @move="click(indexs)"
+        >
+          <l-card :cardData="grid" @refreshCard="refreshCard"></l-card>
+        </grid-item>
+      </grid-layout>
+    </div>
+    <!--这个地方放置最近访问-->
+
+    <footer-tool-bar :style="{height:'72px', width: isSideMenu() && isDesktop() ? `calc(100% - ${sidebarOpened ? 256 : 80}px)` : '100%'}">
+      <div class="tool-list">
+        <div class="tool-item" v-for="item in toolList" :key="item.id">
+          <img :src="'/tools/Icon-'+item.description+'.png'" width="40" height="40" :alt="item.description" :title="item.title"/>
+          <div class="tool-name">{{ item.title }}</div>
+        </div>
+        <!-- <div class="tool-item">
+          <img src="/tools/Icon-PDM.png" width="40" height="40" alt="PDM" title="项目数据管理系统"/>
+          <div class="tool-name">项目数据管理系统</div>
+        </div> -->
+        <!-- <div class="tool-item">
+          <img src="/tools/Icon-MPM.png" width="40" height="40" alt="MPM" title="项目管理系统"/>
+          <div class="tool-name">项目管理系统</div>
+        </div>
+        <div class="tool-item">
+          <img src="/tools/Icon-OA.png" width="40" height="40" alt="OA" title="协同办公系统"/>
+          <div class="tool-name">协同办公系统</div>
+        </div>
+        <div class="tool-item">
+          <img src="/tools/Icon-TDM.png" width="40" height="40" alt="TDM" title="试验数据管理系统"/>
+          <div class="tool-name">试验数据管理系统</div>
+        </div> -->
       </div>
-      <div>主任设计师 | 十一室 - 工程信息化组</div>
-    </div>
-    <div slot="extra">
-      <a-row class="more-info">
-        <a-col :span="8">
-          <head-info title="任务数" content="56" :center="false" :bordered="false"/>
-        </a-col>
-        <a-col :span="8">
-          <head-info title="团队排名" content="8/24" :center="false" :bordered="false"/>
-        </a-col>
-        <a-col :span="8">
-          <head-info title="任务完成率" content="56%" :center="false"/>
-        </a-col>
-      </a-row>
-    </div>
-
-    <div>
-      <a-row :gutter="24">
-        <a-col :xl="16" :lg="24" :md="24" :sm="24" :xs="24">
-          <a-card
-            class="project-list"
-            :loading="loading"
-            style="margin-bottom: 24px;"
-            :bordered="false"
-            title="进行中的任务"
-            :body-style="{ padding: 0 }"
-          >
-            <a slot="extra">全部任务</a>
-            <div>
-              <a-card-grid class="project-card-grid" :key="i" v-for="(item, i) in projects">
-                <a-card :bordered="false" :body-style="{ padding: 0 }">
-                  <a-card-meta>
-                    <div slot="title" class="card-title">
-                      <a-avatar size="small" :src="item.cover"/>
-                      <a>{{ item.title }}</a>
-                    </div>
-                    <div slot="description" class="card-description">{{ item.description }}</div>
-                  </a-card-meta>
-                  <div class="project-item">
-                    <a href="/#/">云雀小组</a>
-                    <span class="datetime">9小时前</span>
-                  </div>
-                </a-card>
-              </a-card-grid>
-            </div>
-          </a-card>
-
-          <a-card :loading="loading" title="动态" :bordered="false">
-            <a-list>
-              <a-list-item :key="index" v-for="(item, index) in activities">
-                <a-list-item-meta>
-                  <a-avatar slot="avatar" :src="item.user.avatar"/>
-                  <div slot="title">
-                    <span>{{ item.user.nickname }}</span>&nbsp;
-                    在&nbsp;
-                    <a href="#">{{ item.project.name }}</a>&nbsp;
-                    <span>{{ item.project.action }}</span>&nbsp;
-                    <a href="#">{{ item.project.event }}</a>
-                  </div>
-                  <div slot="description">{{ item.time }}</div>
-                </a-list-item-meta>
-              </a-list-item>
-            </a-list>
-          </a-card>
-        </a-col>
-        <a-col
-          style="padding: 0 12px"
-          :xl="8"
-          :lg="24"
-          :md="24"
-          :sm="24"
-          :xs="24">
-          <a-card
-            title="快速开始 / 便捷导航"
-            style="margin-bottom: 24px"
-            :bordered="false"
-            :body-style="{padding: 0}"
-          >
-            <div class="item-group">
-              <a>PDM</a>
-              <a>TDM</a>
-              <a>MPM</a>
-              <a>ERP</a>
-              <a>OnRoad</a>
-              <a>OA</a>
-              <a-button size="small" type="primary" ghost icon="plus">添加</a-button>
-            </div>
-          </a-card>
-          <a-card
-            title="积分指数"
-            style="margin-bottom: 24px"
-            :loading="radarLoading"
-            :bordered="false"
-            :body-style="{ padding: 0 }"
-          >
-            <div style="min-height: 400px;">
-              <!-- :scale="scale" :axis1Opts="axis1Opts" :axis2Opts="axis2Opts"  -->
-              <radar :data="radarData"/>
-            </div>
-          </a-card>
-          <a-card :loading="loading" title="团队" :bordered="false">
-            <div class="members">
-              <a-row>
-                <a-col :span="12" v-for="(item, index) in teams" :key="index">
-                  <a>
-                    <a-avatar size="small" :src="item.avatar"/>
-                    <span class="member">{{ item.name }}</span>
-                  </a>
-                </a-col>
-              </a-row>
-            </div>
-          </a-card>
-        </a-col>
-      </a-row>
-      <a-row>
-        <a-col :span="24" style="margin-top: 24px">
-          <a-card
-            title="本年度工作情况"
-            style="margin-bottom: 24px"
-            :bordered="false"
-            :body-style="{padding: 0}"
-          >
-            <heat-map title="本年度工作情况" :data="heatMapData"></heat-map>
-          </a-card>
-        </a-col>
-      </a-row>
-    </div>
-  </page-layout>
+      <!-- <a-button type="primary" @click="validate" :loading="loading">提交</a-button> -->
+    </footer-tool-bar>
+  </div>
 </template>
 
 <script>
-import { timeFix } from '@/utils/util'
-import { mapGetters } from 'vuex'
-
-import PageLayout from '@/components/page/PageLayout'
-import HeadInfo from '@/components/tools/HeadInfo'
-import Radar from '@/components/chart/Radar'
-import HeatMap from '@/components/chart/Heatmap'
-
-import { getRoleList, getServiceList } from '@/api/manage'
-
-const DataSet = require('@antv/data-set')
-
+import { mixin, mixinDevice } from '@/utils/mixin'
+import FooterToolBar from '@/components/FooterToolbar'
+import VueGridLayout from 'vue-grid-layout'
+import LCard from '@/views/dashboard/Card'
+import { getCommonTools, getUserCard } from '@/api/workplace'
 export default {
-  name: 'Workplace',
-  components: {
-    PageLayout,
-    HeadInfo,
-    Radar,
-    HeatMap
-  },
+  name: 'Monitor',
+  mixins: [mixin, mixinDevice],
   data () {
     return {
-      timeFix: timeFix(),
-      avatar: '',
-      user: {},
-
-      projects: [],
-      loading: true,
-      radarLoading: true,
-      activities: [],
-      teams: [],
-
-      // data
-      axis1Opts: {
-        dataKey: 'item',
-        line: null,
-        tickLine: null,
-        grid: {
-          lineStyle: {
-            lineDash: null
-          },
-          hideFirstLine: false
-        }
-      },
-      axis2Opts: {
-        dataKey: 'score',
-        line: null,
-        tickLine: null,
-        grid: {
-          type: 'polygon',
-          lineStyle: {
-            lineDash: null
-          }
-        }
-      },
-      scale: [
-        {
-          dataKey: 'score',
-          min: 0,
-          max: 80
-        }
-      ],
-      axisData: [
-        { item: '引用', a: 70, b: 30, c: 40 },
-        { item: '口碑', a: 60, b: 70, c: 40 },
-        { item: '产量', a: 50, b: 60, c: 40 },
-        { item: '贡献', a: 40, b: 50, c: 40 },
-        { item: '热度', a: 60, b: 70, c: 40 },
-        { item: '引用', a: 70, b: 50, c: 40 }
-      ],
-      radarData: [],
-      heatMapData: []
+      cardList: [],
+      cardSize: { maxH: 5, minH: 5, maxW: 1, minW: 1 },
+      // items: generateItems(50, i => ({ id: i, data: 'Draggable' + i }))
+      is: [],
+      ids: [],
+      index: '',
+      toolList: []
     }
   },
-  computed: {
-    userInfo () {
-      return this.$store.getters.userInfo
-    }
+  components: {
+    LCard,
+    FooterToolBar,
+    GridLayout: VueGridLayout.GridLayout,
+    GridItem: VueGridLayout.GridItem
   },
   created () {
-    this.user = this.userInfo
-    this.avatar = this.userInfo.avatar
-
-    getRoleList().then(res => {
-      console.log('workplace -> call getRoleList()', res)
-    })
-
-    getServiceList().then(res => {
-      console.log('workplace -> call getServiceList()', res)
-    })
-  },
-  mounted () {
-    this.getProjects()
-    this.getActivity()
-    this.getTeams()
-    this.initRadar()
-    this.initHeatMap()
+    this.getSelfWorkplace()
+    this.getSelfTools()
   },
   methods: {
-    ...mapGetters(['nickname', 'welcome']),
-    getProjects () {
-      this.$http.get('/list/search/projects').then(res => {
-        this.projects = res.result && res.result.data
-        this.loading = false
-      })
-    },
-    getActivity () {
-      this.$http.get('/workplace/activity').then(res => {
-        this.activities = res.result
-      })
-    },
-    getTeams () {
-      this.$http.get('/workplace/teams').then(res => {
-        this.teams = res.result
-      })
-    },
-    initRadar () {
-      this.radarLoading = true
-
-      this.$http.get('/workplace/radar').then(res => {
-        const dv = new DataSet.View().source(res.result)
-        dv.transform({
-          type: 'fold',
-          fields: ['个人', '团队', '部门'],
-          key: 'user',
-          value: 'score'
+    getSelfWorkplace () {
+      this.cardList = []
+      // this.$http.get('/portal/userCard/myself')
+      getUserCard()
+        .then(res => {
+          const dataTemp = res.result.data
+          for (var i = 0; i < dataTemp.length; i++) {
+            const temp = {}
+            temp.id = dataTemp[i].id
+            temp.x = 1 * parseInt(dataTemp[i].i % 2)
+            temp.y = 5 * parseInt(dataTemp[i].i / 2)
+            temp.w = 1
+            temp.h = 5
+            temp.i = dataTemp[i].i
+            temp.type = dataTemp[i].type
+            temp.title = dataTemp[i].title
+            temp.url = dataTemp[i].url
+            this.cardList.push(temp)
+          }
         })
-
-        this.radarData = dv.rows
-        this.radarLoading = false
+    },
+    /**
+     * 获取个人常用工具栏信息 byfanjiao
+     */
+    getSelfTools () {
+      getCommonTools().then(res => {
+        this.toolList = res.result.data
       })
     },
-    initHeatMap () {
-      this.$http.get('/workplace/hotmap').then(res => {
-        const dv = new DataSet.View().source(res.result)
-        // dv.transform({
-        //   type: 'fold',
-        //   fields: ['个人', '团队', '部门'],
-        //   key: 'user',
-        //   value: 'score'
-        // })
-
-        this.heatMapData = dv.rows
+    /**
+     * 子组件点击移除卡片后触发 by fanjiao
+     */
+    refreshCard () {
+      this.getSelfWorkplace()
+    },
+    click (index) {
+      this.index = index
+    },
+    moved (a, newX, newY) {
+      const i = (2 * newY) / 5
+      const index = this.index
+      // this.$http.get('/portal/userCard/myself', {
+      getUserCard({
+        params: {
+          list: {
+            cardId: this.ids[index],
+            i: Math.round(i)
+          }
+        }
+      }).then(res => {
       })
+      this.getId()
+    },
+    getId () {
+      for (let i = 0; i < this.cardList.length; i++) {
+        this.ids.push(this.cardList[i].id)
+      }
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-.project-list {
-  .card-title {
-    font-size: 0;
-
-    a {
-      color: rgba(0, 0, 0, 0.85);
-      margin-left: 12px;
-      line-height: 24px;
-      height: 24px;
-      display: inline-block;
-      vertical-align: top;
-      font-size: 14px;
-
-      &:hover {
-        color: #1890ff;
-      }
-    }
-  }
-  .card-description {
-    color: rgba(0, 0, 0, 0.45);
-    height: 44px;
-    line-height: 22px;
-    overflow: hidden;
-  }
-  .project-item {
+  .antd-pro-pages-dashboard-analysis-twoColLayout {
+    position: relative;
     display: flex;
-    margin-top: 8px;
-    overflow: hidden;
-    font-size: 12px;
-    height: 20px;
-    line-height: 20px;
-    a {
-      color: rgba(0, 0, 0, 0.45);
-      display: inline-block;
-      flex: 1 1 0;
-
-      &:hover {
-        color: #1890ff;
-      }
-    }
-    .datetime {
-      color: rgba(0, 0, 0, 0.25);
-      flex: 0 0 auto;
-      float: right;
-    }
-  }
-  .ant-card-meta-description {
-    color: rgba(0, 0, 0, 0.45);
-    height: 44px;
-    line-height: 22px;
-    overflow: hidden;
-  }
-}
-
-.item-group {
-  padding: 20px 0 8px 24px;
-  font-size: 0;
-  a {
-    color: rgba(0, 0, 0, 0.65);
-    display: inline-block;
-    font-size: 14px;
-    margin-bottom: 13px;
-    width: 25%;
-  }
-}
-
-.members {
-  a {
     display: block;
-    margin: 12px 0;
-    line-height: 24px;
-    height: 24px;
-    .member {
-      font-size: 14px;
-      color: rgba(0, 0, 0, 0.65);
-      line-height: 24px;
-      max-width: 100px;
-      vertical-align: top;
-      margin-left: 12px;
-      transition: all 0.3s;
-      display: inline-block;
+    flex-flow: row wrap;
+    &.desktop div[class^=ant-col]:last-child {
+      position: absolute;
+      right: 0;
+      height: 100%;
     }
-    &:hover {
-      span {
-        color: #1890ff;
-      }
+  }
+
+  .description{
+    margin-top: 24px;
+    color: gray;
+    font-size: 14px;
+    line-height: 22px;
+    text-align: center;
+  }
+  .dropdown-container{
+    position: relative;
+    background: #fff;
+    border: 0 solid transparent;
+    border-radius: 4px;
+    box-shadow: 0 2px 20px rgba(0,0,0,.1);
+    .menu {
+        border-radius: 4px;
+        background: #fff;
+        list-style: none;
+        overflow: auto;
+        margin: 0;
+        padding: 4px 0;
+        max-height: 400px;
+        min-width: 200px;
+        .menu-item {
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            font-size: 14px;
+            color: #383838;
+            box-sizing: border-box;
+            padding: 8px 16px;
+            word-break: break-all;
+        }
+    }
+  }
+.tool-list{
+  margin-left: 64px;
+  .tool-item{
+    width: 52px;
+    margin-left: 12px;
+    text-align:center;
+    font-size:8px;
+    text-overflow: ellipsis;
+    float: left;
+    .tool-name{
+      overflow: hidden;/*超出部分隐藏*/
+      white-space: nowrap;/*不换行*/
+      text-overflow:ellipsis;/*超出部分文字以...显示*/
+      margin-top:-26px;
     }
   }
 }
 
-.mobile {
-  .project-list {
-    .project-card-grid {
-      width: 100%;
-    }
-  }
-
-  .more-info {
-    border: 0;
-    padding-top: 16px;
-    margin: 16px 0 16px;
-  }
-
-  .headerContent .title .welcome-text {
-    display: none;
-  }
-}
 </style>

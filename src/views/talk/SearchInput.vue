@@ -5,9 +5,10 @@
       placeholder="消息/联系人/群组"
       style="width: 200px"
       v-model="searchObj.searchValue"
-      @focus="searchInputOnFocus"
-      @input="searchValueChange"
+      @focus="handleFocus"
     />
+    <!-- @focus="searchInputOnFocus"
+    @input="searchValueChange" -->
   </div>
 </template>
 
@@ -40,6 +41,9 @@ export default {
     this.$store.commit('SET_SHOW_SEARCH_CONTENT', this.showSearchContent)
   },
   methods: {
+    handleFocus () {
+      this.searchObj.searchValue = '敬请期待· · ·'
+    },
     // searchInputOnBlur () {
     // console.log('onBlur')
     // if (!this.searchObj.searchValue) {

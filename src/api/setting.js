@@ -1,9 +1,9 @@
 import { axios } from '@/utils/request'
 
 const api = {
-  AllCommonTools: '/setting/commontools/all',
-  SelfCommonTools: '/setting/commontools/self',
-  CheckCommonTools: '/setting/commontools/check'
+  // AllCommonTools: '/portal/userCard/cards',
+  SelfCommonTools: '/portal/userCommonTools/allTools',
+  CheckCommonTools: '/portal/userCommonTools/myself'
 }
 
 export default api
@@ -40,10 +40,9 @@ export function setCheckCommonTools (parameter) {
   return axios({
     url: api.CheckCommonTools,
     method: 'post',
-    params: parameter
+    data: parameter
   })
 }
-
 /**
  * 删除个人工具
  * @param {} parameter

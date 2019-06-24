@@ -193,7 +193,7 @@ export default {
   created () {
     // 获取树形组织信息
     getOrgTree({ 'parentTreeId': 'root' }).then(res => {
-      // this.orgTree = this.handleVal(res.result.data)
+      this.orgTree = this.handleVal(res.result.data)
       generateList(this.orgTree)
     })
     // 将树型结构信息转成列表形式，用于组织信息搜索
@@ -279,6 +279,7 @@ export default {
       this.people3id = this.currentitem.people3id
       this.people4id = this.currentitem.people4id
       this.people5id = this.currentitem.people5id
+      this.type = '2'
     },
     /**
      * 获取父节点 用于点击树节点触发右侧form表单 获取上级组织信息
@@ -373,6 +374,7 @@ export default {
      * 组件主要负责人点击保存触发
      */
     handleSaveOk (returnData, type) {
+      console.log('returnData', returnData)
       const username = []
       const userid = []
       returnData.forEach(item => {
@@ -485,15 +487,15 @@ export default {
           }
         }
       })
-    }
+    },
     /**
      * 处理后台返回值 替换名字 id=>key label=>title
      */
-    // handleVal (value) {
-    //   let str = JSON.stringify(value)
-    //   str = str.replace(/id/g, 'key').replace(/label/g, 'title')
-    //   return JSON.parse(str)
-    // },
+    handleVal (value) {
+      let str = JSON.stringify(value)
+      str = str.replace(/id/g, 'key').replace(/label/g, 'title')
+      return JSON.parse(str)
+    }
   }
 }
 </script>

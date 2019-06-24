@@ -1,7 +1,12 @@
 <template>
   <a-locale-provider :locale="locale">
     <div id="app">
-      <router-view/>
+      <router-view />
+
+      <!-- <div v-else>
+        <NoClient />
+      </div> -->
+
     </div>
   </a-locale-provider>
 </template>
@@ -9,11 +14,19 @@
 <script>
 import zhCN from 'ant-design-vue/lib/locale-provider/zh_CN'
 import { deviceEnquire, DEVICE_TYPE } from '@/utils/device'
+import { isLarkClient } from '@/utils/client'
+import NoClient from '@/views/exception/707'
 
 export default {
+  components: { NoClient },
   data () {
     return {
       locale: zhCN
+    }
+  },
+  computed: {
+    isLarkClient () {
+      return isLarkClient()
     }
   },
   mounted () {

@@ -26,7 +26,6 @@
         </div>
       </a-col>
     </a-row>
-
     <template slot="footer">
       <a-button key="back" @click="cancelHandel">取消</a-button>
       <a-button key="submit" type="primary" :loading="confirmLoading" @click="okHandel">保存</a-button>
@@ -35,7 +34,6 @@
 </template>
 <script>
 import { VueCropper } from 'vue-cropper'
-
 export default {
   components: {
     VueCropper
@@ -43,9 +41,7 @@ export default {
   data () {
     return {
       visible: false,
-      id: null,
       confirmLoading: false,
-
       options: {
         img: '/avatar2.jpg',
         autoCrop: true,
@@ -59,25 +55,21 @@ export default {
   methods: {
     edit (id) {
       this.visible = true
-      this.id = id
+      this.options.img = id
       /* 获取原始头像 */
     },
     close () {
-      this.id = null
       this.visible = false
     },
     cancelHandel () {
       this.close()
     },
     okHandel () {
-      const vm = this
-
-      vm.confirmLoading = true
-      setTimeout(() => {
-        vm.confirmLoading = false
-        vm.close()
-        vm.$message.success('上传头像成功')
-      }, 2000)
+      // 获取截图的base64 数据
+      this.$refs.cropper.getCropData((data) => {
+        this.$emit('ok', data)
+      })
+      this.close()
     },
 
     realTime (data) {

@@ -17,7 +17,7 @@
       <div class="tools-wrapper">
         <!-- user-wrapper -->
         <user-menu></user-menu>
-        <span v-if="device=='tablet'" class="separation-line action">|</span>
+        <span v-if="isLarkClient" class="separation-line action">|</span>
         <!-- option-wrapper -->
         <window-option></window-option>
       </div>
@@ -42,7 +42,7 @@
         <!-- <user-menu class="header-index-right"></user-menu> -->
         <div class="tools-wrapper">
           <user-menu></user-menu>
-          <span class="separation-line action" v-if="device=='tablet'">|</span>
+          <span class="separation-line action" v-if="isLarkClient">|</span>
           <window-option></window-option>
         </div>
       </div>
@@ -58,6 +58,7 @@ import SMenu from '../menu/'
 import Logo from '../tools/Logo'
 
 import { mixin, mixinDevice } from '@/utils/mixin.js'
+import { isLarkClient } from '@/utils/client'
 
 export default {
   name: 'GlobalHeader',
@@ -97,6 +98,11 @@ export default {
   data () {
     return {
       headerBarFixed: false
+    }
+  },
+  computed: {
+    isLarkClient () {
+      return isLarkClient()
     }
   },
   mounted () {

@@ -41,7 +41,7 @@ router.beforeEach((to, from, next) => {
             })
           })
           .then(() => {
-            // 用户信息获取成功后进行websocket连接
+            // 进行websocket连接
             Vue.prototype.SocketGlobal.connect()
           })
           .catch(() => {

@@ -1,23 +1,35 @@
 import { axios } from '@/utils/request'
 
 const api = {
-  talkMembers: 'talk/members',
-  groupInfo: 'talk/group/info',
-  groupList: 'talk/group/list',
-  contactsInfo: 'talk/contacts/info',
-  contactsTree: 'talk/contacts/tree',
-  recentContacts: 'talk/recent/list',
-  talkMap: 'talk/message/map',
-  talkHistory: 'talk/history'
+  talkMembers: 'chat/members',
+  groupInfo: 'chat/zzGroup/getGroupInfo',
+  groupList: 'chat/zzGroup/queryGroupListByUserId',
+  contactsInfo: 'admin/user/',
+  contactsTree: 'admin/org/orgUsers',
+  recentContacts: 'chat/zzGroup/queryContactListById',
+  talkMap: 'chat/zzGroup/queryHistoryMessageById',
+  talkHistory: 'chat/history',
+  // 研讨文件上传地址
+  fileUpload: '/api/chat/zzFileManage/singleFileUpload',
+  // 图片预览地址
+  imgPrevie: '/api/chat/zzFileManage/GetFile',
+  // 文件下载地址
+  fileDownload: '/api/chat/zzFileManage/downloadFile'
 }
 
 export default api
 
-export function getTalkMembers (parameter) {
+/**
+ * 获取当前研讨中的成员
+ * @param {String} contactId
+ */
+export function getTalkMembers (contactId) {
   return axios({
     url: api.talkMembers,
     method: 'get',
-    params: parameter
+    params: {
+      contactId: contactId
+    }
   })
 }
 
@@ -29,7 +41,9 @@ export function getGroupInfo (groupId) {
   return axios({
     url: api.groupInfo,
     method: 'GET',
-    params: groupId
+    params: {
+      groupId: groupId
+    }
   })
 }
 
@@ -37,65 +51,105 @@ export function getGroupInfo (groupId) {
  * 通过联系人id获取联系人详细信息
  * @param {String} contactsId 联系人id
  */
-export function getContactsInfo (contactsId) {
+export function getContactsInfo (id) {
   return axios({
-    url: api.contactsInfo,
-    method: 'GET',
-    params: contactsId
+    url: api.contactsInfo + id,
+    method: 'GET'
   })
 }
 
 /**
  * 获取群组列表
- * @author jihainan
+ * @param {String} userId 当前用户id
  */
-export function getGroupList () {
+export function getGroupList (userId) {
   return axios({
     url: api.groupList,
-    method: 'GET'
+    method: 'GET',
+    params: {
+      userId: userId
+    }
   })
 }
 
 /**
  * 获取联系人树
- * @author jihainan
  */
 export function getContactsTree () {
   return axios({
     url: api.contactsTree,
-    method: 'GET'
+    method: 'GET',
+    params: { parentTreeId: 'root' }
   })
 }
 
 /**
  * 获取最近联系人列表
- * @author jihainan
+ * @param {String} userId 当前用户id
  */
-export function getRecentContacts () {
+export function getRecentContacts (userId) {
   return axios({
     url: api.recentContacts,
-    method: 'GET'
+    method: 'GET',
+    params: {
+      userId: userId
+    }
   })
 }
 
 /**
  * 获取未读消息
- * @author jihainan
+ * @param {String} userId 当前用户id
  */
-export function getTalkMap () {
+export function getTalkMap (userId) {
   return axios({
     url: api.talkMap,
-    method: 'GET'
+    method: 'GET',
+    params: {
+      userId: userId
+    }
+  })
+}
+
+/**
+ * 获取未读消息
+ * @param {String} userId 当前用户id
+ */
+export function getFile (fileId) {
+  return axios({
+    url: api.getFile,
+    method: 'GET',
+    params: {
+      fileId: fileId,
+      t: new Date().getTime()
+    }
   })
 }
 
 /**
  * 获取指定联系人的研讨记录
- * @author jihainan
+ * @param {String} userId 当前用户id
+ * @param {String} contactId 指定联系人id
  */
-export function getTalkHistory () {
+export function getTalkHistory (userId, contactId) {
   return axios({
     url: api.talkHistory,
-    method: 'GET'
+    method: 'GET',
+    params: {
+      userId: userId,
+      contactId: contactId
+    }
+  })
+}
+
+/**
+ * 文件上传
+ */
+export function uploadFile (parameter) {
+  return axios({
+    url: api.upload,
+    method: 'post',
+    data: parameter,
+    headers: { 'Content-Type': 'multipart/form-data' }
   })
 }

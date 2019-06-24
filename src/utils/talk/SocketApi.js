@@ -1,8 +1,9 @@
 /**
  * websocket接口类
- * @author jihainan
  */
 import store from '@/store'
+import notification from 'ant-design-vue/es/notification'
+import { LandingStatus } from '@/utils/constants'
 class SocketApi {
   /**
    * 构造函数
@@ -15,11 +16,11 @@ class SocketApi {
    * @param {Number} reconnInterval 重连间隔时间 单位：毫秒
    * @param {String} binaryType 返回websocket连接所传输二进制数据的类型
    */
-  constructor ({ wsProtocol, ip = '127.0.0.1', port = '8181', paramStr, param, heartbeatTimeout = 50000, reconnInterval = 1000, binaryType = 'arraybuffer' } = {}) {
+  constructor ({ wsProtocol, ip = '127.0.0.1', port = '9326', paramStr, param, heartbeatTimeout = 50000, reconnInterval = 1000, binaryType = 'arraybuffer' } = {}) {
     this.wsProtocol = wsProtocol
     this.ip = ip
     this.port = port
-    this.url = 'ws://127.0.0.1:8181'
+    this.url = 'ws://' + this.ip + ':' + this.port
     this.binaryType = binaryType
 
     if (paramStr) {
@@ -44,26 +45,31 @@ class SocketApi {
 
   /**
    * 建立websocket连接
+   * @param {String} userId 用户id
    */
-  connect () {
-    const ws = new WebSocket(this.url)
-    // 设置在线状态为重连中
-    store.commit('SET_ONLINE_STATE', ws.CONNECTING)
+  connect (userId) {
+    userId = userId || store.getters.userId
+    const ws = new WebSocket(this.url + '?userId=' + userId)
+    // 设置在线状态为连接中
+    store.commit('SET_ONLINE_STATE', LandingStatus.LANDING)
     this.ws = ws
 
     ws.binaryType = this.binaryType
 
     const self = this
 
-    // websocket连接打开
+    // 已经建立websocket连接
     ws.onopen = openEvent => {
       self.lastInteractionTime(new Date().getTime())
 
-      // 获取该用户所有的未读消息
+      // 请求研讨相关的数据
       store.dispatch('GetTalkMap')
+      store.dispatch('GetRecentContacts')
+      store.dispatch('GetGroupList')
+      store.dispatch('GetContactsTree')
 
       // 设置在线状态为已连接
-      store.commit('SET_ONLINE_STATE', ws.OPEN)
+      store.commit('SET_ONLINE_STATE', LandingStatus.ONLINE)
 
       // 定时发送心跳
       self.pingIntervalId = setInterval(() => {
@@ -77,15 +83,100 @@ class SocketApi {
       const received = JSON.parse(messageEvent.data)
 
       switch (received.code) {
+        // 处理消息 更新消息缓存-->最近联系人列表
         case 0:
-        // 接收到私聊消息
-        // eslint-disable-next-line no-fallthrough
         case 1:
-          // 接收到群组消息
-          // 更新最近联系人列表
-          store.dispatch('UpdateRecentContacts', { ...received.data.contactInfo, reOrder: true, addUnread: true })
-          // 更新消息缓存
-          store.dispatch('UpdateTalkMap', received.data)
+          store
+            .dispatch('UpdateTalkMap', received.data)
+            .then(() => {
+              store.dispatch('UpdateRecentContacts', {
+                ...received.data.contactInfo,
+                reOrder: true,
+                addUnread: true
+              })
+            })
+            .catch(error => {
+              console.log(error)
+              const key = `talk${Date.now()}`
+              notification.warning({
+                message: '消息同步出错',
+                description: '研讨消息同步出错，点击同步按钮重新同步',
+                duration: null,
+                btn: (h) => {
+                  return h('a-button', {
+                    props: {
+                      type: 'primary',
+                      size: 'small',
+                      icon: 'reload'
+                    },
+                    on: {
+                      click: () => {
+                        store.dispatch('GetTalkMap')
+                          .then(() => {
+                            store.dispatch('GetRecentContacts')
+                          })
+                          .then(() => notification.close(key))
+                      }
+                    }
+                  }, '同步')
+                },
+                key
+              })
+            })
+          break
+        case 10:
+          // 接收到创建群组的消息-->更新最近联系人-->更新群组列表
+          const {
+            groupId,
+            groupName,
+            groupImg,
+            levels
+          } = received.data.zzGroup
+          store
+            .dispatch('UpdateRecentContacts', {
+              id: groupId,
+              name: groupName,
+              avatar: groupImg,
+              secretLevel: levels,
+              memberNum: received.data.userList.length,
+              isGroup: true,
+              reOrder: true,
+              addUnread: false
+            })
+            .then(() => {
+              store.dispatch('GetGroupList')
+            })
+            .catch(error => {
+              console.log(error)
+              const key = `talk${Date.now()}`
+              notification.warning({
+                message: '有新的群组',
+                description: '新增群组同步出错，点击手动同步',
+                duration: null,
+                btn: (h) => {
+                  return h('a-button', {
+                    props: {
+                      type: 'primary',
+                      size: 'small',
+                      icon: 'reload'
+                    },
+                    on: {
+                      click: () => {
+                        store.dispatch('GetRecentContacts')
+                          .then(() => {
+                            store.dispatch('GetGroupList')
+                          })
+                          .then(() => notification.close(key))
+                      }
+                    }
+                  }, '同步')
+                },
+                key
+              })
+            })
+          break
+        case 4:
+          this.ws.send(JSON.stringify(received))
           break
         default:
           break
@@ -99,14 +190,14 @@ class SocketApi {
       clearInterval(self.pingIntervalId)
 
       // 设置在线状态为已断开
-      store.commit('SET_ONLINE_STATE', ws.CLOSED)
+      store.commit('SET_ONLINE_STATE', LandingStatus.OFFLINE)
 
       // 重连的处理逻辑
       self.reconn()
     }
 
     ws.onerror = errorEvent => {
-      self.colse(4001, '连接出现错误')
+      self.close(4001, '连接出现错误')
       // 出错的处理逻辑
       // ···
     }
@@ -148,9 +239,9 @@ class SocketApi {
    * @param {Number} code 关闭原因代码
    * @param {String} reason 关闭原因描述
    */
-  colse (code, reason) {
+  close (code, reason) {
     // 设置登陆状态为正在断开
-    store.commit('SET_ONLINE_STATE', this.ws.CLOSING)
+    store.commit('SET_ONLINE_STATE', LandingStatus.EXITING)
 
     this.ws.close(code, reason)
   }

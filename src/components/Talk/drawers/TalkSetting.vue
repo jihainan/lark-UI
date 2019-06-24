@@ -3,18 +3,21 @@
     class="unpop-modal"
     title="研讨组设置"
     wrapClassName="talk-setting"
-    :mask="showMask"
-    :width="360"
+    :width="448"
     @close="onClose"
-    :visible="visible"
+    :visible="activeOption=='moreInfo'"
     :wrapStyle="{height: 'calc(100% - 108px)',overflow: 'auto',paddingBottom: '108px', marginTop: '64px' }"
-    getContainer="#talkSetting"
+    :getContainer="mountEle"
+    :maskClosable="true"
+    :closable="false"
   >
     <div class="talk-setting" ref="settingDrawer">
       <a-row :gutter="8" class="group-setting-row">
         <a-col :span="6">
           <span class="group-setting-title">组名称:</span>
         </a-col>
+        <!-- <span class="group-setting-content">{{ setting.title }}</span> -->
+
         <a-col :span="10">
           <span class="group-setting-content">
             <a-input
@@ -23,7 +26,8 @@
               class="group-setting-edit-box"
               @change="e => handleChange(e.target.value)"
             />
-            <template v-else>{{ setting.name }}</template>
+            <template v-else>{{ setting.title }}</template>
+
           </span>
         </a-col>
         <a-col :span="8">
@@ -33,7 +37,7 @@
             <a @click="() => cancel()">取消</a>
           </span>
           <span v-else>
-            <a class="edit" @click="() => edit()">修改</a>
+            <a class="edit" @click="() => edit()"></a><!-- 修改 -->
           </span>
         </a-col>
       </a-row>
@@ -42,7 +46,7 @@
           <span class="group-setting-title">管理员:</span>
         </a-col>
         <a-col :span="10">
-          {{ setting.admin }}
+          {{ setting.user }}
         </a-col>
         <a-col :span="8">
           <span v-if="editable">
@@ -51,7 +55,7 @@
             <a @click="() => cancel()">取消</a>
           </span>
           <span v-else>
-            <a class="edit" @click="() => edit()">修改</a>
+            <a class="edit" @click="() => edit()"></a><!-- 修改 -->
           </span>
         </a-col>
       </a-row>
@@ -101,7 +105,7 @@
       </a-row>
       <a-row :gutter="8" class="group-setting-row">
         <a-col :span="10">
-          <span class="group-setting-title">组成员:{{ teamMembersNum }}人</span>
+          <span class="group-setting-title">组成员:{{ setting.num }}人</span>
         </a-col>
         <a-col :span="10">
           <a @click="() => addMember()">+添加新成员</a>
@@ -110,7 +114,7 @@
 
         </a-col>
       </a-row>
-      <div class="group-setting-person">
+      <!-- <div class="group-setting-person">
         <a-list
           :grid="{ gutter: 16, xs: 1, sm: 2, md: 4, lg: 4, xl: 6, xxl: 3 }"
           :dataSource="setting.members"
@@ -120,7 +124,7 @@
             <div class="user-name">{{ item.name }}</div>
           </a-list-item>
         </a-list>
-      </div>
+      </div> -->
     </div>
     <div
       :style="{
@@ -136,31 +140,57 @@
     >
       <a-button type="danger" @click="onClose" block>退出研讨组</a-button>
     </div>
+    <ul class="setting_ul">
+      <li v-for="(item) in items" :key="item.key">
+        <img :src="setting.url" alt="">
+        <span>{{ setting.userName }}</span>
+      </li>
+    </ul>
   </a-drawer>
 </template>
 <script>
 const data = ['1', '2', '1', '2', '1', '2']
 export default {
+  name: 'MoreInfo',
   data () {
     return {
       showMask: false,
       editable: false,
       text: 'caonima',
-      teamMembersNum: 12,
       data,
-      visible: false,
-      setting: {}
+      // visible: false,
+      setting: [],
+      items: []
     }
   },
+  watch: {
+    activeOption (newValue) {
+      const ary = []
+      if (newValue === 'moreInfo') {
+        console.log('在这里加载数据')
+        this.$http.get('/talk/talk-setting', {
+        }).then(res => {
+          const datas = res.result.data
+          datas.map((item) => {
+            ary.push(item)
+          })
+          this.setting = ary[0]
+        })
+      }
+    }
+  },
+  created () {
+    // 群成员数据
+    // this.$http.get('/talk/members').then(res => {
+    //   const item = res.result
+    //   item.map(item => {
+    //     this.items.push(item)
+    //   })
+    // })
+  },
+  mounted () {
+  },
   methods: {
-    showSetting (talkId) {
-      this.visible = true
-      this.$http.get('/talk/talk-setting', {
-        params: talkId
-      }).then(res => {
-        this.setting = res.result
-      })
-    },
     handleChange (value) {
       console.log(value)
       this.text = value
@@ -177,15 +207,27 @@ export default {
     },
     onClose () {
       this.visible = false
+      this.$emit('closeDrawer')
     },
     addMember () {
 
     }
   },
   props: {
-    talk: {
+    // talk: {
+    //   type: String,
+    //   default: ''
+    // },
+    /** 抽屉挂载的元素 */
+    mountEle: {
       type: String,
-      default: ''
+      default: '.conv-box',
+      required: false
+    },
+    activeOption: {
+      type: String,
+      default: '',
+      required: true
     }
   }
 }
@@ -228,5 +270,25 @@ export default {
       text-overflow: ellipsis;
       line-height: 16px;
     }
+}
+.setting_ul{
+  width: 360px;
+  margin: 50px 0 70px 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  li{
+    list-style: none;
+    float: left;
+    padding-right: 20px;
+    span{
+      display: block;
+      text-align: center;
+      margin-bottom: 5px;
+      width: 50px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
 }
 </style>

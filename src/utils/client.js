@@ -1,30 +1,35 @@
 /* eslint-disable */
 
 /**
- * 云雀客户端的方法
- * // TODO: 对客户端对象不存在时做处理
- * // NOTE: 添加eslint-disable避免编译报错
+ * 适配云雀客户端的方法
  */
 
-/**
- * 最小化窗口
- */
-export function minimizeWindow () {
-  console.log('调用客户端**最小化窗口**的方法')
+/** 判断是否为云雀客户端 */
+export function isLarkClient () {
+  return window.JSInteraction ? true : false
 }
 
-/**
- * 最大/小化切换
- */
-export function switchWindow () {
-  console.log('调用客户端**切换窗口**的方法')
+/** 最小化窗口 */
+export function minimizeWindow () {
+  if (isLarkClient()) {
+    window.JSInteraction.min()
+  }
+}
+
+/** 最大化窗口 */
+export function maximizeWindow () {
+  if (isLarkClient()) {
+    window.JSInteraction.max()
+  }
 }
 
 /**
  * 关闭窗口
  */
 export function closeWindow () {
-  console.log('调用客户端**关闭窗口**的方法')
+  if (isLarkClient()) {
+    window.JSInteraction.min()
+  }
 }
 
 /**

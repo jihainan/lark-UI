@@ -1,14 +1,12 @@
 // 这个组件必须最先引入，否则会报错
 import MessagePiece from './MessagePiece'
 // 抽屉组件
-import TalkSetting from './Drawers/TalkSetting'
-import TalkHistory from './Drawers/TalkHistory'
-import GroupNotice from './Drawers/GroupNotice'
-import MarkMessage from './Drawers/MarkMessage'
-import MoreInfo from './Drawers/MoreInfo'
-import TalkFile from './Drawers/TalkFile'
-
-import CreateTalk from './CreateTalk'
+import TalkSetting from './drawers/TalkSetting'
+import TalkHistory from './drawers/TalkHistory'
+import GroupNotice from './drawers/GroupNotice'
+import MarkMessage from './drawers/MarkMessage'
+import MoreInfo from './drawers/MoreInfo'
+import TalkFile from './drawers/TalkFile'
 
 import ConvBox from './ConvBox'
 import RecentContactsItem from './RecentContactsItem'
@@ -16,8 +14,9 @@ import ContactsTree from './ContactsTree'
 import ContactsInfo from './ContactsInfo'
 import GroupItem from './GroupItem'
 import GroupInfo from './GroupInfo'
-import Face from './Face'
 import ContactsItem from './ContactsItem'
+
+import CreateTalk from './createTalk/CreateTalk'
 
 export {
   // 消息展示组件
@@ -35,9 +34,6 @@ export {
   // 研讨文件
   TalkFile,
 
-  // 创建新的研讨
-  CreateTalk,
-
   // 研讨对话框组件
   ConvBox,
   // 联系人组件
@@ -50,7 +46,8 @@ export {
   GroupItem,
   // 群组信息组件
   GroupInfo,
-  Face,
   // 联系人项
-  ContactsItem
+  ContactsItem,
+  // 创建新的研讨
+  CreateTalk
 }

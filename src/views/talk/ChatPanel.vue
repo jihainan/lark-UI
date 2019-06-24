@@ -65,7 +65,7 @@
 
           <div class="group-contacts-container tab-content-container">
             <div v-for="(item, index) in groupList" :key="index" @click="showGroup(item)">
-              <group-item :groupInfo="item" :activated="item.id === activeGroup"></group-item>
+              <group-item :groupInfo="item" :activated="item.groupId === activeGroup"></group-item>
             </div>
 
             <!-- 没有群组或者群组加载失败时的提示信息 -->
@@ -121,11 +121,11 @@
         </keep-alive>
       </div>
       <div v-show="activeKey == '2'" class="info-area">
-        <group-info :selected="activeGroup" @t="s"></group-info>
+        <group-info :selected="activeGroup" @clickSend="handleClickSend"></group-info>
       </div>
 
       <div v-show="activeKey == '3'" class="info-area">
-        <contacts-info :selected="activeContacts"></contacts-info>
+        <contacts-info :selected="activeContacts" @clickSend="handleClickSend"></contacts-info>
       </div>
     </a-layout>
 
@@ -148,7 +148,7 @@ import {
 import SearchInput from './SearchInput'
 import SearchArea from './SearchArea'
 import SearchRecordModal from './SearchRecordModal'
-
+import { mapGetters } from 'vuex'
 export default {
   name: 'ChatPanel',
   components: {
@@ -168,6 +168,7 @@ export default {
       activeKey: '1',
       // 是否显示创建研讨的模态框
       showCreateModal: () => false,
+
       searchObj: {
         searchValue: ''
       },
@@ -186,6 +187,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['searchResultList', 'searchGroupResultList', 'searchContactsResultList']),
     currentTalk () {
       return this.$store.state.talk.currentTalk
     },
@@ -204,20 +206,11 @@ export default {
       return this.$store.state.talk.contactsTree
     },
     showSearchContent () {
-      if (this.$store.state.chat.showSearchContent === null) {
+      if (this.$store.state.talk.showSearchContent === null) {
         return true/*  */
       } else {
-        return this.$store.state.chat.showSearchContent
+        return this.$store.state.talk.showSearchContent
       }
-    },
-    searchResultList () {
-      return this.$store.state.chat.searchResultList
-    },
-    searchGroupResultList () {
-      return this.$store.state.chat.searchGroupResultList
-    },
-    searchContactsResultList () {
-      return this.$store.state.chat.searchContactsResultList
     }
   },
   watch: {
@@ -226,17 +219,9 @@ export default {
       this.activeChat = newValue.id
     }
   },
-  created () {
-    // 页面创建时获取列表信息
-    this.getRecentContacts()
-    this.getContactsTree()
-    this.getGroupList()
-  },
   methods: {
-    s (val) {
+    handleClickSend () {
       this.activeKey = '1'
-      // console.log('0202', val)
-      this.activeChat = val
     },
     /* 切换面板 */
     changePane (activeKey) {
@@ -266,12 +251,9 @@ export default {
         query: currentTalk
       })
     },
-    delChat (chat) {
-      this.$store.commit('DEL_CHAT', chat)
-    },
     /** 展示群组详细信息 */
     showGroup (group) {
-      this.activeGroup = group.id
+      this.activeGroup = group.groupId
     },
     /** 展示联系人详细信息 */
     showContacts (key) {
@@ -352,12 +334,12 @@ export default {
   }
 
   // 群组标签页样式
-  .group-contacts-container {
-  }
+  // .group-contacts-container {
+  // }
 
   // 联系人标签页样式
-  .contacts-container {
-  }
+  // .contacts-container {
+  // }
 
   // 让最近 群组 联系人tab页的内容可以滚动的样式
   .tab-content-container {

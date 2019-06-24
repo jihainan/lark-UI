@@ -133,7 +133,7 @@ export default {
       })
     },
     loginSuccess (res) {
-      this.$router.push({ name: 'Workplace' })
+      this.$router.push('/')
       // 延迟 1 秒显示欢迎信息
       setTimeout(() => {
         this.$notification.success({

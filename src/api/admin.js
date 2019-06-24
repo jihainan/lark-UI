@@ -7,16 +7,32 @@ import { axios } from '@/utils/request'
 
 const api = {
   orgTree: '/admin/org/tree',
-  user: '/admin/user',
-  adduser: '/admin/user/addUser',
   getuserpage: '/admin/user/page',
   getuser: '/admin/org/user',
   getuserrole: '/admin/role/userRole',
+  user: '/admin/user',
+  adduser: '/admin/user/addUser',
   org: '/admin/org',
   getrole: '/admin/role/page',
   role: '/admin/role',
   rolepermission: '/admin/role/permission',
-  userrole: '/admin/user/roles'
+  userrole: '/admin/user/roles',
+  getnoticepage: '/admin/notice/page',
+  notice: 'admin/notice',
+  noticesend: 'admin/notice/send',
+  // upload: '/fdfs/file/thumbImage',
+  upload: '/fdfs/file/upload',
+  getmenu: '/admin/menu/page',
+  getmenuall: '/admin/menu/all',
+  menu: '/admin/menu',
+  menuelement: '/admin/menu/element',
+  roleuser: '/admin/role/user',
+  // 个人卡片设置
+  card: '/portal/userCard/cards',
+  usercard: '/portal/userCard/myself',
+  gatelog: '/admin/gateLog/page',
+  // 临时增加，方便测试
+  getUserBySecret: 'admin/user/list'
 }
 
 export default api
@@ -38,6 +54,15 @@ export function getUserList (parameter) {
     url: api.getuser,
     method: 'get',
     params: parameter
+  })
+}
+/**
+ * 根据用户id获取用户信息
+ */
+export function getuser (parameter) {
+  return axios({
+    url: api.user + '/' + parameter,
+    method: 'get'
   })
 }
 /**
@@ -159,6 +184,16 @@ export function updateRolePermission (parameter) {
   })
 }
 /**
+ * 新增角色
+ */
+export function addRole (parameter) {
+  return axios({
+    url: api.role,
+    method: 'post',
+    data: parameter
+  })
+}
+/**
  * 修改角色
  */
 export function updateRole (parameter) {
@@ -184,6 +219,206 @@ export function disabledRole (parameter) {
   return axios({
     url: api.role,
     method: 'put',
+    params: parameter
+  })
+}
+/**
+ * 获取消息列表（分页）
+ */
+export function getNoticePage (parameter) {
+  return axios({
+    url: api.getnoticepage,
+    method: 'get',
+    params: parameter
+    // data: parameter
+  })
+}
+/**
+ * 消息保存
+ */
+export function addNotice (parameter) {
+  return axios({
+    url: api.notice,
+    method: 'post',
+    data: parameter
+  })
+}
+/**
+ * 消息修改
+ */
+export function updateNotice (parameter) {
+  return axios({
+    url: api.notice,
+    method: 'put',
+    data: parameter
+  })
+}
+/**
+ * 消息发布
+ */
+export function sendNotice (parameter) {
+  return axios({
+    url: api.noticesend,
+    method: 'post',
+    data: parameter
+  })
+}
+/**
+ * 消息删除
+ */
+export function delNotice (parameter) {
+  return axios({
+    url: api.notice + '/' + parameter,
+    method: 'delete'
+  })
+}
+/**
+ * 文件上传
+ */
+export function uploadFile (parameter) {
+  return axios({
+    url: api.upload,
+    method: 'post',
+    data: parameter,
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}
+/**
+ * 菜单查询（分页）
+ */
+export function getMenuList (parameter) {
+  return axios({
+    url: api.getmenu,
+    method: 'get',
+    params: parameter
+  })
+}
+/**
+ * 菜单查询（不分页）
+ */
+export function getMenuListAll (parameter) {
+  return axios({
+    url: api.getmenuall,
+    method: 'get',
+    params: parameter
+  })
+}
+/**
+ * 新增菜单
+ */
+export function addMenu (parameter) {
+  return axios({
+    url: api.menu,
+    method: 'post',
+    data: parameter
+  })
+}
+/**
+ * 修改菜单
+ */
+export function updateMenu (parameter) {
+  return axios({
+    url: api.menu,
+    method: 'put',
+    data: parameter
+  })
+}
+/**
+ * 删除菜单
+ */
+export function delMenu (parameter) {
+  return axios({
+    url: api.menu + '/' + parameter,
+    method: 'delete'
+  })
+}
+/**
+ * 根据菜单id获取按钮信息
+ */
+export function getMenuElement (parameter) {
+  return axios({
+    url: api.menuelement,
+    method: 'get',
+    params: parameter
+  })
+}
+/**
+ * 根据菜单id获取按钮信息
+ */
+export function saveMenuElement (parameter) {
+  return axios({
+    url: api.menuelement,
+    method: 'post',
+    data: parameter
+  })
+}
+/**
+ * 根据角色id获取用户
+ */
+export function getRoleUser (parameter) {
+  return axios({
+    url: api.roleuser,
+    method: 'get',
+    params: parameter
+  })
+}
+/**
+ * 保存角色对应用户
+ */
+export function saveRoleUser (parameter) {
+  return axios({
+    url: api.roleuser,
+    method: 'put',
+    data: parameter
+  })
+}
+/**
+ * 新增卡片
+ */
+export function addCard (parameter) {
+  return axios({
+    url: api.usercard,
+    method: 'post',
+    data: parameter
+  })
+}
+/**
+ * 删除卡片
+ */
+export function delCard (parameter) {
+  return axios({
+    url: api.usercard,
+    method: 'delete',
+    params: parameter
+  })
+}
+/**
+ * 获取卡片
+ */
+export function getCard () {
+  return axios({
+    url: api.card,
+    method: 'get'
+  })
+}
+/**
+ * 获取网关日志
+ */
+export function getGateLog (parameter) {
+  return axios({
+    url: api.gatelog,
+    method: 'get',
+    params: parameter
+  })
+}
+/**
+ * 临时增加，通过密级获取用户列表
+ * @param {Object} parameter {secretLevel: 60}
+ */
+export function getUserBySecret (parameter) {
+  return axios({
+    url: api.getUserBySecret,
+    method: 'GET',
     params: parameter
   })
 }

@@ -165,6 +165,19 @@ export default {
 </script>
 
 <style lang="less">
+  // 消息密级样式
+  .s-30, .s-undefined {
+    font-size: 14px;
+    color: #00be00;
+  }
+  .s-40, .s-50 {
+    font-size: 14px;
+    color: #ffb500;
+  }
+  .s-60, .s-70 {
+    font-size: 14px;
+    color: #ff0000;
+  }
   body {
     // 打开滚动条固定显示
     overflow-y: auto;
@@ -539,7 +552,7 @@ export default {
       padding-left: 24px;
       -webkit-transition: all .3s;
       transition: all .3s;
-      background: #002140;
+      background: #0052CC;
       overflow: hidden;
 
       img, svg, h1 {
