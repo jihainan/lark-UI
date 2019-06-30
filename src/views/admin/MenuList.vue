@@ -39,6 +39,7 @@
       v-model="visible"
       @ok="handleOk"
       :destroyOnClose="true"
+      :confirmLoading="confirmLoading"
     >
       <a-form :form="form">
         <a-form-item
@@ -145,7 +146,6 @@ export default {
       chooseMet: '',
       // key method value description
       methodMap: new Map(),
-      descriptions: [],
       // 绑定在方法下拉框的值
       selectMethod: new Map(),
       menuid: '',
@@ -180,7 +180,9 @@ export default {
       wrapperCol: {
         xs: { span: 24 },
         sm: { span: 16 }
-      }
+      },
+      spinning: false,
+      confirmLoading: false
     }
   },
   created () {
@@ -195,7 +197,6 @@ export default {
      */
     checkBoxChange (value) {
       this.chooseDes = value
-      this.descriptions = value
     },
     /**
      * 方法下拉框change事件
@@ -208,12 +209,17 @@ export default {
      * 保存element信息
      */
     saveElement () {
+      if (this.inDetail) {
+        // 关闭编辑框
+        this.visible = false
+        return
+      }
       const elementList = this.handleElementData()
       if (elementList === undefined) {
         return
       }
-      console.log('elementList', elementList)
       const data = { 'menuId': this.menuid, 'elements': elementList }
+      this.confirmLoading = true
       // 请求后台保存菜单按钮信息
       return saveMenuElement(data).then(res => {
         if (res.status === 200) {
@@ -237,7 +243,9 @@ export default {
           message: '出现异常，请联系系统管理员',
           duration: 4
         })
-      )
+      ).finally(() => {
+        this.confirmLoading = false
+      })
     },
     /**
      * 刷新菜单
@@ -245,9 +253,7 @@ export default {
     refreshMenu () {
       return getMenuListAll()
         .then(res => {
-          console.log('refreshMenu')
           this.menulist = Object.assign({}, res.result.data)
-          console.log('this.menulist', this.menulist)
         })
     },
     /**
@@ -257,14 +263,14 @@ export default {
     handleElementData () {
       const arr = []
       let checkResult = true
-      if (this.descriptions.length === 0) {
+      if (this.chooseDes.length === 0) {
         this.$notification['info']({
           message: '请选择包含的按钮',
           duration: 2
         })
         return
       }
-      this.descriptions.forEach(item => {
+      this.chooseDes.forEach(item => {
         if (this.methodMap.get(item) === undefined) {
           this.$notification['info']({
             message: '请为' + item + '按钮选择请求方式',
@@ -415,6 +421,7 @@ export default {
         okType: 'danger',
         cancelText: '取消',
         onOk () {
+          _this.spinning = true
           // 在这里调用删除接口
           return delMenu(
             record.id
@@ -434,11 +441,13 @@ export default {
               }
             }
           ).catch(() =>
-            this.$notification['error']({
+            _this.$notification['error']({
               message: '出现异常，请联系系统管理员',
               duration: 4
             })
-          )
+          ).finally(() => {
+            _this.spinning = false
+          })
         },
         onCancel: () => {
           this.$notification['info']({

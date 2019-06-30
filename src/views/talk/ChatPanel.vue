@@ -247,7 +247,7 @@ export default {
 
       // 路由跳转
       this.$router.push({
-        path: '/talk/ChatPanel/ChatBox',
+        path: '/talk/chatpanel/chatbox',
         query: currentTalk
       })
     },

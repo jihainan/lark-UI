@@ -52,7 +52,6 @@ export default {
     },
     handleOk (users) {
       this.returnUsers = users
-      console.log('users-----', users)
     },
     clickOk () {
       this.$emit('ok', this.returnUsers)

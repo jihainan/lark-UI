@@ -31,7 +31,7 @@ const app = {
       state.sidebar = type
       Vue.ls.set(SIDEBAR_TYPE, type)
 
-      console.log('SET_SIDEBAR_TYPE', type)
+      // console.log('SET_SIDEBAR_TYPE', type)
     },
     CLOSE_SIDEBAR: (state) => {
       Vue.ls.set(SIDEBAR_TYPE, true)

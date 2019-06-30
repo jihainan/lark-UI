@@ -6,7 +6,7 @@
           <a-form-item
             label="姓名"
           >
-            <a-input v-decorator="['name',{rules: [{ required: true, message: '请输入姓名' }]}]"/>
+            <a-input :disabled="true" v-decorator="['name',{rules: [{ required: true, message: '请输入姓名' }]}]"/>
           </a-form-item>
           <a-form-item
             label="联系方式"
@@ -88,7 +88,7 @@ export default {
             if (this.user.avatar) {
               this.imageUrl = FILE_SERVER_IP + this.user.avatar
             } else {
-              this.imageUrl = '/avatar1_200.jpg'
+              this.imageUrl = '/avatar.jpg'
             }
           })
         }

@@ -19,11 +19,13 @@
 <template>
   <a-row :gutter="10">
     <a-col :span="6">
-      <a-card title="组织信息">
-        <a-tree
-          :treeData="orgTree"
-          @select="handleClick"
-        />
+      <a-card title="组织信息" :bodyStyle="bodyStyle">
+        <div style="overflow:scroll;height:350px">
+          <a-tree
+            :treeData="orgTree"
+            @select="handleClick"
+          />
+        </div>
       </a-card>
     </a-col>
     <a-col :span="18">
@@ -51,6 +53,7 @@ export default {
   name: 'UserTransfer',
   data () {
     return {
+      bodyStyle: { 'height': '400px' },
       orgTree: [],
       // key userid value userinfo
       // 用于存储人员信息
@@ -81,6 +84,7 @@ export default {
     }
   },
   methods: {
+
     /**
      * 打开人员选择器
      * userArr 非必填 transfer组件中已选中的人员
@@ -93,13 +97,15 @@ export default {
       this.ds = []
       this.userMap = new Map()
       this.userfilter = filter
-      userArr.forEach(item => {
-        this.targetKeys.push(item.id)
-        item.key = item.id
-        item.title = item.name
-        this.ds.push(item)
-        this.userMap.set(item.id, item)
-      })
+      if (userArr && userArr.length) {
+        userArr.forEach(item => {
+          this.targetKeys.push(item.id)
+          item.key = item.id
+          item.title = item.name
+          this.ds.push(item)
+          this.userMap.set(item.id, item)
+        })
+      }
     },
     /**
      * 点击组织机构树，获取该组织下人员信息

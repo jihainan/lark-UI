@@ -1,158 +1,163 @@
 <template>
   <div>
     <a-row :gutter="24" >
-      <a-col :span="6">
-        <a-card :bordered="true" title="组织树">
-          <a-row :gutter="24" type="flex" justify="space-around" align="middle">
-            <a-col :span="18">
-              <a-input-search style="margin-bottom: 8px" placeholder="Search" @change="onChange" />
-            </a-col>
-            <a-col :span="6">
-              <a-icon type="plus-circle" @click="addOrg" style="font-size:20px" theme="twoTone"/>
-            </a-col>
-          </a-row>
-          <a-tree
-            @expand="onExpand"
-            :expandedKeys="expandedKeys"
-            :autoExpandParent="autoExpandParent"
-            :treeData="orgTree"
-            @select="selectOrg"
-            ref="orgtree"
-          >
-            <template slot="title" slot-scope="{title}">
-              <span v-if="title.indexOf(searchValue) > -1">
-                {{ title.substr(0, title.indexOf(searchValue)) }}
-                <span style="color: #f50">{{ searchValue }}</span>
-                {{ title.substr(title.indexOf(searchValue) + searchValue.length) }}
-              </span>
-              <span v-else>{{ title }}</span>
-            </template>
-          </a-tree>
-        </a-card>
-      </a-col>
-      <a-col :span="18" >
-        <a-card :bordered="true" :title="cardname" v-show="formvisable">
-          <a-row :gutter="24">
-            <a-form :form="editForm">
-              <a-form-item
-                :labelCol="labelCol"
-                :wrapperCol="wrapperCol"
-                label="上级组织"
-              >
-                <a-input v-decorator="['parentId']" :disabled="disabled"/>
-              </a-form-item>
-              <a-form-item
-                :labelCol="labelCol"
-                :wrapperCol="wrapperCol"
-                label="组织名称"
-              >
-                <a-input
-                  placeholder="组织名称"
-                  v-decorator="['orgName',{rules: [{ required: true, message: '请输入组织名称信息' },{ max:20,message:'长度不能超过20个字'}]}]"/>
-              </a-form-item>
-              <a-form-item
-                :labelCol="labelCol"
-                :wrapperCol="wrapperCol"
-                label="组织类型"
-              >
-                <a-select
-                  v-decorator="['orgtype',{rules: [{ required: true, message: '请选择组织类型信息' }]}]"
-                  placeholder="请选择">
-                  <a-select-option value="1">集团</a-select-option>
-                </a-select>
-              </a-form-item>
-              <a-form-item
-                :labelCol="labelCol"
-                :wrapperCol="wrapperCol"
-                label="人员排序一"
-              >
-                <a-input-search
-                  enterButton
-                  v-decorator="['people1']"
-                  @search="$refs.model.beginChoose(people1id, '1')"
-                />
-              </a-form-item>
-              <a-form-item
-                :labelCol="labelCol"
-                :wrapperCol="wrapperCol"
-                label="人员排序二"
-              >
-                <a-input-search
-                  enterButton
-                  v-decorator="['people2']"
-                  @search="$refs.model.beginChoose(people2id, '2')"
-                />
-              </a-form-item>
-              <a-form-item
-                :labelCol="labelCol"
-                :wrapperCol="wrapperCol"
-                label="人员排序三"
-              >
-                <a-input-search
-                  enterButton
-                  v-decorator="['people3']"
-                  @search="$refs.model.beginChoose(people3id, '3')"
-                />
-              </a-form-item>
-              <a-form-item
-                :labelCol="labelCol"
-                :wrapperCol="wrapperCol"
-                label="人员排序四"
-              >
-                <a-input-search
-                  enterButton
-                  v-decorator="['people4']"
-                  @search="$refs.model.beginChoose(people4id, '4')"
-                />
-              </a-form-item>
-              <a-form-item
-                :labelCol="labelCol"
-                :wrapperCol="wrapperCol"
-                label="人员排序五"
-              >
-                <a-input-search
-                  enterButton
-                  v-decorator="['people5']"
-                  @search="$refs.model.beginChoose(people5id, '5')"
-                />
-              </a-form-item>
-              <a-form-item
-                :labelCol="labelCol"
-                :wrapperCol="wrapperCol"
-                label="描述"
-              >
-                <a-textarea :rows="5" v-decorator="['description']"/>
-              </a-form-item>
-              <a-form-item
-                :labelCol="labelCol"
-                :wrapperCol="wrapperCol"
-                label="状态"
-              >
-                <a-switch defaultChecked v-decorator="['status']"/>
-              </a-form-item>
-            </a-form>
-          </a-row>
-          <a-row>
-            <a-button type="primary" @click="saveOrginfo">
-              保存
-            </a-button>
-            <a-button type="default" @click="delOrg" style="margin-left: 8px">
-              删除
-            </a-button>
-          </a-row>
-          <user-transfer ref="model" @ok="handleSaveOk" @close="handleSaveClose"/>
-        </a-card>
-      </a-col>
+      <a-spin :spinning="spinning">
+        <a-col :span="6">
+          <a-card :bordered="true" title="组织树">
+            <a-row :gutter="24" type="flex" justify="space-around" align="middle">
+              <a-col :span="18">
+                <a-input-search style="margin-bottom: 8px" placeholder="Search" @change="onChange" />
+              </a-col>
+              <a-col :span="6">
+                <a-icon type="plus-circle" @click="addOrg" style="font-size:20px" theme="twoTone"/>
+              </a-col>
+            </a-row>
+            <a-tree
+              @expand="onExpand"
+              :expandedKeys="expandedKeys"
+              :autoExpandParent="autoExpandParent"
+              :treeData="orgTree"
+              @select="selectOrg"
+              ref="orgtree"
+            >
+              <template slot="title" slot-scope="{title}">
+                <span v-if="title.indexOf(searchValue) > -1">
+                  {{ title.substr(0, title.indexOf(searchValue)) }}
+                  <span style="color: #f50">{{ searchValue }}</span>
+                  {{ title.substr(title.indexOf(searchValue) + searchValue.length) }}
+                </span>
+                <span v-else>{{ title }}</span>
+              </template>
+            </a-tree>
+          </a-card>
+        </a-col>
+        <a-col :span="18" >
+          <a-card :bordered="true" :title="cardname" v-show="formvisable">
+            <a-row :gutter="24">
+              <a-form :form="editForm">
+                <a-form-item
+                  :labelCol="labelCol"
+                  :wrapperCol="wrapperCol"
+                  label="上级组织"
+                >
+                  <a-input v-decorator="['parentId']" :disabled="disabled"/>
+                </a-form-item>
+                <a-form-item
+                  :labelCol="labelCol"
+                  :wrapperCol="wrapperCol"
+                  label="组织名称"
+                >
+                  <a-input
+                    placeholder="组织名称"
+                    v-decorator="['orgName',{rules: [{ required: true, message: '请输入组织名称信息' },{ max:20,message:'长度不能超过20个字'}]}]"/>
+                </a-form-item>
+                <a-form-item
+                  :labelCol="labelCol"
+                  :wrapperCol="wrapperCol"
+                  label="组织类型"
+                >
+                  <a-select
+                    v-decorator="['orgtype',{rules: [{ required: true, message: '请选择组织类型信息' }]}]"
+                    placeholder="请选择">
+                    <a-select-option value="1">集团</a-select-option>
+                  </a-select>
+                </a-form-item>
+                <a-form-item
+                  :labelCol="labelCol"
+                  :wrapperCol="wrapperCol"
+                  label="人员排序一"
+                >
+                  <!-- <a-input-search -->
+                  <a-input
+                    enterButton
+                    v-decorator="['people1']"
+                  />
+                  <!-- @search="$refs.model.beginChoose(people1id, '1')" -->
+                </a-form-item>
+                <a-form-item
+                  :labelCol="labelCol"
+                  :wrapperCol="wrapperCol"
+                  label="人员排序二"
+                >
+                  <a-input
+                    enterButton
+                    v-decorator="['people2']"
+                  />
+                  <!-- @search="$refs.model.beginChoose(people2id, '2')" -->
+                </a-form-item>
+                <a-form-item
+                  :labelCol="labelCol"
+                  :wrapperCol="wrapperCol"
+                  label="人员排序三"
+                >
+                  <a-input
+                    enterButton
+                    v-decorator="['people3']"
+                  />
+                  <!-- @search="$refs.model.beginChoose(people3id, '3')" -->
+                </a-form-item>
+                <a-form-item
+                  :labelCol="labelCol"
+                  :wrapperCol="wrapperCol"
+                  label="人员排序四"
+                >
+                  <a-input
+                    enterButton
+                    v-decorator="['people4']"
+                  />
+                  <!-- @search="$refs.model.beginChoose(people4id, '4')" -->
+                </a-form-item>
+                <a-form-item
+                  :labelCol="labelCol"
+                  :wrapperCol="wrapperCol"
+                  label="人员排序五"
+                >
+                  <a-input
+                    enterButton
+                    v-decorator="['people5']"
+                  />
+                  <!-- @search="$refs.model.beginChoose(people5id, '5')" -->
+                </a-form-item>
+                <a-form-item
+                  :labelCol="labelCol"
+                  :wrapperCol="wrapperCol"
+                  label="描述"
+                >
+                  <a-textarea :rows="5" v-decorator="['description']"/>
+                </a-form-item>
+                <a-form-item
+                  :labelCol="labelCol"
+                  :wrapperCol="wrapperCol"
+                  label="状态"
+                >
+                  <a-switch defaultChecked v-decorator="['status']"/>
+                </a-form-item>
+              </a-form>
+            </a-row>
+            <a-row type="flex" justify="end">
+              <a-col :span="6">
+                <a-button type="primary" @click="saveOrginfo">
+                  保存
+                </a-button>
+                <a-button type="danger" @click="delOrg" style="margin-left: 8px">
+                  删除
+                </a-button>
+              </a-col>
+            </a-row>
+            <!-- <user-transfer ref="model" @ok="handleSaveOk" @close="handleSaveClose"/> -->
+          </a-card>
+        </a-col>
+      </a-spin>
     </a-row>
   </div>
 </template>
 <script>
-import UserTransfer from '@/components/admin/UserTransfer'
+// import UserTransfer from '@/components/admin/UserTransfer'
 import { getOrgTree, addorg, updateorg, delorg } from '@/api/admin'
 export default {
   name: 'OrgList',
   components: {
-    UserTransfer
+    // UserTransfer
   },
   data () {
     return {
@@ -187,7 +192,8 @@ export default {
       // 右侧form表单默认不显示
       formvisable: false,
       disabled: true,
-      parentId: ''
+      parentId: '',
+      spinning: false
     }
   },
   created () {
@@ -336,6 +342,7 @@ export default {
         okType: 'danger',
         cancelText: '取消',
         onOk () {
+          _this.spinning = true
           // 在这里调用删除接口
           return delorg(
             _this.currentitem.key
@@ -357,10 +364,12 @@ export default {
             }
           ).catch(() =>
             _this.$notification['error']({
-              message: '删除异常，请联系系统管理员',
+              message: '出现异常，请联系系统管理员',
               duration: 4
             })
-          )
+          ).finally(() => {
+            _this.spinning = false
+          })
         },
         onCancel: () => {
           _this.$notification['info']({
@@ -429,6 +438,7 @@ export default {
       const _this = this
       this.editForm.validateFields((err, values) => {
         if (!err) {
+          this.spinning = true
           if (this.type === '1') {
             values.parentId = this.currentitem.key
             // 在这里调用新增接口
@@ -441,7 +451,7 @@ export default {
                     message: '保存成功',
                     duration: 2
                   })
-                  this.formvisable = false
+                  _this.formvisable = false
                   _this.refreshOrg()
                 } else {
                   _this.$notification['error']({
@@ -452,10 +462,12 @@ export default {
               }
             ).catch(() =>
               _this.$notification['error']({
-                message: '保存失败111，出现异常',
+                message: '出现异常，请联系系统管理员',
                 duration: 4
               })
-            )
+            ).finally(() => {
+              _this.spinning = false
+            })
           } else {
             values.parentId = this.parentId
             values.id = this.currentitem.key
@@ -479,11 +491,13 @@ export default {
                 }
               }
             ).catch(() =>
-              _this.$notification['error']({
-                message: '保存失败，出现异常',
+              this.$notification['error']({
+                message: '出现异常，请联系系统管理员',
                 duration: 4
               })
-            )
+            ).finally(() => {
+              _this.spinning = false
+            })
           }
         }
       })

@@ -11,20 +11,21 @@
       <span class="action ant-dropdown-link user-dropdown-menu">
         <!-- 添加登陆状态展示 -->
         <a-badge :status="statusMap.get(onlineState)" :offset="[-10, 23]" :numberStyle="{padding: '4px'}">
-          <!-- <a-avatar class="avatar" size="small" :src="avatar()"/> -->
-          <a-avatar class="avatar" size="small" src="/avatar2.jpg"/>
+          <a-avatar class="avatar" size="small" :src="avatar">
+            <span>{{ nickname.slice(0,1) }}</span>
+          </a-avatar>
         </a-badge>
-        <span>{{ nickname() }}</span>
+        <span>{{ nickname }}</span>
       </span>
       <a-menu slot="overlay" class="user-dropdown-menu-wrapper">
         <a-menu-item key="0">
-          <router-link :to="{ name: 'center' }">
+          <router-link :to="{ name: 'Center' }">
             <a-icon type="user"/>
             <span>个人信息</span>
           </router-link>
         </a-menu-item>
         <a-menu-item key="1">
-          <router-link :to="{ name: 'settings' }">
+          <router-link :to="{ name: 'Settings' }">
             <a-icon type="setting"/>
             <span>账户设置</span>
           </router-link>
@@ -67,13 +68,13 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['nickname', 'avatar']),
     onlineState () {
       return this.$store.state.talk.onlineState
     }
   },
   methods: {
     ...mapActions(['Logout']),
-    ...mapGetters(['nickname', 'avatar']),
     handleLogout () {
       const that = this
 
@@ -96,7 +97,7 @@ export default {
     },
     messageFun () {
       Utils.$emit('message', 'msg')
-      this.$router.push({ name: 'Analysis', params: { messageFlag: true } })
+      this.$router.push({ name: 'Workplace', params: { messageFlag: true } })
     }
   }
 }

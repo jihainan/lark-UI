@@ -9,7 +9,7 @@ import { ACCESS_TOKEN } from '@/store/mutation-types'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
-const whiteList = ['login', 'register', 'registerResult'] // no redirect whitelist
+const whiteList = ['Login'] // no redirect whitelist
 
 // 全局守卫 登录后通过这里第一次路由跳转 初始化用户数据全在这里
 router.beforeEach((to, from, next) => {

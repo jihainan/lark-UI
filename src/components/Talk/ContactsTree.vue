@@ -57,11 +57,9 @@ export default {
   methods: {
     handleSelect (selectedKeys, { selectedNodes }) {
       if (selectedNodes.length) {
-        if (selectedNodes[0].data.props.dataRef.hasOwnProperty('online')) {
+        if (selectedNodes[0].data.props.dataRef.scopedSlots.title === 'userNode') {
           this.$emit('SelectContacts', selectedKeys[0])
         }
-      } else {
-        this.$emit('SelectContacts', selectedKeys[0])
       }
     }
   }

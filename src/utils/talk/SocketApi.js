@@ -81,7 +81,8 @@ class SocketApi {
     ws.onmessage = messageEvent => {
       const time = new Date()
       const received = JSON.parse(messageEvent.data)
-
+      console.log('messageEvent')
+      console.log(messageEvent)
       switch (received.code) {
         // 处理消息 更新消息缓存-->最近联系人列表
         case 0:
@@ -176,7 +177,8 @@ class SocketApi {
             })
           break
         case 4:
-          this.ws.send(JSON.stringify(received))
+          // 创建群组时给服务端返回code为4的数据
+          this.ws.send(messageEvent.data)
           break
         default:
           break
@@ -243,7 +245,9 @@ class SocketApi {
     // 设置登陆状态为正在断开
     store.commit('SET_ONLINE_STATE', LandingStatus.EXITING)
 
-    this.ws.close(code, reason)
+    if (this.ws) {
+      this.ws.close(code, reason)
+    }
   }
 
   /**

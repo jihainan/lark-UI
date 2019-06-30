@@ -75,6 +75,11 @@ export default {
         newItem.img = img
         return newItem
       })
+      members.push({
+        userId: this.userId,
+        userLevels: this.userSecretLevel,
+        img: this.avatar
+      })
       this.$emit('nextStep', members, 2)
     },
     prevStep () {

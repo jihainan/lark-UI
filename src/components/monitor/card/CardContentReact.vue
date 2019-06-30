@@ -13,7 +13,7 @@
               <span>{{ item.msgSender }}</span>
             </a-avatar>
           </a-list-item-meta>
-          <div>{{ item.sendTime|timeFormat }}</div>
+          <div v-if="item.msgType==='1'">{{ item.sendTime|timeFormat }}</div>
         </a-list-item>
       </a-list>
     </div>

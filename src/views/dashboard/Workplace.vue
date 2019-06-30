@@ -14,7 +14,7 @@
         :use-css-transforms="true"
       >
         <grid-item
-          v-for="(grid, indexs) in cardList"
+          v-for="grid in cardList"
           dragAllowFrom=".ant-card-head"
           :minH="cardSize.minH"
           :maxH="cardSize.maxH"
@@ -25,40 +25,38 @@
           :w="1"
           :h="5"
           :i="grid.i"
+          :vertical-compact="true"
           @moved="moved"
-          @move="click(indexs)"
         >
-          <l-card :cardData="grid" @refreshCard="refreshCard"></l-card>
+          <l-card :cardData="grid" @refreshCard="refreshCard">
+          </l-card>
         </grid-item>
       </grid-layout>
     </div>
     <!--这个地方放置最近访问-->
-
     <footer-tool-bar :style="{height:'72px', width: isSideMenu() && isDesktop() ? `calc(100% - ${sidebarOpened ? 256 : 80}px)` : '100%'}">
       <div class="tool-list">
         <div class="tool-item" v-for="item in toolList" :key="item.id">
-          <img :src="'/tools/Icon-'+item.description+'.png'" width="40" height="40" :alt="item.description" :title="item.title"/>
+          <a :href="item.uri">
+            <img :src="'/tools/Icon-'+item.description+'.png'" width="40" height="40" :alt="item.description" :title="item.title"/>
+          </a>
           <div class="tool-name">{{ item.title }}</div>
         </div>
-        <!-- <div class="tool-item">
-          <img src="/tools/Icon-PDM.png" width="40" height="40" alt="PDM" title="项目数据管理系统"/>
-          <div class="tool-name">项目数据管理系统</div>
-        </div> -->
-        <!-- <div class="tool-item">
-          <img src="/tools/Icon-MPM.png" width="40" height="40" alt="MPM" title="项目管理系统"/>
-          <div class="tool-name">项目管理系统</div>
-        </div>
-        <div class="tool-item">
-          <img src="/tools/Icon-OA.png" width="40" height="40" alt="OA" title="协同办公系统"/>
-          <div class="tool-name">协同办公系统</div>
-        </div>
-        <div class="tool-item">
-          <img src="/tools/Icon-TDM.png" width="40" height="40" alt="TDM" title="试验数据管理系统"/>
-          <div class="tool-name">试验数据管理系统</div>
-        </div> -->
       </div>
-      <!-- <a-button type="primary" @click="validate" :loading="loading">提交</a-button> -->
     </footer-tool-bar>
+    <div v-if="cardList.length===0">
+      <div class="img_arrow">
+        <img src="/arrow.png"/>
+      </div>
+      <div class="exception">
+        <div class="img">
+          <img src="/images/exceptionImg/500.svg"/>
+        </div>
+        <div class="content">
+          <div class="desc">温馨提示：在账户设置/卡片设置中，可维护常用卡片</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -67,7 +65,7 @@ import { mixin, mixinDevice } from '@/utils/mixin'
 import FooterToolBar from '@/components/FooterToolbar'
 import VueGridLayout from 'vue-grid-layout'
 import LCard from '@/views/dashboard/Card'
-import { getCommonTools, getUserCard } from '@/api/workplace'
+import { getCommonTools, getUserCard, moveUserCard } from '@/api/workplace'
 export default {
   name: 'Monitor',
   mixins: [mixin, mixinDevice],
@@ -79,7 +77,8 @@ export default {
       is: [],
       ids: [],
       index: '',
-      toolList: []
+      toolList: [],
+      cardmap: new Map()
     }
   },
   components: {
@@ -94,15 +93,14 @@ export default {
   },
   methods: {
     getSelfWorkplace () {
-      this.cardList = []
-      // this.$http.get('/portal/userCard/myself')
       getUserCard()
         .then(res => {
+          this.cardList = []
           const dataTemp = res.result.data
           for (var i = 0; i < dataTemp.length; i++) {
             const temp = {}
             temp.id = dataTemp[i].id
-            temp.x = 1 * parseInt(dataTemp[i].i % 2)
+            temp.x = 1 * parseInt((parseInt(dataTemp[i].i) + 1) % 2)
             temp.y = 5 * parseInt(dataTemp[i].i / 2)
             temp.w = 1
             temp.h = 5
@@ -128,33 +126,26 @@ export default {
     refreshCard () {
       this.getSelfWorkplace()
     },
-    click (index) {
-      this.index = index
-    },
+    /**
+     * 移动完成后保存位置变化
+     */
     moved (a, newX, newY) {
-      const i = (2 * newY) / 5
-      const index = this.index
-      // this.$http.get('/portal/userCard/myself', {
-      getUserCard({
-        params: {
-          list: {
-            cardId: this.ids[index],
-            i: Math.round(i)
-          }
-        }
-      }).then(res => {
+      moveUserCard(this.handleCardI()).then(res => {
       })
-      this.getId()
     },
-    getId () {
-      for (let i = 0; i < this.cardList.length; i++) {
-        this.ids.push(this.cardList[i].id)
-      }
+    /**
+     * 每次移动卡片都将卡片的位置全部重新获取
+     */
+    handleCardI () {
+      let temp = ''
+      this.cardList.forEach(item => {
+        temp += ',' + item.id + ':' + (parseInt(item.y) / 5 * 2 + parseInt(item.x) + 1)
+      })
+      return temp.substring(1)
     }
   }
 }
 </script>
-
 <style lang="less" scoped>
   .antd-pro-pages-dashboard-analysis-twoColLayout {
     position: relative;
@@ -224,6 +215,38 @@ export default {
       margin-top:-26px;
     }
   }
+}
+.exception {
+  min-height: 500px;
+  height: 80%;
+  align-items: center;
+  text-align: center;
+  margin-top: 100px;
+  .img {
+    display: inline-block;
+    padding-right: 52px;
+    zoom: 1;
+    img {
+      height: 360px;
+      max-width: 430px;
+    }
+  }
+  .content {
+    display: inline-block;
+    flex: auto;
+    .desc {
+      color: rgba(0, 0, 0, .45);
+      font-size: 20px;
+      line-height: 28px;
+      margin-bottom: 16px;
+    }
+  }
+}
+.img_arrow {
+  margin-top: 10px;
+  margin-right: 55px;
+  align-items:end;
+  text-align: end;
 }
 
 </style>

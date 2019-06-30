@@ -42,6 +42,16 @@ export function getUserCard (parameter) {
   })
 }
 /**
+ * 移动卡片
+ * created by fanjiao
+ */
+export function moveUserCard (parameter) {
+  return axios({
+    url: api.userCard + '?data=' + parameter,
+    method: 'put'
+  })
+}
+/**
  * 查询个人工具
  * created by fanjiao
  */
