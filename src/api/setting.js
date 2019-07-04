@@ -54,3 +54,23 @@ export function delCheckCommonTools (parameter) {
     params: parameter
   })
 }
+/**
+ * 传递卡片id
+ */
+// export function settingCard (parameter) {
+//   return axios({
+//     url: api.settingCard,
+//     method: 'post',
+//     params: parameter
+//   })
+// }
+export function settingCard (parameter) {
+  return axios({
+    url: api.settingCard,
+    model: 'post',
+    params: {
+      cardId: parameter,
+      userId: this.$store.state.user.name
+    }
+  })
+}

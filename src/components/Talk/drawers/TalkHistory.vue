@@ -12,9 +12,9 @@
     ref="ss"
     v-if="hackReset"
     destroyOnClose
+    key="2"
   >
-
-    <sou></sou>
+    <sou :contactId="contactId" :hisGrop="hisGrop"></sou>
     <div class="login_img">
       没有更多信息...
     </div>
@@ -35,6 +35,16 @@ export default {
     activeOption: {
       type: String,
       default: ''
+    },
+    contactId: {
+      type: String,
+      default: '',
+      required: true
+    },
+    hisGrop: {
+      type: String,
+      default: '',
+      required: true
     }
   },
   data () {

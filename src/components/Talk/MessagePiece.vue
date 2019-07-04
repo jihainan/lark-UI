@@ -1,6 +1,6 @@
 <template>
   <!-- 聊天消息框 -->
-  <div :class="['message-piece', {send: isMe(), receive: !isMe()}]">
+  <div :class="['message-piece', {send: isMe(), receive: !isMe()}]" >
 
     <!-- 消息时间 需要判断显示时间的条件 -->
     <div class="time-stamp">
@@ -33,7 +33,12 @@
                   【{{ JSON.parse(messageInfo.content.secretLevel) | fileSecret }}】
                 </span>
               </div>
-              <pre>{{ messageInfo.content.title }}</pre>
+              <!-- <pre>{{ messageInfo.content.title }}</pre> -->
+              <div
+                v-html="messageInfo.content.title"
+                style="display:inline"
+              >
+              </div>
             </div>
 
             <!-- 图片消息 -->
@@ -128,6 +133,9 @@ export default {
       // 图片加载状态 0:无状态 1:加载中 2:加载成功 3:加载失败
       imgLoading: 0,
       previewVisible: false
+      // imgB: [],
+      // leftB: '',
+      // rightB: ''
     }
   },
   computed: {

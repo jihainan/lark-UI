@@ -31,6 +31,8 @@ router.beforeEach((to, from, next) => {
               // 动态添加可访问路由表
               router.addRoutes(store.getters.addRouters)
               const redirect = decodeURIComponent(from.query.redirect || to.path)
+              // 重新登录时，不跳转到上一次访问的地址
+              // const redirect = decodeURIComponent(to.path)
               if (to.path === redirect) {
                 // hack方法 确保addRoutes已完成 ,set the replace: true so the navigation will not leave a history record
                 next({ ...to, replace: true })
@@ -86,15 +88,24 @@ const action = Vue.directive('action', {
   bind: function (el, binding, vnode) {
     const actionName = binding.arg
     const roles = store.getters.roles
-    const permissionId = vnode.context.$route.meta.permission
+    let permissionId = vnode.context.$route.meta.permission
+    if (permissionId && permissionId.length > 0) {
+      permissionId = permissionId[0]
+    }
     let actions = []
-    roles.permissions.forEach(p => {
+    roles.frontPermissionList.some(p => {
       if (p.permissionId !== permissionId) {
-        return
+        return false
       }
-      actions = p.actionList
+      actions = p.actionEntitySetList
+      return true
     })
-    if (actions.indexOf(actionName) < 0) {
+    const per = actions.some(item => {
+      if (item.code === actionName && item.defaultCheck === true) {
+        return true
+      }
+    })
+    if (!per) {
       el.parentNode && el.parentNode.removeChild(el) || (el.style.display = 'none')
     }
   }

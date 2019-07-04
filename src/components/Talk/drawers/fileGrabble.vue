@@ -1,8 +1,15 @@
 <template>
   <div>
-    <input type="text" class="seek_inp" placeholder="输入要搜索内容" v-model="searchVal" >
-    <a-button type="primary" icon="search" style="border-radius:0"></a-button>
-
+    <!-- <input type="text" class="seek_inp" placeholder="输入要搜索内容" v-model="searchVal" >
+    <a-button type="primary" icon="search" style="border-radius:0 5px 5px 0"></a-button> -->
+    <a-input-search
+      placeholder="输入要搜索内容"
+      @search="onSearch"
+      enterButton
+      type="text"
+      v-model="searchVal"
+      style="margin-bottom: 20px"
+    />
     <ul class="history_box">
       <li>
         <div class="nav_box">
@@ -14,22 +21,30 @@
         </div>
       </li>
       <li v-for="(newItem,index) in NewItems" class="history_cotent" :key="index" :value="newItem.value">
-
+        <!-- {{ NewItems }} -->
         <a-list-item-meta class="file_name">
-          <a class="file_a" slot="title">{{ newItem.name.last }}</a>
-          <a-avatar slot="avatar" :src="newItem.url"/>
+          <a-tooltip slot="title" :title="newItem.fileName">
+            <a class="file_a" message="sss">{{ newItem.fileName }}</a> <!-- 文件名 -->
+          </a-tooltip> <!-- 文件图片 -->
+          <!-- <a-avatar slot="avatar" :src="newItem.url" style="border-radius:0" /> -->
+          <a-avatar slot="avatar" :src="newItem.url" style="border-radius:0;  font-size: 25px;" > <a-icon type="file"></a-icon> </a-avatar>
+          <!-- <a-icon class="content_icon" type="file"/> -->
         </a-list-item-meta>
-        <span class="file_sp">{{ newItem.name.title }}</span>
-        <div class="file_time">{{ newItem.time }}</div>
-        <a href>
+        <a-tooltip :title="newItem.reviser">
+          <span class="file_sp">{{ newItem.reviser }}</span><!-- 人名  -->
+        </a-tooltip>
+        <a-tooltip :title="newItem.time">
+          <div class="file_time">{{ newItem.time }}</div> <!-- 上传时间 -->
+        </a-tooltip>
+        <a>
           <div class="secret secret1">
-            <a-tag color="orange" v-if="newItem.Concentrated === 'secret'">保密</a-tag>
-            <a-tag color="tomato" v-if="newItem.Concentrated === 'top-secret'">机密</a-tag>
-            <a-tag color v-if="newItem.Concentrated === 'no-secret'">非密</a-tag>
+            <a-tag color="orange" v-if="newItem.levels === '40'">秘密</a-tag>
+            <a-tag color="tomato" v-if="newItem.levels === '60'">机密</a-tag>
+            <a-tag color v-if="newItem.levels === '30'">非密</a-tag>
           </div>
         </a>
-        <a class="down">下载</a>
-
+        <!-- <a class="down" :href="'/chat/zzFileManage/downloadFile'" onclick="return false">下载</a> -->
+        <a-button class="down" type="primary" icon="download" @click="down(newItem.fileId)" :disabled="flag"></a-button>
       </li>
       <li>
         <div
@@ -47,6 +62,7 @@
 
 </template>
 <script>
+import { fileGrabble, fileDownload } from '@/api/talk.js'
 export default {
   name: 'Rabble',
   data () {
@@ -57,7 +73,9 @@ export default {
       loading: false,
       loadingMore: false,
       showLoadingMore: true,
-      item: []
+      item: [],
+      pageNumber: 1,
+      flag: false
     }
   },
   created () {
@@ -72,25 +90,51 @@ export default {
     onSearch (value) {
       console.log(value)
     },
+    // 提示
+    openNotification () {
+      this.$notification.warning({
+        message: '无法获取文件，稍后再试',
+        description: '',
+        onClick: () => {
+          console.log('Notification Clicked!')
+        }
+      })
+    },
 
     getData (callback) {
-      this.$http.get('https://www.easy-mock.com/mock/5cef9a806bbb7d72047ec887/drawer/notice/drawer/file').then(data => {
-        callback(data)
+      fileGrabble(this.pageNumber).then(data => {
+        if (data.result.data.length < 5) {
+          this.showLoadingMore = false
+        }
+        // callback(data.result.data)
+        const datas = data.result.data
+        datas.map(item => {
+          this.data.push(item)
+        })
+      }).catch(res => {
+        this.openNotification()
+        // this.showLoadingMore = false
       })
     },
     onLoadMore () {
       this.loadingMore = true
-      this.getData(res => {
+      this.pageNumber++
+      this.getData((res) => {
         this.data = this.data.concat(res.results)
-        this.loadingMore = false
         this.$nextTick(() => {
           window.dispatchEvent(new Event('resize'))
         })
       })
+      this.loadingMore = false
     },
     /** 抽屉关闭时触发closeDrawer事件 */
     onClose () {
       this.$emit('closeDrawer')
+    },
+    down (id) {
+      fileDownload(id).then(item => {
+        window.open('/api/chat/zzFileManage/downloadFile' + '?fileId=' + id, '_self')
+      })
     }
   },
   computed: {
@@ -98,7 +142,7 @@ export default {
       var _this = this
       var NewItems = []
       this.data.map(function (item) {
-        if (item.name.last.search(_this.searchVal) !== -1) {
+        if (item.fileName.search(_this.searchVal) !== -1) {
           NewItems.push(item)
         }
       })
@@ -109,14 +153,23 @@ export default {
 </script>
 
 <style lang="less" scoped>
-ul{
+.seek_inp{
+  width: 90%;
+  height: 30px;
+  outline: none;
+  border: 1px solid #cccccc;
+  border-radius: 5px 0 0 5px;
+  margin-bottom: 20px;
+}
+.history_box{
   margin-bottom: 100px;
   overflow: hidden;
-  .history_box{
-  height: 55px;
-  margin-bottom: 50px;
+  list-style: none;
+  padding: 0;
+  .history_cotent{
+    height: 55px;
+    margin-bottom: 5px;
   }
-
 }
 .ant-list-item-meta{
   float: left;
@@ -127,12 +180,17 @@ ul{
   line-height: 55px;
   h4{
     line-height: 55px;
+    width: 90px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
   }
 }
 .file_name{
   float: left;
   margin-right: 20px;
-  line-height: 55px
+  line-height: 55px;
 }
 .file_sp{
   float: left;
@@ -144,8 +202,10 @@ ul{
   box-sizing: border-box;
   margin-right: 30px;
   text-align: left;
-  line-height: 55px
+  // line-height: 55px
+  margin-top: 18px
 }
+
 .file_time{
   float: left;
   margin-right: 20px;
@@ -153,7 +213,8 @@ ul{
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  line-height: 55px
+  // line-height: 55px
+  margin-top: 18px
 }
 .secret1{
   float: left;
@@ -162,9 +223,10 @@ ul{
 }
 .down{
   float:right;
-  height: 55px;
-  line-height: 55px;
-  display: block
+  // height: 55px;
+  // line-height: 55px;
+  // display: block
+  margin-top: 10px
 }
 .nav_box {
   width: 100%;
@@ -185,4 +247,5 @@ ul{
     }
   }
 }
+
 </style>

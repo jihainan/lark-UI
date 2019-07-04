@@ -4,14 +4,16 @@
       <a-icon type="message"/>
     </span> -->
     <span class="action">
-      <a-icon type="question-circle-o"></a-icon>
+      <router-link :to="{ name: 'Feedback' }">
+        <a-icon type="question-circle-o"></a-icon>
+      </router-link>
     </span>
     <header-notice class="action"/>
     <a-dropdown>
       <span class="action ant-dropdown-link user-dropdown-menu">
-        <!-- 添加登陆状态展示 -->
+        <!-- 添加登录状态展示 -->
         <a-badge :status="statusMap.get(onlineState)" :offset="[-10, 23]" :numberStyle="{padding: '4px'}">
-          <a-avatar class="avatar" size="small" :src="avatar">
+          <a-avatar class="avatar" size="small" :src="avatar" style="backgroundColor: #f49d2a">
             <span>{{ nickname.slice(0,1) }}</span>
           </a-avatar>
         </a-badge>
@@ -98,6 +100,11 @@ export default {
     messageFun () {
       Utils.$emit('message', 'msg')
       this.$router.push({ name: 'Workplace', params: { messageFlag: true } })
+    },
+    /**
+     * 打开评论面板
+     */
+    openCommentBoard () {
     }
   }
 }

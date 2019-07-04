@@ -11,7 +11,7 @@
     destroyOnClose
 
   >
-    <sou></sou>
+    <mark-message-grabble :groupId="groupId"></mark-message-grabble>
     <div class="login_img">
       没有更多信息...
     </div>
@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import sou from './messageGrabble.vue'
+import MarkMessageGrabble from './MarkMessageGrabble.vue'
 export default {
   name: 'MarkMessage',
   props: {
@@ -33,10 +33,15 @@ export default {
       type: String,
       default: '',
       required: true
+    },
+    groupId: {
+      type: String,
+      default: '',
+      required: true
     }
   },
   components: {
-    sou
+    MarkMessageGrabble
   },
   data () {
     return {
@@ -75,7 +80,7 @@ export default {
 <style lang="less" scoped>
 .login_img{
   text-align: center;
-  color: #cccccc
+  color: #cccccc;
 }
 
  </style>

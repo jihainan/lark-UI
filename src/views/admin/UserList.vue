@@ -50,7 +50,7 @@
                       <a-button @click="() => queryParam = {}">重置</a-button>
                     </a-col>
                     <a-col :span="5">
-                      <a-button type="primary" @click="openEditModal('','1')">新增用户</a-button>
+                      <a-button type="primary" @click="openEditModal('','1')" v-action:add>新增用户</a-button>
                     </a-col>
                   </a-row>
                 </a-col>
@@ -65,11 +65,11 @@
                 >
                   <span slot="action" slot-scope="text, record">
                     <template>
-                      <a @click="openEditModal(record,'2')">编辑</a>
+                      <a @click="openEditModal(record,'2')" v-action:update>编辑</a>
                       <a-divider type="vertical"/>
                     </template>
                     <template>
-                      <a @click="handleDel(record)">删除</a>
+                      <a @click="handleDel(record)" v-action:delete>删除</a>
                     </template>
                   </span>
                 </s-table>

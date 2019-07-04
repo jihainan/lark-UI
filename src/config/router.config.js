@@ -17,14 +17,14 @@ export const asyncRouterMap = [
         name: 'Dashboard',
         redirect: '/dashboard/workplace',
         component: MonitorView,
-        meta: { title: '工作舱', keepAlive: true, hideHeader: true, icon: 'home', permission: [ 'dashboard' ] },
+        meta: { title: '工作舱', keepAlive: true, hideHeader: true, icon: 'home', permission: ['dashboard'] },
         hideChildrenInMenu: true,
         children: [
           {
             path: 'workplace',
             name: 'Workplace',
             component: () => import('@/views/dashboard/Workplace'),
-            meta: { title: '工作台', keepAlive: true, icon: 'dashboard', permission: [ 'dashboard' ], hidden: true }
+            meta: { title: '工作台', keepAlive: true, icon: 'dashboard', permission: ['dashboard'], hidden: true }
           }
         ]
       },
@@ -60,7 +60,7 @@ export const asyncRouterMap = [
         meta: {
           title: '系统管理',
           icon: 'appstore',
-          permission: ['user', 'org', 'role','notice','menu','gatelog']
+          permission: ['user', 'org', 'role', 'notice', 'menu', 'gatelog']
         },
         children: [
           {
@@ -119,6 +119,28 @@ export const asyncRouterMap = [
             }
           },
           {
+            path: '/list/word-list',
+            name: 'WordList',
+            component: () => import('@/views/admin/DictWord'),
+            meta: {
+              title: '敏感词汇管理',
+              icon: 'lock',
+              keepAlive: false,
+              permission: ['word']
+            }
+          },
+          {
+            path: '/list/commontools',
+            name: 'CommonTools',
+            component: () => import('@/views/admin/CommonTools'),
+            meta: {
+              title: '常用工具管理',
+              icon: 'tool',
+              keepAlive: false,
+              permission: ['commontools']
+            }
+          },
+          {
             path: '/list/log-list',
             name: 'LogList',
             component: () => import('@/views/admin/LogList'),
@@ -139,6 +161,12 @@ export const asyncRouterMap = [
               keepAlive: false,
               permission: ['service']
             }
+          },
+          {
+            path: '/dashboard/feedback',
+            name: 'Feedback',
+            component: () => import('@/views/dashboard/Feedback'),
+            meta: { title: '问题反馈', hidden: true, keepAlive: false, permission: [ 'user' ] }
           }
         ]
       },
@@ -148,19 +176,19 @@ export const asyncRouterMap = [
         name: 'Result',
         component: PageView,
         redirect: '/result/success',
-        meta: { title: '工具', icon: 'check-circle-o', permission: [ 'result' ] },
+        meta: { title: '工具', icon: 'check-circle-o', permission: ['result'] },
         children: [
           {
             path: 'success',
             name: 'ResultSuccess',
             component: () => import(/* webpackChunkName: "result" */ '@/views/result/Success'),
-            meta: { title: '成功', hiddenHeaderContent: true, permission: [ 'result' ] }
+            meta: { title: '成功', hiddenHeaderContent: true, permission: ['result'] }
           },
           {
             path: 'fail',
             name: 'ResultFail',
             component: () => import(/* webpackChunkName: "result" */ '@/views/result/Error'),
-            meta: { title: '失败', hiddenHeaderContent: true, permission: [ 'result' ] }
+            meta: { title: '失败', hiddenHeaderContent: true, permission: ['result'] }
           }
         ]
       },
@@ -171,25 +199,25 @@ export const asyncRouterMap = [
         name: 'Exception',
         component: RouteView,
         redirect: '/exception/403',
-        meta: { title: '异常页', icon: 'warning', permission: [ 'exception' ] },
+        meta: { title: '异常页', icon: 'warning', permission: ['exception'] },
         children: [
           {
             path: '403',
             name: 'Exception403',
             component: () => import(/* webpackChunkName: "fail" */ '@/views/exception/403'),
-            meta: { title: '403', permission: [ 'exception' ] }
+            meta: { title: '403', permission: ['exception'] }
           },
           {
             path: '404',
             name: 'Exception404',
             component: () => import(/* webpackChunkName: "fail" */ '@/views/exception/404'),
-            meta: { title: '404', permission: [ 'exception' ] }
+            meta: { title: '404', permission: ['exception'] }
           },
           {
             path: '500',
             name: 'Exception500',
             component: () => import(/* webpackChunkName: "fail" */ '@/views/exception/500'),
-            meta: { title: '500', permission: [ 'exception' ] }
+            meta: { title: '500', permission: ['exception'] }
           }
         ]
       },
@@ -202,19 +230,19 @@ export const asyncRouterMap = [
         name: 'Account',
         // 在侧导航中隐藏
         hidden: true,
-        meta: { title: '个人页', icon: 'user', keepAlive: true, permission: [ 'self' ] },
+        meta: { title: '个人页', icon: 'user', keepAlive: true, permission: ['self'] },
         children: [
           {
             path: 'center',
             name: 'Center',
             component: () => import('@/views/account/center/Index'),
-            meta: { title: '个人中心', keepAlive: true, permission: [ 'self' ] }
+            meta: { title: '个人中心', keepAlive: true, permission: ['self'] }
           },
           {
             path: 'settings',
             name: 'Settings',
             component: () => import('@/views/account/settings/Index'),
-            meta: { title: '个人设置', hideHeader: true, keepAlive: true, permission: [ 'self' ] },
+            meta: { title: '个人设置', hideHeader: true, keepAlive: true, permission: ['self'] },
             redirect: '/account/settings/base',
             hideChildrenInMenu: true,
             children: [
@@ -222,7 +250,7 @@ export const asyncRouterMap = [
                 path: 'base',
                 name: 'BaseSettings',
                 component: () => import('@/views/account/settings/BaseSetting'),
-                meta: { title: '基本设置', hidden: true, keepAlive: false, permission: [ 'self' ] }
+                meta: { title: '基本设置', hidden: true, keepAlive: false, permission: ['self'] }
               },
               // {
               //   path: 'security',
@@ -234,7 +262,19 @@ export const asyncRouterMap = [
                 path: 'custom',
                 name: 'CustomSettings',
                 component: () => import('@/views/account/settings/Custom'),
-                meta: { title: '个性化设置', hidden: true, keepAlive: false, permission: [ 'self' ] }
+                meta: { title: '个性化设置', hidden: true, keepAlive: false, permission: ['self'] }
+              },
+              {
+                path: 'binding',
+                name: 'BindingSettings',
+                component: () => import('@/views/account/settings/Binding'),
+                meta: { title: '账户绑定', hidden: true, keepAlive: true, permission: ['user'] }
+              },
+              {
+                path: 'notification',
+                name: 'NotificationSettings',
+                component: () => import('@/views/account/settings/Notification'),
+                meta: { title: '新消息通知', hidden: true, keepAlive: true, permission: ['user'] }
               },
               {
                 path: 'binding',
@@ -264,13 +304,13 @@ export const asyncRouterMap = [
                 path: 'workplace',
                 name: 'WorkPlaceSettings',
                 component: () => import('@/views/account/settings/Workplace'),
-                meta: { title: '卡片设置', hidden: true, keepAlive: false, permission: [ 'self' ] }
+                meta: { title: '卡片设置', hidden: true, keepAlive: false, permission: ['self'] }
               },
               {
                 path: 'commontool',
                 name: 'CommonToolSettings',
                 component: () => import('@/views/account/settings/CommonTool'),
-                meta: { title: '常用工具设置', hidden: true, keepAlive: false, permission: [ 'self' ] }
+                meta: { title: '常用工具设置', hidden: true, keepAlive: false, permission: ['self'] }
               }
             ]
           }

@@ -9,7 +9,7 @@
                 <a-input-search style="margin-bottom: 8px" placeholder="Search" @change="onChange" />
               </a-col>
               <a-col :span="6">
-                <a-icon type="plus-circle" @click="addOrg" style="font-size:20px" theme="twoTone"/>
+                <a-icon type="plus-circle" @click="addOrg" style="font-size:20px" theme="twoTone" v-action:add/>
               </a-col>
             </a-row>
             <a-tree
@@ -136,10 +136,10 @@
             </a-row>
             <a-row type="flex" justify="end">
               <a-col :span="6">
-                <a-button type="primary" @click="saveOrginfo">
+                <a-button type="primary" @click="saveOrginfo" v-action:update>
                   保存
                 </a-button>
-                <a-button type="danger" @click="delOrg" style="margin-left: 8px">
+                <a-button type="danger" @click="delOrg" style="margin-left: 8px" v-action:delete>
                   删除
                 </a-button>
               </a-col>

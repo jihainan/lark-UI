@@ -16,7 +16,7 @@
         <a-step title="完成" />
       </a-steps>
       <div class="content">
-        <BaseInfo v-if="currentTab === 0" @nextStep="nextStep"/>
+        <BaseInfo v-if="currentTab === 0" :groupInfo="baseInfo" @nextStep="nextStep" ref="baseInfo"/>
         <UserSelect v-if="currentTab === 1" :groupInfo="baseInfo" @nextStep="nextStep" @prevStep="prevStep"/>
         <ResultPage v-if="currentTab === 2" :groupInfo="baseInfo" @toTalk="toTalk" @finish="finish"/>
       </div>
@@ -26,7 +26,6 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import {} from '@/api/talk'
 import { SocketMessage } from '@/utils/talk'
 import BaseInfo from './BaseInfo'
 import UserSelect from './UserSelect'
@@ -86,6 +85,10 @@ export default {
     prevStep () {
       if (this.currentTab > 0) {
         this.currentTab -= 1
+        // 回显基本信息
+        this.$nextTick(() => {
+          this.$refs.baseInfo.setFormData(this.baseInfo)
+        })
       }
     },
     finish () {

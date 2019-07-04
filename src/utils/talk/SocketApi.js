@@ -242,7 +242,7 @@ class SocketApi {
    * @param {String} reason 关闭原因描述
    */
   close (code, reason) {
-    // 设置登陆状态为正在断开
+    // 设置登录状态为正在断开
     store.commit('SET_ONLINE_STATE', LandingStatus.EXITING)
 
     if (this.ws) {

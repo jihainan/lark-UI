@@ -17,6 +17,7 @@
           placeholder="给研讨组起一个名字"
         />
       </a-form-item>
+
       <a-form-item
         label="群组密级"
         :labelCol="labelCol"
@@ -33,6 +34,7 @@
           </a-select-option>
         </a-select>
       </a-form-item>
+
       <a-form-item
         label="所属项目"
         :labelCol="labelCol"
@@ -45,6 +47,7 @@
           placeholder="请填写研讨组所属项目"
         />
       </a-form-item>
+
       <a-form-item
         label="参与范围"
         :labelCol="labelCol"
@@ -56,6 +59,7 @@
           placeholder="填写研讨组讨论范围（可选）"
         />
       </a-form-item>
+
       <a-form-item
         :label-col="labelCol"
         :wrapper-col="wrapperCol"
@@ -71,17 +75,19 @@
         <a-button type="primary" @click="nextStep">下一步</a-button>
       </a-form-item>
     </a-form>
+
     <a-divider />
     <div class="step-form-style-desc">
       <h3>说明</h3>
-      <h4>群组创建注意事项</h4>
-      <p>群组创建注意事项，群组创建注意事项，群组创建注意事项，群组创建注意事项</p>
+      <h4>请详细填写群组信息</h4>
+      <p>研讨内容必须符合保密要求，群组成员需共同承担保密职责</p>
     </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
+import pick from 'lodash.pick'
 
 export default {
   name: 'BaseInfo',
@@ -113,6 +119,15 @@ export default {
           console.log('创建的数据：', values)
         }
       })
+    },
+    setFormData (info) {
+      this.form.setFieldsValue(pick(
+        info,
+        'groupName',
+        'levels',
+        'pname',
+        'scop',
+        'groupDescribe'))
     }
   }
 }

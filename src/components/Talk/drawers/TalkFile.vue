@@ -8,6 +8,7 @@
     :closable="false"
     @close="onClose"
     :visible="activeOption=='talkFile'"
+    :destroyOnClose="true"
   >
     <file-grabble></file-grabble>
 
@@ -22,11 +23,11 @@ export default {
   name: 'TalkFile',
   props: {
     /** 抽屉挂载的元素 */
-    mountEle: {
-      type: String,
-      default: '.conv-box',
-      required: false
-    },
+    // mountEle: {
+    //   type: String,
+    //   // default: '.conv-box',
+    //   required: false
+    // },
     activeOption: {
       type: String,
       default: '',

@@ -3,7 +3,7 @@
     <a-form style="max-width: 650px; margin: 40px auto 0;">
       <a-alert
         :closable="true"
-        message="只能选择与群组密级相符合的用户"
+        message="下列用户已根据群组密级进行了筛选"
         style="margin-bottom: 24px;"
       />
 
@@ -40,7 +40,7 @@ export default {
       loading: false,
       userList: [],
       listStyle: {
-        width: '200px', height: '450px'
+        width: '190px', height: '450px'
       }
     }
   },

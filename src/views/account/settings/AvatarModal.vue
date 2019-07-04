@@ -43,7 +43,7 @@ export default {
       visible: false,
       confirmLoading: false,
       options: {
-        img: '/avatar.jpg',
+        img: '/avatar.png',
         autoCrop: true,
         autoCropWidth: 200,
         autoCropHeight: 200,

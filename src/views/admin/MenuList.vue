@@ -27,7 +27,7 @@
       <span slot="action" slot-scope="text, record">
         <a @click="detailMenu(record)">详情</a>
         <a-divider type="vertical" />
-        <a @click="editMenu(record)">编辑</a>
+        <a @click="editMenu(record)" v-action:update>编辑</a>
         <!-- <a-divider type="vertical" />
         <a @click="delMenu(record)">删除</a> -->
       </span>
@@ -73,17 +73,17 @@
         >
           <a-row>
             <a-checkbox-group style="width:100%" @change="checkBoxChange" :defaultValue="chooseDes">
-              <a-row type="flex" justify="start" align="middle" v-for="item in descriptionArr" :key="item">
-                <a-col :span="4"><a-checkbox :value="item">{{ item }}</a-checkbox></a-col>
+              <a-row type="flex" justify="start" align="middle" v-for="item in descriptionOpt" :key="item.value">
+                <a-col :span="4"><a-checkbox :value="item.value">{{ item.label }}</a-checkbox></a-col>
                 <a-col :span="10">
                   <a-select
                     size="default"
                     :disabled="inDetail"
                     style="margin-top:10px"
                     @change="selectChange"
-                    :defaultValue="selectMethod.get(item)===undefined?'':selectMethod.get(item)"
+                    :defaultValue="selectMethod.get(item.value)===undefined?'':selectMethod.get(item.value)"
                   >
-                    <a-select-option v-for="method in methodArr" :key="`${item}-${method}`" >
+                    <a-select-option v-for="method in methodArr" :key="`${item.value}-${method}`" >
                       {{ method }}
                     </a-select-option>
                   </a-select>
@@ -140,14 +140,24 @@ export default {
       // 上级菜单下拉框内容
       menulist: [],
       methodArr: ['POST', 'PUT', 'PATCH', 'GET', 'DELETE', 'CONNECT', 'HEAD', 'OPTIONS', 'TRACE'],
-      descriptionArr: ['增加', '修改', '删除', '查询', '上传', '下载', '导入', '导出'],
+      descriptionOpt: [
+        { label: '增加', value: 'add' },
+        { label: '修改', value: 'update' },
+        { label: '删除', value: 'delete' },
+        { label: '查询', value: 'select' },
+        { label: '上传', value: 'upload' },
+        { label: '下载', value: 'download' },
+        { label: '导入', value: 'import' },
+        { label: '导出', value: 'export' }
+      ],
       // 选择的描述
       chooseDes: [],
-      chooseMet: '',
-      // key method value description
+      // key code value method
       methodMap: new Map(),
       // 绑定在方法下拉框的值
       selectMethod: new Map(),
+      // key code value description
+      checkboxMap: new Map(),
       menuid: '',
       // 加载数据方法 必须为 Promise 对象
       loadData: parameter => {
@@ -189,6 +199,9 @@ export default {
     return getMenuListAll()
       .then(res => {
         this.menulist = Object.assign({}, res.result.data)
+        this.descriptionOpt.forEach(item => {
+          this.checkboxMap.set(item.value, item.label)
+        })
       })
   },
   methods: {
@@ -273,12 +286,12 @@ export default {
       this.chooseDes.forEach(item => {
         if (this.methodMap.get(item) === undefined) {
           this.$notification['info']({
-            message: '请为' + item + '按钮选择请求方式',
+            message: '请为"' + this.checkboxMap.get(item) + '"按钮选择请求方式',
             duration: 2
           })
           checkResult = false
         }
-        arr.push({ 'method': this.methodMap.get(item), 'description': item })
+        arr.push({ 'method': this.methodMap.get(item), 'description': this.checkboxMap.get(item), 'code': item })
       })
       if (!checkResult) {
         return
@@ -392,11 +405,11 @@ export default {
           if (res.status === 200) {
             res.result.data.forEach(item => {
               // 用于初始化绑定组件
-              this.chooseDes.push(item.description)
+              this.chooseDes.push(item.code)
               // 用于初始化绑定组件
-              this.selectMethod.set(item.description, item.description + '-' + item.method)
+              this.selectMethod.set(item.code, item.code + '-' + item.method)
               // 用于发送到后台请求的数据
-              this.methodMap.set(item.description, item.method)
+              this.methodMap.set(item.code, item.method)
             })
           }
           this.visible = true

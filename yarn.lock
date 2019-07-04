@@ -79,7 +79,7 @@
   resolved "https://registry.yarnpkg.com/@antv/g2-plugin-slider/-/g2-plugin-slider-2.1.1.tgz#c20c5f1cf085bea478f8ab1fc84837e45c46a065"
   integrity sha1-wgxfHPCFvqR4+KsfyEg35FxGoGU=
 
-"@antv/g2@^3.4.0", "@antv/g2@^3.4.10":
+"@antv/g2@^3.4.0":
   version "3.4.10"
   resolved "http://registry.npm.taobao.org/@antv/g2/download/@antv/g2-3.4.10.tgz#72607fa3fb261a2a935762c78c8e568297f523cf"
   integrity sha1-cmB/o/smGiqTV2LHjI5Wgpf1I88=
@@ -2857,7 +2857,7 @@ combined-stream@^1.0.6, combined-stream@~1.0.6:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@2, commander@^2.18.0, commander@^2.19.0:
+commander@2, commander@^2.18.0, commander@^2.19.0, commander@~2.20.0:
   version "2.20.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.0.tgz#d58bb2b5c1ee8f87b0d340027e9e94e222c5a422"
   integrity sha512-7j2y+40w61zy6YC2iRNpUe/NwhNyoXrYpHMrSunaMG64nRnaf96zO/KMQR4OyN/UnE5KLyEBnKHd4aG3rskjpQ==
@@ -2866,11 +2866,6 @@ commander@2.17.x, commander@~2.17.1:
   version "2.17.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.17.1.tgz#bd77ab7de6de94205ceacc72f1716d29f20a77bf"
   integrity sha1-vXerfebelCBc6sxy8XFtKfIKd78=
-
-commander@~2.20.0:
-  version "2.20.0"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.0.tgz#d58bb2b5c1ee8f87b0d340027e9e94e222c5a422"
-  integrity sha512-7j2y+40w61zy6YC2iRNpUe/NwhNyoXrYpHMrSunaMG64nRnaf96zO/KMQR4OyN/UnE5KLyEBnKHd4aG3rskjpQ==
 
 commondir@^1.0.1:
   version "1.0.1"
@@ -10382,13 +10377,12 @@ uuid@^3.0.1, uuid@^3.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
   integrity sha1-G0r0lV6zB3xQHCOHL8ZROBFYcTE=
 
-v-emoji-picker@^1.1.0, v-emoji-picker@^1.1.1:
-  version "1.1.1"
-  resolved "http://registry.npm.taobao.org/v-emoji-picker/download/v-emoji-picker-1.1.1.tgz#1ba0b70c39102c681fa45d827b19b319b4fae8ab"
-  integrity sha1-G6C3DDkQLGgfpF2CexmzGbT66Ks=
+v-emoji-picker@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/v-emoji-picker/-/v-emoji-picker-1.1.4.tgz#ce5f5a03a4c352788e84fae6262c69a20dcfbb26"
+  integrity sha512-rigDCf8i18xfT0mXV0iNaylkMEo7WEqDMjxbqgS9MM06+b3b1VX93uQ0OxeXxfy5Z+t7Sqz7Y1cJ10eHyskZ/w==
   dependencies:
-    v-emoji-picker "^1.1.0"
-    vue "^2.6.6"
+    vue "^2.6.10"
 
 validate-npm-package-license@^3.0.1:
   version "3.0.4"
@@ -10637,10 +10631,10 @@ vue@^2.5.17, vue@^2.5.22, vue@^2.5.3:
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.7.tgz#254f188e7621d2d19ee28d0c0442c6d21b53ae2d"
   integrity sha1-JU8YjnYh0tGe4o0MBELG0htTri0=
 
-vue@^2.6.6:
-  version "2.6.9"
-  resolved "http://registry.npm.taobao.org/vue/download/vue-2.6.9.tgz#415c1cc1a5ed00c8f0acdd0a948139d12b7ea6b3"
-  integrity sha1-QVwcwaXtAMjwrN0KlIE50St+prM=
+vue@^2.6.10:
+  version "2.6.10"
+  resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.10.tgz#a72b1a42a4d82a721ea438d1b6bf55e66195c637"
+  integrity sha512-ImThpeNU9HbdZL3utgMCq0oiMzAkt1mcgy3/E6zWC/G6AaQoeuFdsl9nDhTDU3X1R6FK7nsIUuRACVcjI+A2GQ==
 
 vuex@^3.1.0:
   version "3.1.0"
@@ -10684,6 +10678,11 @@ watchpack@^1.5.0:
     chokidar "^2.0.2"
     graceful-fs "^4.1.2"
     neo-async "^2.5.0"
+
+watermark-div@^0.1.9:
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/watermark-div/-/watermark-div-0.1.9.tgz#7f8ed7ba74c145cc6f427101a72515655796efd4"
+  integrity sha512-dFqhxOFOwggmVOfUh81DxzqnRJ9FjM7UAd2DEFEIRlZaqlk0vkAZB49Z5ZI6FEvy2fQ+hPegaQxwmU+mIP4PUg==
 
 wbuf@^1.1.0, wbuf@^1.7.3:
   version "1.7.3"

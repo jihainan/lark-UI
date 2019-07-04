@@ -533,7 +533,7 @@ export default {
   .sider {
     box-shadow: 2px 0 6px rgba(0, 21, 41, .35);
     position: relative;
-    z-index: 10;
+    z-index: 20;
     height: auto;
 
     .ant-layout-sider-children:hover {

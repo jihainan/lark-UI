@@ -1,31 +1,15 @@
 <template>
-  <!-- 研讨布局 -->
   <a-layout class="talk-layout">
     <a-layout-sider class="talk-layout-sider">
       <div class="search-bar">
-        <SearchInput/>
-        <!-- <a-dropdown>
-          <a-menu slot="overlay">
-            <a-menu-item key="1" @click="$refs.model.beginTalk()">发起研讨</a-menu-item>
-            <a-menu-item key="2">发起会议</a-menu-item>
-          </a-menu>
-          <a-button type="default" size="small" icon="plus" style="margin-left:3px;"></a-button>
-        </a-dropdown> -->
+
+        <SearchAll :inputStyle="{height: '31px', width: '200px'}" @showDetail="showSearchDetail" />
+
         <a-tooltip title="发起研讨" placement="bottom" :overlayStyle="{fontSize: '12px'}">
-          <a-button @click="startTalk" icon="plus" size="small" style="marginLeft: 3px"></a-button>
+          <a-button class="add-group-btn" @click="startTalk" icon="plus" size="small" />
         </a-tooltip>
       </div>
-      <SearchArea
-        :activeChat="activeChat"
-        :activeGroup="activeGroup"
-        :contactsGroup="activeContacts"
-        :searchResultList="searchResultList"
-        :searchGroupResultList="searchGroupResultList"
-        :showSearchContent="showSearchContent"
-        :searchContactsResultList="searchContactsResultList"
-      />
       <a-tabs
-        v-if="showSearchContent"
         :activeKey="activeKey"
         @change="changePane"
         :tabBarGutter="0"
@@ -34,7 +18,7 @@
       >
         <a-tab-pane key="1" forceRender>
           <span slot="tab">
-            <a-icon type="clock-circle" style="{fontSize: 16px}"/>最近
+            <a-icon type="clock-circle" style="{fontSize: 16px}" />最近
           </span>
           <!-- 最近里面每一项 -->
           <div class="recent-contacts-container tab-content-container">
@@ -60,7 +44,7 @@
 
         <a-tab-pane key="2">
           <span slot="tab">
-            <a-icon type="team" style="{fontSize: 16px}"/>群组
+            <a-icon type="team" style="{fontSize: 16px}" />群组
           </span>
 
           <div class="group-contacts-container tab-content-container">
@@ -86,7 +70,7 @@
 
         <a-tab-pane key="3">
           <span slot="tab">
-            <a-icon type="user" style="{fontSize: 18px, margin: 0}"/>联系人
+            <a-icon type="user" style="{fontSize: 18px, margin: 0}" />联系人
           </span>
 
           <div class="contacts-container tab-content-container">
@@ -117,7 +101,7 @@
     <a-layout class="talk-layout-content">
       <div v-show="activeKey == '1'" class="chat-area">
         <keep-alive>
-          <router-view/>
+          <router-view />
         </keep-alive>
       </div>
       <div v-show="activeKey == '2'" class="info-area">
@@ -131,24 +115,12 @@
 
     <!-- 创建新的研讨模态框 -->
     <CreateTalk :showModal="showCreateModal" />
-    <SearchRecordModal :searchRecordModalVisible="searchRecordModalVisible"/>
   </a-layout>
 </template>
 
 <script>
-import {
-  ContactsTree,
-  ContactsInfo,
-  GroupInfo,
-  RecentContactsItem,
-  GroupItem,
-  CreateTalk
-} from '@/components/Talk'
+import { ContactsTree, ContactsInfo, GroupInfo, RecentContactsItem, GroupItem, CreateTalk, SearchAll } from '@/components/Talk'
 
-import SearchInput from './SearchInput'
-import SearchArea from './SearchArea'
-import SearchRecordModal from './SearchRecordModal'
-import { mapGetters } from 'vuex'
 export default {
   name: 'ChatPanel',
   components: {
@@ -158,9 +130,7 @@ export default {
     RecentContactsItem,
     GroupItem,
     CreateTalk,
-    SearchInput,
-    SearchArea,
-    SearchRecordModal
+    SearchAll
   },
   data () {
     return {
@@ -187,7 +157,6 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['searchResultList', 'searchGroupResultList', 'searchContactsResultList']),
     currentTalk () {
       return this.$store.state.talk.currentTalk
     },
@@ -204,13 +173,6 @@ export default {
     },
     contactsTree () {
       return this.$store.state.talk.contactsTree
-    },
-    showSearchContent () {
-      if (this.$store.state.talk.showSearchContent === null) {
-        return true/*  */
-      } else {
-        return this.$store.state.talk.showSearchContent
-      }
     }
   },
   watch: {
@@ -282,17 +244,24 @@ export default {
      */
     getRecentContacts () {
       this.recentLoading = true
-      this.$store
-        .dispatch('GetRecentContacts')
-        .finally(() => {
-          this.recentLoading = false
-        })
+      this.$store.dispatch('GetRecentContacts').finally(() => {
+        this.recentLoading = false
+      })
     },
     handleOpenSearchRecordModal () {
       this.searchRecordModalVisible = true
     },
     handleCloseSearchRecordModal () {
       this.searchRecordModalVisible = false
+    },
+    showSearchDetail (item, isGroup) {
+      if (isGroup) {
+        this.activeKey = '2'
+        this.activeGroup = item.groupId
+      } else {
+        this.activeKey = '3'
+        this.activeContacts = item.key
+      }
     }
   },
   activated: function () {}
@@ -316,7 +285,15 @@ export default {
   // 聊天搜索栏样式 该部分高度为48px
   .search-bar {
     display: flex;
-    margin: 16px 27px 8px;
+    margin: 16px 19px 8px;
+    .add-group-btn {
+      margin-left: 10px;
+      width: 31px;
+      height: 31px;
+      background: #d1d2d4;
+      color: #7c7a7a;
+      font-size: 18px;
+    }
   }
 
   // 调整tabs标签样式
@@ -346,7 +323,7 @@ export default {
     overflow: hidden;
 
     // 视窗高度-头部导航栏高度-搜索框高度-tab页高度
-    height: calc(100vh - 64px - 48px - 46px);
+    height: calc(100vh - 64px - 55px - 46px);
 
     &:hover {
       overflow-y: overlay;

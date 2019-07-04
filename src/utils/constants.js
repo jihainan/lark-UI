@@ -22,9 +22,9 @@ const ErrorType = {
   SERVER_ERROR: 500 // 刷新token错误
 }
 
-// 登陆状态常量 同websocket的readyState
+// 登录状态常量 同websocket的readyState
 const LandingStatus = {
-  /** 正在登陆 */
+  /** 正在登录 */
   LANDING: 0,
   /** 在线 */
   ONLINE: 1,
@@ -34,6 +34,8 @@ const LandingStatus = {
   OFFLINE: 3
 }
 
+// 文件服务器地址
+// const FILE_SERVER_IP = 'http://10.12.97.34:80/'
 const FILE_SERVER_IP = 'http://10.11.24.5:80/'
 
 export {

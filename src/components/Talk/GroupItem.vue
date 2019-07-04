@@ -1,6 +1,6 @@
 <template>
   <!-- groups item -->
-  <div :class="groupItemClasses">
+  <div :class="groupItemClasses" @click="handleClick">
 
     <div class="avatar">
       <a-avatar class="avatar-img" shape="square" :src="groupInfo.groupImg" :size="30">
@@ -56,7 +56,11 @@ export default {
       }
     }
   },
-  methods: {}
+  methods: {
+    handleClick () {
+      this.$emit('select', this.groupInfo)
+    }
+  }
 }
 </script>
 

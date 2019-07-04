@@ -7,7 +7,12 @@ const api = {
   // update by fanjiao 接口联调
   notice: '/portal/notice/orgNotice',
   userCard: '/portal/userCard/myself',
-  userTools: '/portal/userCommonTools/myself'
+  userTools: '/portal/userCommonTools/myself',
+  // 意见反馈
+  feedback: '/portal/feedback',
+  feedback_page: '/portal/feedback/page',
+  comment: '/portal/comment',
+  commentlist: '/portal/comment/feedBackComments'
 }
 
 export default api
@@ -60,5 +65,80 @@ export function getCommonTools (parameter) {
     url: api.userTools,
     method: 'get',
     data: parameter
+  })
+}
+/**
+ * 问题反馈添加
+ * created by fanjiao
+ */
+export function addFeedback (parameter) {
+  return axios({
+    url: api.feedback,
+    method: 'post',
+    data: parameter
+  })
+}
+/**
+ * 问题反馈删除
+ * created by fanjiao
+ */
+export function delFeedback (parameter) {
+  return axios({
+    url: api.feedback + '/' + parameter,
+    method: 'delete'
+  })
+}
+/**
+ * 问题反馈修改
+ * created by fanjiao
+ */
+export function updateFeedback (parameter) {
+  return axios({
+    url: api.feedback,
+    method: 'put',
+    data: parameter
+  })
+}
+/**
+ * 问题反馈分页
+ * created by fanjiao
+ */
+export function getFeedback (parameter) {
+  return axios({
+    url: api.feedback_page,
+    method: 'get',
+    params: parameter
+  })
+}
+/**
+ * 评论查看
+ * created by fanjiao
+ */
+export function getComment (parameter) {
+  return axios({
+    url: api.commentlist,
+    method: 'get',
+    params: parameter
+  })
+}
+/**
+ * 评论添加
+ * created by fanjiao
+ */
+export function addComment (parameter) {
+  return axios({
+    url: api.comment,
+    method: 'post',
+    data: parameter
+  })
+}
+/**
+ * 评论删除
+ * created by fanjiao
+ */
+export function delComment (parameter) {
+  return axios({
+    url: api.comment + '/' + parameter,
+    method: 'delete'
   })
 }

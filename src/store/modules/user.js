@@ -35,7 +35,7 @@ const user = {
 
   actions: {
     /**
-     * 登陆
+     * 登录
      * @param {Object} userInfo 用户信息
      */
     Login ({ commit }, userInfo) {
@@ -51,7 +51,7 @@ const user = {
       })
     },
     /**
-     * 获取登陆用户的详细信息
+     * 获取登录用户的详细信息
      */
     GetInfo ({ commit }) {
       return new Promise((resolve, reject) => {
@@ -84,7 +84,7 @@ const user = {
     },
 
     /**
-     * 退出登陆
+     * 退出登录
      */
     Logout ({ commit, state }) {
       return new Promise((resolve) => {
@@ -93,7 +93,7 @@ const user = {
         Vue.ls.remove(ACCESS_TOKEN)
 
         // 断开websocket连接
-        Vue.prototype.SocketGlobal.close(3400, '退出登陆')
+        Vue.prototype.SocketGlobal.close(3400, '退出登录')
 
         logout(state.token).then(() => {
           resolve()

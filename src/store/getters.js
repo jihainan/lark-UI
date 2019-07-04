@@ -17,16 +17,14 @@ const getters = {
   /** 用户名 */
   nickname: state => state.user.name,
   /** 用户密级 */
-  userSecretLevel: state => state.user.info.secretLevel,
+  userSecretLevel: state => parseInt(state.user.info.secretLevel),
 
   addRouters: state => state.permission.addRouters,
 
   /** websocket连接状态 */
   onlineState: state => state.talk.onlineState,
-  showSearchContent: state => state.talk.showSearchContent,
-  searchResultList: state => state.talk.searchResultList,
-  searchGroupResultList: state => state.talk.searchGroupResultList,
-  searchContactsResultList: state => state.talk.searchContactsResultList
+  groupList: state => state.talk.groupList,
+  contactsTree: state => state.talk.contactsTree
 }
 
 export default getters

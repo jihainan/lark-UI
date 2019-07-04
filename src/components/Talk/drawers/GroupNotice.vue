@@ -15,7 +15,6 @@
 </template>
 
 <script>
-// var time = this.getNowFormatDate()
 export default {
   name: 'GroupNotice',
   props: {

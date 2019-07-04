@@ -9,6 +9,7 @@
       :value="id"
       @change="onChange"
       style="width:100%"
+      :disabled="disabled"
     ></a-tree-select>
   </div>
 </template>
@@ -34,11 +35,20 @@ export default {
       this.id = this.values
     }
   },
+  watch: {
+    values: function (val) {
+      this.id = val
+    }
+  },
   props: {
     // 树选择器选中内容 非必填可传递
     values: {
       type: String,
       default: ''
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {
@@ -57,9 +67,9 @@ export default {
     /**
      * change事件
      */
-    onChange (value) {
+    onChange (value, label) {
       this.id = value
-      this.$emit('ok', value)
+      this.$emit('ok', value, label)
     }
   }
 }

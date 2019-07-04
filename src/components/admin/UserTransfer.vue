@@ -18,7 +18,7 @@
 -->
 <template>
   <a-row :gutter="10">
-    <a-col :span="6">
+    <a-col :span="7">
       <a-card title="组织信息" :bodyStyle="bodyStyle">
         <div style="overflow:scroll;height:350px">
           <a-tree
@@ -28,7 +28,7 @@
         </div>
       </a-card>
     </a-col>
-    <a-col :span="18">
+    <a-col :span="17">
       <a-spin :spinning="tLoading">
         <a-transfer
           :titles="['可选择人员', '已选择人员']"
@@ -219,7 +219,7 @@ export default {
      * 处理后台返回值 替换名字 id=>key label=>title
      */
     handleVal (value) {
-      let str = JSON.stringify(value)
+      let str = JSON.stringify(value[0].children[0].children)
       str = str.replace(/id/g, 'key').replace(/label/g, 'title')
       return JSON.parse(str)
     }

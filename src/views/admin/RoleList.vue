@@ -21,7 +21,7 @@
             <span class="table-page-search-submitButtons">
               <a-button type="primary" @click="searchRole">查询</a-button>
               <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
-              <a-button type="primary" style="margin-left: 30px" @click="handleAdd()">新增角色</a-button>
+              <a-button type="primary" style="margin-left: 30px" @click="handleAdd()" v-action:add>新增角色</a-button>
             </span>
           </a-col>
         </a-row>
@@ -55,9 +55,9 @@
       </div>
       -->
       <span slot="action" slot-scope="text, record">
-        <a @click="handleEdit(record)">编辑</a>
+        <a @click="handleEdit(record)" v-action:update>编辑</a>
         <a-divider type="vertical" />
-        <a @click="handlePermission(record)">权限</a>
+        <a @click="handlePermission(record)" v-action:update>权限</a>
         <a-divider type="vertical" />
         <a-dropdown>
           <a class="ant-dropdown-link">
@@ -66,13 +66,13 @@
           <a-menu slot="overlay">
             <a-menu-item>
               <!-- <a @click="rolesdisabled(record)">禁用</a> -->
-              <a @click="appointUsers(record)">指定用户</a>
+              <a @click="appointUsers(record)" v-action:update>指定用户</a>
             </a-menu-item>
             <a-menu-item>
               <a @click="rolesDetail(record)">详情</a>
             </a-menu-item>
             <a-menu-item>
-              <a @click="rolesDelete(record)">删除</a>
+              <a @click="rolesDelete(record)" v-action:delete>删除</a>
             </a-menu-item>
           </a-menu>
         </a-dropdown>

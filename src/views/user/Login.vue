@@ -18,7 +18,7 @@
             {rules: [{ required: true, message: '请输入用户名' }, { validator: handleUsernameOrEmail }], validateTrigger: 'change'}
           ]"
         >
-          <a-icon slot="prefix" type="user" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+          <a-icon slot="prefix" type="user" :style="{ color: 'rgba(0,0,0,.25)' }" />
         </a-input>
       </a-form-item>
 
@@ -33,7 +33,7 @@
             {rules: [{ required: true, message: '请输入密码' }], validateTrigger: 'blur'}
           ]"
         >
-          <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+          <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }" />
         </a-input>
       </a-form-item>
       <a-form-item style="margin-top:32px">
@@ -46,7 +46,7 @@
           class="login-button"
           :loading="state.loginBtn"
           :disabled="state.loginBtn"
-        >登陆</a-button>
+        >进入</a-button>
       </a-form-item>
     </a-form>
   </div>
@@ -57,7 +57,7 @@ import { mapActions } from 'vuex'
 import { timeFix } from '@/utils/util'
 
 export default {
-  data() {
+  data () {
     return {
       loginBtn: false,
       loginType: 0,
@@ -72,7 +72,7 @@ export default {
   methods: {
     ...mapActions(['Login', 'Logout']),
     // handler
-    handleUsernameOrEmail(rule, value, callback) {
+    handleUsernameOrEmail (rule, value, callback) {
       const { state } = this
       const regex = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/
       if (regex.test(value)) {
@@ -82,7 +82,7 @@ export default {
       }
       callback()
     },
-    handleSubmit(e) {
+    handleSubmit (e) {
       e.preventDefault()
       const {
         form: { validateFields },
@@ -109,7 +109,7 @@ export default {
         }
       })
     },
-    loginSuccess(res) {
+    loginSuccess (res) {
       this.$router.push({ path: '/dashboard/workplace' })
       this.$nextTick(() => {
         this.$notification.success({

@@ -29,7 +29,7 @@
               <span class="table-page-search-submitButtons">
                 <a-button type="primary" @click="search">查询</a-button>
                 <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
-                <a-button type="primary" style="margin-left: 30px" @click="openModal('1')">新增消息</a-button>
+                <a-button type="primary" style="margin-left: 30px" @click="openModal('1')" v-action:add>新增消息</a-button>
               </span>
             </a-col>
           </a-row>
@@ -45,11 +45,11 @@
         <span slot="action" slot-scope="text, record">
           <template>
             <a v-if="record.isSend==='0'">
-              <a @click="openModal('2', record)">修改</a>
+              <a @click="openModal('2', record)" v-action:update>修改</a>
               <a-divider type="vertical" />
-              <a @click="sendNotice(record)">发布</a>
+              <a @click="sendNotice(record)" v-action:update>发布</a>
               <a-divider type="vertical" />
-              <a @click="deleteNotice(record)">删除</a>
+              <a @click="deleteNotice(record)" v-action:delete>删除</a>
             </a>
           </template>
         </span>
@@ -209,14 +209,6 @@ export default {
       confirmLoading: false,
       orgCode: ''
     }
-  },
-  computed: {
-    userInfo () {
-      return this.$store.getters.userInfo
-    }
-  },
-  created () {
-    this.user = this.userInfo
   },
   methods: {
     /**
