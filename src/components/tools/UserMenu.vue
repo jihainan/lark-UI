@@ -3,11 +3,13 @@
     <!-- <span class="action" @click="messageFun">
       <a-icon type="message"/>
     </span> -->
-    <span class="action">
-      <router-link :to="{ name: 'Feedback' }">
+
+    <router-link :to="{ name: 'Feedback' }">
+      <span class="action">
         <a-icon type="question-circle-o"></a-icon>
-      </router-link>
-    </span>
+      </span>
+    </router-link>
+
     <header-notice class="action"/>
     <a-dropdown>
       <span class="action ant-dropdown-link user-dropdown-menu">

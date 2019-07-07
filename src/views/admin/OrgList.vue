@@ -12,23 +12,25 @@
                 <a-icon type="plus-circle" @click="addOrg" style="font-size:20px" theme="twoTone" v-action:add/>
               </a-col>
             </a-row>
-            <a-tree
-              @expand="onExpand"
-              :expandedKeys="expandedKeys"
-              :autoExpandParent="autoExpandParent"
-              :treeData="orgTree"
-              @select="selectOrg"
-              ref="orgtree"
-            >
-              <template slot="title" slot-scope="{title}">
-                <span v-if="title.indexOf(searchValue) > -1">
-                  {{ title.substr(0, title.indexOf(searchValue)) }}
-                  <span style="color: #f50">{{ searchValue }}</span>
-                  {{ title.substr(title.indexOf(searchValue) + searchValue.length) }}
-                </span>
-                <span v-else>{{ title }}</span>
-              </template>
-            </a-tree>
+            <div style="overflow:scroll;height:650px">
+              <a-tree
+                @expand="onExpand"
+                :expandedKeys="expandedKeys"
+                :autoExpandParent="autoExpandParent"
+                :treeData="orgTree"
+                @select="selectOrg"
+                ref="orgtree"
+              >
+                <template slot="title" slot-scope="{title}">
+                  <span v-if="title.indexOf(searchValue) > -1">
+                    {{ title.substr(0, title.indexOf(searchValue)) }}
+                    <span style="color: #f50">{{ searchValue }}</span>
+                    {{ title.substr(title.indexOf(searchValue) + searchValue.length) }}
+                  </span>
+                  <span v-else>{{ title }}</span>
+                </template>
+              </a-tree>
+            </div>
           </a-card>
         </a-col>
         <a-col :span="18" >

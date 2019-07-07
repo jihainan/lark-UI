@@ -38,25 +38,21 @@
             </a-form-item>
           </a-col>
           <a-col :md="8" :sm="24">
-            <span>
-              <a-row type="flex" justify="start">
-                <a-col :md="3">
-                  <a-button type="primary" @click="search">查询</a-button>
-                </a-col>
-                <a-col :md="3">
-                  <a-button @click="() => queryParam = {}">重置</a-button>
-                </a-col>
-                <a-col :md="3">
-                  <a-button type="primary" @click="handleAdd()">新增</a-button>
-                </a-col>
-                <a-col :md="3">
-                  <a-upload name="file" @change="uploadChange" :fileList="fileList" :customRequest="customRequest" :beforeUpload="beforeUpload">
-                    <a-button :loading="importLoading">
-                      <a-icon type="upload"/>批量导入
-                    </a-button>
-                  </a-upload>
-                </a-col>
-              </a-row>
+            <span class="table-page-search-submitButtons">
+              <a-button type="primary" @click="search">查询</a-button>
+              <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
+              <a-button style="margin-left: 8px" type="primary" @click="handleAdd()">新增</a-button>
+              <a-upload
+                style="margin-left: 8px"
+                name="file"
+                @change="uploadChange"
+                :fileList="fileList"
+                :customRequest="customRequest"
+                :beforeUpload="beforeUpload">
+                <a-button :loading="importLoading">
+                  <a-icon type="upload"/>批量导入
+                </a-button>
+              </a-upload>
             </span>
           </a-col>
         </a-row>

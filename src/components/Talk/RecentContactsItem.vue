@@ -26,7 +26,7 @@
 
     <div class="info">
       <p class="nickname">{{ contactsInfo.name }}</p>
-      <p class="msg">
+      <div class="msg">
         <span v-if="contactsInfo.atMe && contactsInfo.isGroup" class="at-me">[有人@我]</span>
         <!-- 群组被静音后提示未读消息条数 -->
         <span v-if="contactsInfo.isGroup && contactsInfo.isMute && contactsInfo.unreadNum">[{{ contactsInfo.unreadNum }}条]</span>
@@ -34,8 +34,8 @@
         <span v-if="contactsInfo.sender && contactsInfo.isGroup">{{ contactsInfo.sender }}:</span>
 
         <!-- 分类显示消息内容 -->
-        {{ lastMessage }}
-      </p>
+        <div v-html="lastMessage" class="msg-content"></div>
+      </div>
     </div>
 
   </div>
@@ -168,10 +168,16 @@ export default {
 
     .msg {
       margin: 0;
-      font-size: 14px;
+      font-size: 13px;
       color: rgb(140, 141, 143);
       overflow: hidden;
       text-overflow: ellipsis;
+      // TODO: 临时添加，需要修改
+      display: flex;
+      &-content {
+        display: flex;
+      }
+
       .at-me {
         color: red;
       }

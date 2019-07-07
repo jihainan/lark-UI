@@ -1,6 +1,7 @@
 <template>
   <a-modal
     v-model="visible"
+    style="top: 20px;"
     :maskClosable="false"
     :width="850"
     destroyOnClose

@@ -33,8 +33,8 @@
     "vue-scroll": "^2.1.9",
     "vue-svg-component-runtime": "^1.0.1",
     "vue-virtual-scroller": "^1.0.0-rc.2",
-    "vuex": "^3.1.0",
-    "watermark-div": "^0.1.9"
+    "vue-wysiwyg": "^1.7.2",
+    "vuex": "^3.1.0"
   },
   "devDependencies": {
     "@babel/polyfill": "^7.2.5",

@@ -12,7 +12,9 @@ const api = {
   feedback: '/portal/feedback',
   feedback_page: '/portal/feedback/page',
   comment: '/portal/comment',
-  commentlist: '/portal/comment/feedBackComments'
+  commentlist: '/portal/comment/feedBackComments',
+  // 公告/消息管理
+  getnoticepage: '/portal/notice/page'
 }
 
 export default api
@@ -140,5 +142,16 @@ export function delComment (parameter) {
   return axios({
     url: api.comment + '/' + parameter,
     method: 'delete'
+  })
+}
+/**
+ * 获取消息列表（分页）
+ */
+export function getNoticePage (parameter) {
+  return axios({
+    url: api.getnoticepage,
+    method: 'get',
+    params: parameter
+    // data: parameter
   })
 }

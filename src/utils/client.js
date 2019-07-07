@@ -23,6 +23,13 @@ export function maximizeWindow () {
   }
 }
 
+/** 窗口还原 */
+export function resizeWindow () {
+  if (isLarkClient()) {
+    window.JSInteraction.normal()
+  }
+}
+
 /**
  * 关闭窗口
  */
@@ -33,14 +40,14 @@ export function closeWindow () {
 }
 
 /**
- * 判断是否最大化
+ * 判断浏览器是否最大化（不合理的方法！！！）
  * 该方法仅在chrome浏览器上有效
  * @return Boolean
  */
 export function isFullScreen () {
   let explorer = window.navigator.userAgent.toLowerCase()
-  if (explorer.indexOf(chrome) > 0) {
-    return window.outerHeight === screen.availHeight && window.outerWidth === screen.availWidth
+  if (explorer.indexOf('chrome') > 0) {
+    return window.outerWidth >= screen.availWidth
   } else {
     // 非chrome浏览器，待处理
     return false

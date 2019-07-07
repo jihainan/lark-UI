@@ -3,12 +3,12 @@
     <div class="table-page-search-wrapper">
       <a-form layout="inline">
         <a-row :gutter="8" type="flex" justify="end">
-          <a-col :md="4" :sm="24">
+          <a-col :md="6" :sm="24">
             <a-form-item label="工具名称">
               <a-input placeholder="请输入" v-model="queryParam.title"/>
             </a-form-item>
           </a-col>
-          <a-col :md="4" :sm="24">
+          <a-col :md="6" :sm="24">
             <a-form-item label="状态">
               <a-select placeholder="请选择" v-model="queryParam.wordType">
                 <a-select-option value="1">正常</a-select-option>
@@ -16,7 +16,7 @@
               </a-select>
             </a-form-item>
           </a-col>
-          <a-col :md="3" :sm="24" :offset="1">
+          <a-col :md="6" :sm="24" :offset="1">
             <span class="table-page-search-submitButtons">
               <a-button type="primary" @click="search">查询</a-button>
               <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>

@@ -40,7 +40,7 @@ export default {
       loading: false,
       userList: [],
       listStyle: {
-        width: '190px', height: '450px'
+        width: '190px', height: '414px'
       }
     }
   },

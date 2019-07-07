@@ -3,22 +3,22 @@
     <a-card :bordered="false" v-show="feedbackCard">
       <div class="table-page-search-wrapper">
         <a-form layout="inline">
-          <a-row :gutter="8" type="flex" justify="end">
-            <a-col :md="4" :sm="24">
+          <a-row :gutter="6" type="flex" justify="end">
+            <a-col :md="6" :sm="24">
               <a-form-item label="标题">
-                <a-input v-model="queryParam.title"/>
+                <a-input v-model="queryParam.title" />
               </a-form-item>
             </a-col>
-            <a-col :md="8" :sm="24">
+            <a-col :md="12" :sm="24">
               <span>
                 <a-row type="flex" justify="start">
-                  <a-col :md="3" :offset="2">
+                  <a-col :md="4" :offset="6">
                     <a-button type="primary" @click="search">查询</a-button>
                   </a-col>
-                  <a-col :md="3">
+                  <a-col :md="4">
                     <a-button @click="() => queryParam = {}">重置</a-button>
                   </a-col>
-                  <a-col :md="3">
+                  <a-col :md="4">
                     <a-button type="primary" @click="openFbModal('add')">意见反馈</a-button>
                   </a-col>
                 </a-row>
@@ -53,21 +53,11 @@
         :destroyOnClose="true"
       >
         <a-form :form="editForm">
-          <a-form-item
-            :labelCol="labelCol"
-            :wrapperCol="wrapperCol"
-            label="标题"
-            hasFeedback
-          >
-            <a-input v-decorator="['title',{rules: [{ required: true, message: '请填写标题' }]}]"/>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="标题" hasFeedback>
+            <a-input v-decorator="['title',{rules: [{ required: true, message: '请填写标题' }]}]" />
           </a-form-item>
-          <a-form-item
-            :labelCol="labelCol"
-            :wrapperCol="wrapperCol"
-            label="内容"
-            hasFeedback
-          >
-            <a-textarea rows="4" v-decorator="['content']"/>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="内容" hasFeedback>
+            <a-textarea rows="4" v-decorator="['content']" />
           </a-form-item>
         </a-form>
       </a-modal>
@@ -75,33 +65,37 @@
     <a-card :bordered="false" v-show="commentCarcd" style="background-color: rgb(239, 239, 239);">
       <a-card style="padding: 20px;">
         <a-row>
-          <a-col :md="20"><a-icon type="exclamation-circle" /><span style="font-size: 20px;font-weight:bold;"> {{ fdRecord.title }}</span></a-col>
+          <a-col :md="20">
+            <a-icon type="exclamation-circle" />
+            <span style="font-size: 20px;font-weight:bold;">{{ fdRecord.title }}</span>
+          </a-col>
           <a-col :md="4">
             <a-button @click="returnFbPage">
-              <a-icon type="rollback"/>返回
+              <a-icon type="rollback" />返回
             </a-button>
           </a-col>
         </a-row>
-        <a-row><div style="height:15px"></div></a-row>
+        <a-row>
+          <div style="height:15px"></div>
+        </a-row>
         <a-row>
           <span style="margin-left:20px">{{ fdRecord.content }}</span>
         </a-row>
       </a-card>
       <a-card style="padding: 20px;">
         <span v-if="commentList.length === 0">暂时没有评论</span>
-          <a-comment v-for="comment in commentList" :key="comment.commentId">
-            <a-avatar
-              style="color: #f56a00; backgroundColor: #fde3cf"
-              slot="avatar"
-            >{{ fdRecord.crtName }}</a-avatar>
-            <span slot="content">{{ comment.content }}
+        <a-comment v-for="comment in commentList" :key="comment.commentId">
+          <a-avatar
+            style="color: #f56a00; backgroundColor: #fde3cf"
+            slot="avatar"
+          >{{ fdRecord.crtName }}</a-avatar>
+          <span slot="content">{{ comment.content }}</span>
+          <div v-if="fdRecord.crtUser===user.id">
+            <span slot="actions">
+              <a @click="deleteComment(comment)">删除</a>
             </span>
-            <div v-if="fdRecord.crtUser===user.id">
-              <span slot="actions">
-                <a @click="deleteComment(comment)">删除</a>
-              </span>
-            </div>
-          </a-comment>
+          </div>
+        </a-comment>
         <!-- <a-comment>
           <a-avatar
             style="color: #f56a00; backgroundColor: #fde3cf"
@@ -122,16 +116,12 @@
               </span>
             </div>
           </a-comment>
-        </a-comment> -->
-        
+        </a-comment>-->
       </a-card>
       <a-card style="padding: 20px;">
         <!-- 提交 -->
         <a-comment>
-          <a-avatar
-            style="color: #f56a00; backgroundColor: #fde3cf"
-            slot="avatar"
-          >{{ user.name }}</a-avatar>
+          <a-avatar style="color: #f56a00; backgroundColor: #fde3cf" slot="avatar">{{ user.name }}</a-avatar>
           <div slot="content">
             <a-form-item :wrapperCol="wrapperCol">
               <a-textarea :rows="4" v-model="commentValue" placeholder="评论"></a-textarea>
@@ -142,9 +132,7 @@
                 :loading="commentloading"
                 @click="submitComment"
                 type="primary"
-              >
-                提交
-              </a-button>
+              >提交</a-button>
             </a-form-item>
           </div>
         </a-comment>
@@ -154,7 +142,15 @@
 </template>
 <script>
 import { STable } from '@/components'
-import { getFeedback, addFeedback, delFeedback, updateFeedback, getComment, addComment, delComment } from '@/api/workplace'
+import {
+  getFeedback,
+  addFeedback,
+  delFeedback,
+  updateFeedback,
+  getComment,
+  addComment,
+  delComment
+} from '@/api/workplace'
 export default {
   name: 'Feedbacklist',
   components: {
@@ -207,10 +203,9 @@ export default {
       ],
       // 加载数据方法 必须为 Promise 对象
       loadData: parameter => {
-        return getFeedback(parameter)
-          .then(res => {
-            return res.result
-          })
+        return getFeedback(parameter).then(res => {
+          return res.result
+        })
       },
       // 单条意见反馈信息
       fdRecord: {},
@@ -248,7 +243,9 @@ export default {
       this.bindForm(type, record)
       this.editVisible = true
       this.type = type
-      this.id = record.id
+      if (record) {
+        this.id = record.id
+      }
     },
     /**
      * 绑定表单值
@@ -278,42 +275,48 @@ export default {
         if (!err) {
           this.confirmLoading = true
           if (this.type === 'add') {
-            addFeedback(values).then(res => {
-              if (res.status === 200) {
-                this.$notification['success']({
-                  message: '操作成功',
-                  duration: 2
-                })
-                this.editVisible = false
-                this.search()
-              }
-            }).catch(() =>
-              this.$notification['error']({
-                message: '出现异常，请联系系统管理员',
-                duration: 4
+            addFeedback(values)
+              .then(res => {
+                if (res.status === 200) {
+                  this.$notification['success']({
+                    message: '操作成功',
+                    duration: 2
+                  })
+                  this.editVisible = false
+                  this.search()
+                }
               })
-            ).finally(() => {
-              this.confirmLoading = false
-            })
+              .catch(() =>
+                this.$notification['error']({
+                  message: '出现异常，请联系系统管理员',
+                  duration: 4
+                })
+              )
+              .finally(() => {
+                this.confirmLoading = false
+              })
           } else {
             values.id = this.id
-            updateFeedback(values).then(res => {
-              if (res.status === 200) {
-                this.$notification['success']({
-                  message: '操作成功',
-                  duration: 2
-                })
-                this.editVisible = false
-                this.search()
-              }
-            }).catch(() =>
-              this.$notification['error']({
-                message: '出现异常，请联系系统管理员',
-                duration: 4
+            updateFeedback(values)
+              .then(res => {
+                if (res.status === 200) {
+                  this.$notification['success']({
+                    message: '操作成功',
+                    duration: 2
+                  })
+                  this.editVisible = false
+                  this.search()
+                }
               })
-            ).finally(() => {
-              this.confirmLoading = false
-            })
+              .catch(() =>
+                this.$notification['error']({
+                  message: '出现异常，请联系系统管理员',
+                  duration: 4
+                })
+              )
+              .finally(() => {
+                this.confirmLoading = false
+              })
           }
         }
       })
@@ -331,10 +334,8 @@ export default {
         cancelText: '取消',
         onOk () {
           // 在这里调用删除接口
-          return delFeedback(
-            record.id
-          ).then(
-            res => {
+          return delFeedback(record.id)
+            .then(res => {
               if (res.status === 200) {
                 _this.$notification['success']({
                   message: '删除成功',
@@ -347,13 +348,13 @@ export default {
                   duration: 4
                 })
               }
-            }
-          ).catch(() =>
-            _this.$notification['error']({
-              message: '出现异常，请联系系统管理员',
-              duration: 4
             })
-          )
+            .catch(() =>
+              _this.$notification['error']({
+                message: '出现异常，请联系系统管理员',
+                duration: 4
+              })
+            )
         },
         onCancel: () => {
           this.$notification['info']({
@@ -394,22 +395,24 @@ export default {
     submitComment () {
       if (this.commentValue) {
         this.commentloading = true
-        addComment({ 'feedbackId': this.feedBackId, 'content': this.commentValue }).then(res => {
-          if (res.status === 200) {
-            this.$notification['success']({
-              message: '操作成功',
-              duration: 2
-            })
-            this.commentloading = false
-            this.commentValue = ''
-            this.getCommentsById()
-          }
-        }).catch(() =>
-          this.$notification['error']({
-            message: '出现异常，请联系系统管理员',
-            duration: 4
+        addComment({ feedbackId: this.feedBackId, content: this.commentValue })
+          .then(res => {
+            if (res.status === 200) {
+              this.$notification['success']({
+                message: '操作成功',
+                duration: 2
+              })
+              this.commentloading = false
+              this.commentValue = ''
+              this.getCommentsById()
+            }
           })
-        )
+          .catch(() =>
+            this.$notification['error']({
+              message: '出现异常，请联系系统管理员',
+              duration: 4
+            })
+          )
       }
     },
     /**
@@ -425,10 +428,8 @@ export default {
         cancelText: '取消',
         onOk () {
           // 在这里调用删除接口
-          return delComment(
-            record.id
-          ).then(
-            res => {
+          return delComment(record.id)
+            .then(res => {
               if (res.status === 200) {
                 _this.$notification['success']({
                   message: '删除成功',
@@ -441,13 +442,13 @@ export default {
                   duration: 4
                 })
               }
-            }
-          ).catch(() =>
-            _this.$notification['error']({
-              message: '出现异常，请联系系统管理员',
-              duration: 4
             })
-          )
+            .catch(() =>
+              _this.$notification['error']({
+                message: '出现异常，请联系系统管理员',
+                duration: 4
+              })
+            )
         },
         onCancel: () => {
           this.$notification['info']({

@@ -1,21 +1,20 @@
 <template>
-  <div v-if="isLarkClient" class="option-wrapper">
-    <a-tooltip title="最小化" :mouseLeaveDelay="0">
+  <div v-if="isLarkClient()" class="option-wrapper">
+    <a-tooltip title="收起" :mouseLeaveDelay="0">
       <span class="action" @click="handleOption('mini')">
         <a-icon class="window-option-btn" type="minus" />
       </span>
     </a-tooltip>
-    <!-- <a-tooltip :title="isFullScreen ? '向下还原' : '最大化'" :mouseLeaveDelay="0"> -->
-    <a-tooltip title="最大化" :mouseLeaveDelay="0">
-      <span class="action" @click="handleOption('max')">
-        <a-icon class="window-option-btn" type="plus" />
+    <a-tooltip title="切换" :mouseLeaveDelay="0">
+      <span class="action" @click="handleOption('resize')">
+        <a-icon class="window-option-btn" type="swap" />
       </span>
     </a-tooltip>
-    <a-tooltip title="关闭" :mouseLeaveDelay="0">
+    <!-- <a-tooltip title="关闭" :mouseLeaveDelay="0">
       <span class="action" @click="handleOption('close')">
         <a-icon class="window-option-btn" type="close" />
       </span>
-    </a-tooltip>
+    </a-tooltip> -->
   </div>
 </template>
 
@@ -25,6 +24,7 @@ import {
   minimizeWindow,
   closeWindow,
   maximizeWindow,
+  resizeWindow,
   isFullScreen } from '@/utils/client'
 import { mixinDevice } from '@/utils/mixin.js'
 
@@ -34,22 +34,21 @@ export default {
   data () {
     return {}
   },
-  computed: {
-    isFullScreen () {
-      return isFullScreen()
-    },
+  methods: {
     isLarkClient () {
       return isLarkClient()
-    }
-  },
-  methods: {
+    },
     handleOption (option) {
       switch (option) {
         case 'mini':
           minimizeWindow()
           break
-        case 'max':
-          maximizeWindow()
+        case 'resize':
+          if (isFullScreen()) {
+            resizeWindow()
+          } else {
+            maximizeWindow()
+          }
           break
         case 'close':
           closeWindow()

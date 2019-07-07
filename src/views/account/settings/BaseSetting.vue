@@ -25,7 +25,7 @@
                 <a-select-option :value="3">休假中</a-select-option>
               </a-select>
             </a-form-item> -->
-            <a-input v-decorator="['oTel']" />
+            <a-input v-decorator="['otel']" />
           </a-form-item>
           <a-form-item label="描述">
             <a-textarea rows="4" v-decorator="['description']" />
@@ -95,7 +95,7 @@ export default {
           this.user = Object.assign({}, res.result)
           this.$nextTick(() => {
             // 表单中绑定信息项
-            this.form.setFieldsValue(pick(res.result, 'name', 'telephone'))
+            this.form.setFieldsValue(pick(res.result, 'name', 'otel', 'description'))
             if (this.user.avatar) {
               this.imageUrl = FILE_SERVER_IP + this.user.avatar
             } else {
@@ -217,6 +217,7 @@ export default {
     saveInfo (values) {
       values.id = this.user.id
       values.pid = this.user.pid
+      values.name = this.user.name
       updateuser(values)
         .then(res => {
           if (res.status === 200) {

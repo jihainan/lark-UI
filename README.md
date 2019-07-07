@@ -44,3 +44,25 @@
                             src\api\workplace.js
                             src\components\tools\UserMenu.vue
                             src\config\router.config.js
+20190704 push by fanjiao:filepath--【修改bug：23.联系方式/描述保存不生效】
+                            src\views\account\settings\BaseSetting.vue
+20190704 push by fanjiao:filepath--【修改bug：21.用户管理界面按钮重叠 】
+                            src\views\admin\CommonTools.vue
+                            src\views\admin\NotificationList.vue
+                            src\views\admin\DictWord.vue
+                            src\views\admin\OrgList.vue
+                            src\views\admin\UserList.vue
+20190704 push by fanjiao:filepath--【修改bug：26.普通用户进入消息列表白屏 】                            
+                            src\config\router.config.js
+20190704 push by fanjiao:filepath--【修改bug：24.卡片设置界面无滚动条 】  
+                            src\views\account\settings\Workplace.vue
+                            src\views\admin\OrgList.vue
+20190704 push by fanjiao:filepath--【修改bug：常用链接没有用 】                              
+                            src\views\dashboard\Workplace.vue
+20190705 push by fanjiao:filepath--【上传头像成功后修改用户信息添加用户姓名，接口统一需要】                              
+                            src\views\account\settings\BaseSetting.vue
+20190705 push by fanjiao:filepath--【普通用户查看消息与管理员管理消息功能拆开】
+                            src\components\tools\HeaderNotice.vue
+                            src\views\dashboard\NotificationList.vue
+                            src\api\workplace.js
+                            src\config\router.config.js

@@ -15,7 +15,7 @@
           <div class="table-page-search-wrapper">
             <a-form layout="inline">
               <a-row :gutter="8">
-                <a-col :span="6">
+                <a-col :md="7" :sm="24">
                   <a-form-item label="姓名">
                     <a-input v-model="queryParam.name"/>
                   </a-form-item>
@@ -28,7 +28,7 @@
                     </a-select>
                   </a-form-item>
                 </a-col> -->
-                <a-col :span="6">
+                <a-col :md="7" :sm="24">
                   <a-form-item label="密级">
                     <a-select placeholder="请选择" v-model="queryParam.secretLevel">
                       <a-select-option value="30">非密</a-select-option>
@@ -41,19 +41,26 @@
                     </a-select>
                   </a-form-item>
                 </a-col>
-                <a-col :span="6">
+                <a-col :md="10" :sm="24">
+                  <span class="table-page-search-submitButtons">
+                    <a-button type="primary" @click="searchUser">查询</a-button>
+                    <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
+                    <a-button style="margin-left: 30px" type="primary" @click="openEditModal('','1')" v-action:add>新增用户</a-button>
+                  </span>
+                </a-col>
+                <!-- <a-col>
                   <a-row type="flex" justify="end">
-                    <a-col :span="5">
+                    <a-col>
                       <a-button type="primary" @click="searchUser">查询</a-button>
                     </a-col>
-                    <a-col :span="5">
+                    <a-col>
                       <a-button @click="() => queryParam = {}">重置</a-button>
                     </a-col>
-                    <a-col :span="5">
+                    <a-col>
                       <a-button type="primary" @click="openEditModal('','1')" v-action:add>新增用户</a-button>
                     </a-col>
                   </a-row>
-                </a-col>
+                </a-col> -->
               </a-row>
               <a-row>
                 <s-table

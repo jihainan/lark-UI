@@ -9,29 +9,25 @@
     :overlayStyle="{ width: '300px', top: '50px' }">
     <template slot="content">
       <a-spin :spinning="loadding">
-        <a-list>
+        <a-list style="margin-left:20px">
           <a-list-item v-for="msg in msglist.slice(0,6)" :key="msg.id">
-            <router-link :to="{ name: 'MsgList' }">
-              <!-- TODO 接口暂未提供发布时间 -->
-              <!-- <a-list-item-meta :description="msg.date|timeFormat" :title="msg.title"> -->
-              <a-list-item-meta :title="msg.title">
-                <a-avatar style="background-color: white" slot="avatar" :src="getImgPath(msg.type)"/>
-              </a-list-item-meta>
-            </router-link>
-          </a-list-item>
-          <a-list-item key="item-all" style="margin-left:45px;margin-top:10px">
-            <router-link :to="{ name: 'MsgList' }">
-              <a-list-item-meta title="查看全部" @click="visible = false">
+            <router-link :to="{ name: 'myNotice' }">
+              <a-list-item-meta :title="msg.title" @click="visible = false">
               </a-list-item-meta>
             </router-link>
           </a-list-item>
         </a-list>
+        <span style="margin-left:60px;font-weight:bold">
+          <router-link :to="{ name: 'myNotice' }">
+            查看全部
+          </router-link>
+        </span>
       </a-spin>
     </template>
     <span @click="fetchNotice" class="header-notice">
-      <a-badge :count="msgNum">
-        <a-icon style="font-size: 16px; padding: 4px" type="bell" />
-      </a-badge>
+      <a-icon style="font-size: 16px; padding: 4px" type="bell" />
+      <!-- <a-badge :count="msgNum">
+      </a-badge> -->
     </span>
   </a-popover>
 </template>
@@ -70,16 +66,6 @@ export default {
         this.loadding = false
       }
       this.visible = !this.visible
-    },
-    /**
-     * 根据消息类型获取消息图标
-     */
-    getImgPath (item) {
-      if (item === 'admin') {
-        return '/tools/Icon-msg-admin.png'
-      } else {
-        return '/tools/Icon-msg-sys.png'
-      }
     }
   }
 }
