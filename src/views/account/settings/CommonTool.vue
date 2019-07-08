@@ -6,11 +6,11 @@
       title="工具列表">
 
       <div slot="extra">
-        <a-radio-group>
+        <!-- <a-radio-group>
           <a-radio-button>全部</a-radio-button>
           <a-radio-button>已选</a-radio-button>
           <a-radio-button>未选</a-radio-button>
-        </a-radio-group>
+        </a-radio-group> -->
         <a-input-search style="margin-left: 16px; width: 272px;" />
       </div>
 

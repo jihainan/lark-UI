@@ -4,12 +4,12 @@
       <div class="table-page-search-wrapper">
         <a-form layout="inline">
           <a-row :gutter="32" type="flex" justify="end">
-            <a-col :span="4">
+            <a-col :md="6" :sm="24">
               <a-form-item label="标题">
                 <a-input v-model="queryParam.title"/>
               </a-form-item>
             </a-col>
-            <a-col :span="4">
+            <a-col :md="6" :sm="24">
               <a-form-item label="消息类型">
                 <a-select placeholder="请选择" v-model="queryParam.type">
                   <a-select-option value="admin">管理员公告</a-select-option>
@@ -17,7 +17,7 @@
                 </a-select>
               </a-form-item>
             </a-col>
-            <a-col :span="4">
+            <a-col :md="6" :sm="24">
               <a-form-item label="发布状态">
                 <a-select placeholder="请选择" v-model="queryParam.isSend">
                   <a-select-option value="0">未发布</a-select-option>
@@ -25,11 +25,11 @@
                 </a-select>
               </a-form-item>
             </a-col>
-            <a-col :span="6">
+            <a-col :md="6" :sm="24">
               <span class="table-page-search-submitButtons">
                 <a-button type="primary" @click="search">查询</a-button>
                 <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
-                <a-button type="primary" style="margin-left: 30px" @click="openModal('1')">新增消息</a-button>
+                <a-button type="primary" style="margin-left: 30px" @click="openModal('1')" v-action:add>新增消息</a-button>
               </span>
             </a-col>
           </a-row>
@@ -45,11 +45,11 @@
         <span slot="action" slot-scope="text, record">
           <template>
             <a v-if="record.isSend==='0'">
-              <a @click="openModal('2', record)">修改</a>
+              <a @click="openModal('2', record)" v-action:update>修改</a>
               <a-divider type="vertical" />
-              <a @click="sendNotice(record)">发布</a>
+              <a @click="sendNotice(record)" v-action:update>发布</a>
               <a-divider type="vertical" />
-              <a @click="deleteNotice(record)">删除</a>
+              <a @click="deleteNotice(record)" v-action:delete>删除</a>
             </a>
           </template>
         </span>

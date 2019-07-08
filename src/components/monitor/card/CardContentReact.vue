@@ -2,16 +2,15 @@
   <div>
     <div v-if="listData.length!=0" class="card-content">
       <a-list
+        itemLayout="horizontal"
         :bordered="bordered"
-        :dataSource="listData.slice(0, 8)"
+        :dataSource="listData.slice(0, 6)"
         class="card-list"
       >
         <a-list-item style="padding: 3px 21px 3px 21px" slot="renderItem" slot-scope="item">
-          <a-list-item-meta v-if="item.msgType==='1'">
-            <div slot="title">{{ item.msgSender+'：'+item.msg }}</div>
-            <a-avatar slot="avatar" :src="fileurl+''+item.avatar">
-              <span>{{ item.msgSender }}</span>
-            </a-avatar>
+          <a-list-item-meta v-if="item.msgType==='1'" :description="item.msg">
+            <a slot="title" href="#">{{ item.msgSender }}</a>
+            <a-avatar slot="avatar" :src="fileurl+''+item.avatar" />
           </a-list-item-meta>
           <div v-if="item.msgType==='1'">{{ item.sendTime|timeFormat }}</div>
         </a-list-item>
@@ -43,19 +42,25 @@ export default {
     }
   },
   filters: { timeFormat: toWeiXinString },
-  mounted () {
-  }
+  mounted () {}
 }
 </script>
 <style lang="less" scoped>
-    .card-list{
-      .ant-list-item{
-        cursor: pointer;
-        transition: background-color 218ms;
-        border-bottom: 0px solid #e8e8e8;
-      }
-      .ant-list-item:hover{
-        background-color: #f5f5f5;
-      }
-    }
+.card-list {
+  .ant-list-item {
+    cursor: pointer;
+    transition: background-color 218ms;
+    border-bottom: 0px solid #e8e8e8;
+  }
+  .ant-list-item:hover {
+    background-color: #f5f5f5;
+  }
+}
+.ant-list-item-meta-description {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
 </style>

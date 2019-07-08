@@ -13,12 +13,20 @@
           </a-col>
           <a-col :md="4" :sm="24">
             <a-form-item label="词汇名称">
-              <a-input placeholder="请输入" v-model="queryParam.wordName"/>
+              <a-input v-model="queryParam.wordName"/>
             </a-form-item>
           </a-col>
-          <a-col :md="4" :sm="24">
+          <a-col :md="4" :sm="24" v-show="queryParam.wordType === '2'">
             <a-form-item label="替换词汇">
-              <a-input placeholder="请输入" v-model="queryParam.replaceName"/>
+              <a-input v-model="queryParam.replaceWord"/>
+            </a-form-item>
+          </a-col>
+          <a-col :md="4" :sm="24" v-show="queryParam.wordType === '1'">
+            <a-form-item label="密级">
+              <a-select v-model="queryParam.wordCode">
+                <a-select-option value="40">秘密</a-select-option>
+                <a-select-option value="60">机密</a-select-option>
+              </a-select>
             </a-form-item>
           </a-col>
           <a-col :md="4" :sm="24">
@@ -29,26 +37,22 @@
               </a-select>
             </a-form-item>
           </a-col>
-          <a-col :md="6" :sm="24" :offset="1">
+          <a-col :md="8" :sm="24">
             <span class="table-page-search-submitButtons">
-              <a-row>
-                <a-col :md="4">
-                  <a-button type="primary" @click="search">查询</a-button>
-                </a-col>
-                <a-col :md="4">
-                  <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
-                </a-col>
-                <a-col :md="7">
-                  <a-button type="primary" style="margin-left: 30px" @click="handleAdd()">新增</a-button>
-                </a-col>
-                <a-col :md="9">
-                  <a-upload name="file" @change="uploadChange" :fileList="fileList" :customRequest="customRequest" :beforeUpload="beforeUpload">
-                    <a-button>
-                      <a-icon type="upload" />批量导入
-                    </a-button>
-                  </a-upload>
-                </a-col>
-              </a-row>
+              <a-button type="primary" @click="search">查询</a-button>
+              <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
+              <a-button style="margin-left: 8px" type="primary" @click="handleAdd()">新增</a-button>
+              <a-upload
+                style="margin-left: 8px"
+                name="file"
+                @change="uploadChange"
+                :fileList="fileList"
+                :customRequest="customRequest"
+                :beforeUpload="beforeUpload">
+                <a-button :loading="importLoading">
+                  <a-icon type="upload"/>批量导入
+                </a-button>
+              </a-upload>
             </span>
           </a-col>
         </a-row>
@@ -88,22 +92,16 @@
       v-model="editVisible"
       @ok="handleEditOk"
       :confirmLoading="confirmLoading"
+      :destroyOnClose="true"
     >
       <a-form :form="editForm">
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="词汇编码"
-        >
-          <a-input :disabled="true" v-decorator="['wordCode']"/>
-        </a-form-item>
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
           label="词汇类型"
           hasFeedback
         >
-          <a-select v-decorator="['wordType',{rules: [{ required: true, message: '请填写词汇类型' }]}]" :disabled="inDetail" @change="typeChange">
+          <a-select v-decorator="['wordType',{rules: [{ required: true, message: '请填写词汇类型' }]}]" :disabled="inDetail" @change="editTypeChange">
             <a-select-option value="1">涉密</a-select-option>
             <a-select-option value="2">敏感</a-select-option>
           </a-select>
@@ -121,45 +119,21 @@
           :wrapperCol="wrapperCol"
           label="替换词汇"
           hasFeedback
-          v-if="type==='2'"
+          v-if="editType==='2'"
         >
           <a-input v-decorator="['replaceWord',{rules: [{ required: true, message: '请填写替换词汇' }]}]" :disabled="inDetail"/>
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
-          label="创建人"
+          label="密级"
           hasFeedback
-          v-if="inDetail"
+          v-if="editType==='1'"
         >
-          <a-input v-decorator="['crtUser']" :disabled="inDetail"/>
-        </a-form-item>
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="创建时间"
-          hasFeedback
-          v-if="inDetail"
-        >
-          <a-input v-decorator="['crtTime']" :disabled="inDetail"/>
-        </a-form-item>
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="修改人"
-          hasFeedback
-          v-if="inDetail"
-        >
-          <a-input v-decorator="['updUser']" :disabled="inDetail"/>
-        </a-form-item>
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="修改时间"
-          hasFeedback
-          v-if="inDetail"
-        >
-          <a-input v-decorator="['updTime']" :disabled="inDetail"/>
+          <a-select v-decorator="['wordCode',{rules: [{ required: true, message: '请选择密级' }]}]" :disabled="inDetail">
+            <a-select-option value="40">秘密</a-select-option>
+            <a-select-option value="60">机密</a-select-option>
+          </a-select>
         </a-form-item>
       </a-form>
     </a-modal>
@@ -196,12 +170,28 @@ export default {
       // 表头
       columns: [
         {
-          title: '词汇编码',
-          dataIndex: 'wordCode'
+          title: '词汇类型',
+          dataIndex: 'wordType',
+          key: 'wordType',
+          customRender: function (wordType) {
+            const config = {
+              '1': '涉密',
+              '2': '敏感'
+            }
+            return config[wordType]
+          }
         },
         {
-          title: '词汇类型',
-          dataIndex: 'wordType'
+          title: '密级',
+          dataIndex: 'wordCode',
+          key: 'wordCode',
+          customRender: function (wordCode) {
+            const config = {
+              '40': '秘密',
+              '60': '机密'
+            }
+            return config[wordCode]
+          }
         },
         {
           title: '词汇名称',
@@ -226,8 +216,10 @@ export default {
           })
       },
       confirmLoading: false,
+      importLoading: false,
       id: '',
-      fileList: []
+      fileList: [],
+      editType: ''
     }
   },
   created () {
@@ -237,6 +229,11 @@ export default {
      * 搜索
      */
     search () {
+      if (this.queryParam.wordType === '1') {
+        delete this.queryParam.replaceWord
+      } else if (this.queryParam.wordType === '2') {
+        delete this.queryParam.wordCode
+      }
       this.$refs.stable.loadData({}, this.queryParam, {})
     },
     /**
@@ -253,6 +250,7 @@ export default {
      */
     handleStatus (record, isUse) {
       this.confirmLoading = true
+      record.isUse = isUse
       updateWord(record).then(
         res => {
           this.handleResult(res)
@@ -287,12 +285,12 @@ export default {
       _this.confirmLoading = true
       this.$confirm({
         title: '警告',
-        content: `确认要删除 ${record.name} 的信息吗?`,
+        content: `确认要删除 ${record.wordName} 吗?`,
         okText: '确认',
         okType: 'danger',
         cancelText: '取消',
         onOk () {
-          delWord(record.id).then(
+          delWord({ 'id': record.id }).then(
             res => {
               _this.handleResult(res)
             }
@@ -328,6 +326,7 @@ export default {
               this.handleCatch(err)
             )
           } else if (this.inEdit) {
+            values.id = this.id
             updateWord(values).then(
               res => {
                 this.handleResult(res)
@@ -348,13 +347,26 @@ export default {
       } else {
         this.wordType = ''
       }
-      setTimeout(() => {
-        this.editForm.setFieldsValue({
-          wordType: '',
-          wordName: '',
-          replaceWord: ''
-        })
-      }, 0)
+      if (this.inAdd) {
+        setTimeout(() => {
+          this.editForm.setFieldsValue({
+            wordCode: '',
+            wordType: '',
+            wordName: '',
+            replaceWord: ''
+          })
+        }, 0)
+      } else {
+        this.editType = record.wordType
+        setTimeout(() => {
+          this.editForm.setFieldsValue({
+            wordCode: record.wordCode,
+            wordType: record.wordType,
+            wordName: record.wordName,
+            replaceWord: record.replaceWord
+          })
+        }, 0)
+      }
       this.editVisible = true
     },
     /**
@@ -364,25 +376,34 @@ export default {
       this.type = value
     },
     /**
+    * 编辑页词汇类型变化
+    */
+    editTypeChange (value) {
+      this.editType = value
+    },
+    /**
      * 请求接口后返回的结果
      */
     handleResult (res) {
       if (res.status === 200) {
-        this.$notification['success']({
-          message: '操作成功',
-          duration: 2
-        })
-        // 关闭编辑框
-        this.editVisible = false
-        // 刷新列表
-        this.$refs.stable.refresh(true)
-      } else {
-        this.$notification['error']({
-          message: res.message,
-          duration: 4
-        })
+        if (res.message === '200') {
+          this.$notification['success']({
+            message: '操作成功',
+            duration: 2
+          })
+          // 关闭编辑框
+          this.editVisible = false
+          // 刷新列表
+          this.$refs.stable.refresh(true)
+        } else {
+          this.$notification['error']({
+            message: res.result,
+            duration: 4
+          })
+        }
       }
       this.confirmLoading = false
+      this.importLoading = false
     },
     /**
      * 请求接口发生异常
@@ -401,14 +422,13 @@ export default {
       this.fileList = []
       this.filename = info.file.name
       if (info.file.status === 'uploading') {
-        this.loading = true
+        this.importLoading = true
         return
       }
       if (info.file.status === 'done') {
-        this.loading = false
+        this.importLoading = false
       }
     },
-
     /**
      * 重写上传action方法
      */
@@ -416,23 +436,21 @@ export default {
       const formData = new FormData()
       formData.append('file', data.file)
       data.onProgress()
-      importWords(formData).then(res => {
-        if (res.status === 200) {
-          // const imageUrl = res.result
-          // vue-cropper插件img绑定url时，会有跨域问题，图片类型转base64传递到子组件
-          this.getBase64(data.file, (imageUrl) => {
-            this.$refs.modal.edit(imageUrl)
-          })
+      this.importLoading = true
+      importWords(formData).then(
+        res => {
+          this.handleResult(res)
         }
-      })
+      ).catch((err) =>
+        this.handleCatch(err)
+      )
     },
     /**
      * 上传前文件类型及尺寸的校验
      */
     beforeUpload (file) {
       // 校验上传文件类型
-      console.log('file.type', file.type)
-      const isExcel = file.type === 'excel'
+      const isExcel = this.checkFileType(file.name)
       if (!isExcel) {
         this.$notification['error']({
           message: '请上传Excel文件',
@@ -448,6 +466,14 @@ export default {
         })
       }
       return isExcel && isLt10M
+    },
+    checkFileType (name) {
+      const type = name.substr(name.indexOf('.') + 1)
+      if (type === 'xls' || type === 'xlsx') {
+        return true
+      } else {
+        return false
+      }
     }
   }
 }

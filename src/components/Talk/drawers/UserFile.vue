@@ -48,7 +48,6 @@ export default {
   watch: {
     activeOption (newValue) {
       if (newValue === 'userFile') {
-        console.log('在这里加载数据')
       }
     }
   },

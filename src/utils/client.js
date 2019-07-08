@@ -1,4 +1,5 @@
 /* eslint-disable */
+import { MESSAGE_TYPE } from '@/utils/constants'
 
 /**
  * 适配云雀客户端的方法
@@ -23,9 +24,14 @@ export function maximizeWindow () {
   }
 }
 
-/**
- * 关闭窗口
- */
+/** 窗口还原 */
+export function resizeWindow () {
+  if (isLarkClient()) {
+    window.JSInteraction.normal()
+  }
+}
+
+/** 关闭窗口 */
 export function closeWindow () {
   if (isLarkClient()) {
     window.JSInteraction.min()
@@ -33,14 +39,35 @@ export function closeWindow () {
 }
 
 /**
- * 判断是否最大化
+ * 客户端新消息提醒
+ * @param {Tweet} message 新消息
+ */
+export function messagePopup (message) {
+  if (isLarkClient()) {
+    const info = parseInfo(message)
+    window.JSInteraction.showmessage(info)
+  }
+}
+
+/** 解析新消息，生成用户客户端提醒的消息内容
+ * @param {Tweet} message 新消息
+ */
+function parseInfo (message) {
+  let info = message.username + ':'
+  const { type, title } = message
+  info = info + MESSAGE_TYPE.get(type || 1) + (title || '')
+  return info
+}
+
+/**
+ * 判断浏览器是否最大化（不合理的方法！！！）
  * 该方法仅在chrome浏览器上有效
  * @return Boolean
  */
 export function isFullScreen () {
   let explorer = window.navigator.userAgent.toLowerCase()
-  if (explorer.indexOf(chrome) > 0) {
-    return window.outerHeight === screen.availHeight && window.outerWidth === screen.availWidth
+  if (explorer.indexOf('chrome') > 0) {
+    return window.outerWidth >= screen.availWidth
   } else {
     // 非chrome浏览器，待处理
     return false

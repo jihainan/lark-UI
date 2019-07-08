@@ -53,7 +53,6 @@ export default {
   watch: {
     activeOption (newValue) {
       if (newValue === 'markMessage') {
-        console.log('在这里加载数据')
       }
     }
   },

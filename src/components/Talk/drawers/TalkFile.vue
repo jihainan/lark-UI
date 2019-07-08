@@ -43,7 +43,6 @@ export default {
   watch: {
     activeOption (newValue) {
       if (newValue === 'talkFile') {
-        console.log('在这里加载数据')
       }
     }
   },

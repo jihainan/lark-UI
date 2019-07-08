@@ -39,9 +39,11 @@ const api = {
   // 网关日志
   gatelog: '/admin/gateLog/page',
   // 敏感词
-  getwordpage: '',
-  dicword: '',
-  importWords: '',
+  getwordpage: '/chat/zzDictionaryWords/query',
+  dicword_add: '/chat/zzDictionaryWords/create',
+  dicword_update: '/chat/zzDictionaryWords/update',
+  dicword_delete: '/chat/zzDictionaryWords/delete',
+  importWords: '/chat/zzDictionaryWords/importDictionaryWords',
   // 常用工具
   gettoolpage: '/portal/commonTools/page',
   commontools: '/portal/commonTools',
@@ -432,7 +434,7 @@ export function getGateLog (parameter) {
 export function getWordList (parameter) {
   return axios({
     url: api.getwordpage,
-    method: 'get',
+    method: 'post',
     params: parameter
   })
 }
@@ -441,7 +443,7 @@ export function getWordList (parameter) {
  */
 export function delWord (parameter) {
   return axios({
-    url: api.dicword,
+    url: api.dicword_delete,
     method: 'delete',
     params: parameter
   })
@@ -451,9 +453,9 @@ export function delWord (parameter) {
  */
 export function updateWord (parameter) {
   return axios({
-    url: api.dicword,
+    url: api.dicword_update,
     method: 'put',
-    data: parameter
+    params: parameter
   })
 }
 /**
@@ -461,9 +463,9 @@ export function updateWord (parameter) {
  */
 export function addWord (parameter) {
   return axios({
-    url: api.dicword,
+    url: api.dicword_add,
     method: 'post',
-    data: parameter
+    params: parameter
   })
 }
 /**

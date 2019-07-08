@@ -1,28 +1,30 @@
 <template>
   <div>
     <ul class="faces">
-      <li v-for="item in faceList" :key="item">
-        <img :src="faceMap[item]" @click="insertFace(item)"/>
+      <li v-for="item in faceMap" :key="item">
+        <img :src="item" @click="insertFace(item)"/>
       </li>
     </ul>
     <div class="clear"></div>
   </div>
 </template>
 <script>
-import faceUtils from '@/utils/face'
-
+import { faceUtils } from '@/utils/face'
 export default {
   name: 'Faces',
   components: {},
   data () {
     return {
-      faceList: faceUtils.faceItems,
+      // faceList: faceUtils.faceItems,
       faceMap: faceUtils.faces()
     }
+  },
+  created () {
   },
   methods: {
     insertFace: function (item) {
       this.$emit('insertFace', item)
+      this.$emit('getfocus')
     }
   }
 }
@@ -36,6 +38,8 @@ export default {
   border: 1px solid #f0f5ff;
   display: block;
   height: 25rem;
+  overflow: auto;
+  padding: 0;
   li {
     width: 3rem;
     height: 3rem;

@@ -4,7 +4,8 @@
     :width="isTablet() ? '175px' : '256px' "
     :collapsible="collapsible"
     v-model="collapsed"
-    :trigger="null">
+    :trigger="null"
+  >
     <logo />
     <s-menu
       :collapsed="collapsed"
@@ -12,9 +13,9 @@
       :theme="theme"
       :mode="mode"
       @select="onSelect"
-      style="padding: 16px 0px;"></s-menu>
+      style="padding: 0px 0px;"
+    ></s-menu>
   </a-layout-sider>
-
 </template>
 
 <script>
@@ -64,5 +65,9 @@ export default {
 .ant-menu-dark .ant-menu-inline.ant-menu-sub {
   background: #000c17;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45) inset;
+}
+.sider .logo svg {
+  height: 64px;
+  width: 64px;
 }
 </style>

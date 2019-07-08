@@ -5,7 +5,7 @@ export function timeFix () {
 }
 
 export function welcome () {
-  const arr = ['休息一会儿吧', '准备吃什么呢?', '我猜你可能累了']
+  const arr = ['新的一天加油啊!', '准备吃什么呢?', '我猜你可能累了']
   const index = Math.floor((Math.random() * arr.length))
   return arr[index]
 }
@@ -75,7 +75,15 @@ export function format (date, fmt) {
       return hour === 0 ? 12 : hour
     })(),
     'E+': (() => {
-      const week = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' }
+      const week = {
+        '0': 'Sunday',
+        '1': 'Monday',
+        '2': 'Tuesday',
+        '3': 'Wednesday',
+        '4': 'Thursday',
+        '5': 'Friday',
+        '6': 'Saturday'
+      }
       return week[date.getDay() + '']
     })(),
     /*
@@ -85,7 +93,15 @@ export function format (date, fmt) {
 		})(),
 		*/
     'x1': (() => {
-      const week = { '0': '周日', '1': '周一', '2': '周二', '3': '周三', '4': '周四', '5': '周五', '6': '周六' }
+      const week = {
+        '0': '周日',
+        '1': '周一',
+        '2': '周二',
+        '3': '周三',
+        '4': '周四',
+        '5': '周五',
+        '6': '周六'
+      }
       return week[date.getDay() + '']
     })(),
     'x2': (() => {
@@ -126,13 +142,21 @@ export function toWeiXinString (date) {
   } else if (date.getTime() > beforeYesterday.getTime()) {
     str = '前天'
   } else if (date.getTime() > monday.getTime()) {
-    const week = { '0': '周日', '1': '周一', '2': '周二', '3': '周三', '4': '周四', '5': '周五', '6': '周六' }
-    str = week[ date.getDay() + '' ]
+    const week = {
+      '0': '周日',
+      '1': '周一',
+      '2': '周二',
+      '3': '周三',
+      '4': '周四',
+      '5': '周五',
+      '6': '周六'
+    }
+    str = week[date.getDay() + '']
   } else {
-    const hour = [ '凌晨', '早上', '下午', '晚上' ]
+    const hour = ['凌晨', '早上', '下午', '晚上']
     const h = date.getHours()
     if (h === 12) str = '中午'
-    else str = hour[ parseInt(h / 6) ]
+    else str = hour[parseInt(h / 6)]
     str = format(date, 'MM月dd ') + str
   }
   str += format(date, 'HH:ss')

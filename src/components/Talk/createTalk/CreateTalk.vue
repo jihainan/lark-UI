@@ -1,10 +1,12 @@
 <template>
   <a-modal
     v-model="visible"
+    style="top: 20px;"
     :maskClosable="false"
     :width="850"
     destroyOnClose
     :footer="null"
+    @cancel="handleCloseModal"
   >
     <template slot="title">
       <div class="create-talk-title">创建研讨组</div>
@@ -96,6 +98,12 @@ export default {
     },
     toTalk () {
       this.visible = false
+    },
+    /** 创建成功后再次打开模态框回到第一步 */
+    handleCloseModal () {
+      if (this.currentTab === 2) {
+        this.currentTab = 0
+      }
     }
   }
 }

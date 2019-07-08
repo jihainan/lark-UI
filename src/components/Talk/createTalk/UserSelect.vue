@@ -40,7 +40,7 @@ export default {
       loading: false,
       userList: [],
       listStyle: {
-        width: '190px', height: '450px'
+        width: '190px', height: '414px'
       }
     }
   },
@@ -49,9 +49,9 @@ export default {
   },
   mounted () {
     const secretListMap = new Map([
-      [60, [60, 70]],
-      [40, [40, 50, 60, 70]],
-      [30, [30, 40, 50, 60, 70]]
+      [60, [60, 70, 80, 90]],
+      [40, [40, 50, 60, 70, 80, 90]],
+      [30, [30, 40, 50, 60, 70, 80, 90]]
     ])
     this.$refs.groupUserTransfer.beginChooseUser([], {
       secretLevels: secretListMap.get(this.groupInfo.levels).join(),

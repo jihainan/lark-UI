@@ -37,8 +37,8 @@
     <footer-tool-bar :style="{height:'72px', width: isSideMenu() && isDesktop() ? `calc(100% - ${sidebarOpened ? 256 : 80}px)` : '100%'}">
       <div class="tool-list">
         <div class="tool-item" v-for="item in toolList" :key="item.id">
-          <a :href="item.uri">
-            <img :src="'/tools/Icon-'+item.description+'.png'" width="40" height="40" :alt="item.description" :title="item.title"/>
+          <a :href="item.uri+'?userId='+userPId">
+            <img :src="'/images/tools/Icon-'+item.description+'.png'" width="40" height="40" :alt="item.description" :title="item.title"/>
           </a>
           <div class="tool-name">{{ item.title }}</div>
         </div>
@@ -66,6 +66,8 @@ import FooterToolBar from '@/components/FooterToolbar'
 import VueGridLayout from 'vue-grid-layout'
 import LCard from '@/views/dashboard/Card'
 import { getCommonTools, getUserCard, moveUserCard } from '@/api/workplace'
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'Monitor',
   mixins: [mixin, mixinDevice],
@@ -86,6 +88,9 @@ export default {
     FooterToolBar,
     GridLayout: VueGridLayout.GridLayout,
     GridItem: VueGridLayout.GridItem
+  },
+  computed: {
+    ...mapGetters(['userPId'])
   },
   created () {
     this.getSelfWorkplace()

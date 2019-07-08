@@ -22,8 +22,9 @@ const api = {
   getGroupMembers: 'chat/zzGroup/getGroupUserList',
   // zzGroup/getGroupInfo    groupID
   // getContent: 'https://www.easy-mock.com/mock/5cef9a806bbb7d72047ec887/drawer/notice/drawer/notice',
+  // 下面的地址前面必须加/
   // 研讨文件上传地址
-  fileUpload: '/api/chat/zzFileManage/singleFileUpload',
+  fileUpload: '/zuul/api/chat/zzFileManage/singleFileUpload',
   // 图片预览地址
   imgPrevie: '/api/chat/zzFileManage/GetFile',
   // 文件下载地址
@@ -34,7 +35,7 @@ export default api
 /**
  * 获取当前研讨中的成员
  * @param {String} contactId
- */
+*/
 export function getTalkMembers (contactId) {
   return axios({
     url: api.talkMembers,
@@ -246,7 +247,7 @@ export function talkHistoryAll (userId, isGroup, id, page) {
       isGroup: isGroup,
       contactId: id,
       page: page,
-      size: 10
+      size: 30
     }
   })
 }
@@ -262,7 +263,7 @@ export function MarkMessageGrabble (userId, page, groupId) {
       userId: userId,
       page: page,
       groupId: groupId,
-      size: 5,
+      size: 30,
       tagType: 0
     }
   })
@@ -285,7 +286,7 @@ export function userfileGrabble (userId, receiver, page) {
   })
 }
 /**
- * 联系人文件
+ * 群成员列表
  * ?groupId=
  */
 export function getGroupMembers (groupId) {

@@ -39,7 +39,6 @@ export default {
   watch: {
     activeOption (newValue) {
       if (newValue === 'groupNotice') {
-        console.log('在这里加载数据')
         this.getContent()
       }
     }

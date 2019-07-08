@@ -20,7 +20,7 @@
   <a-row :gutter="10">
     <a-col :span="7">
       <a-card title="组织信息" :bodyStyle="bodyStyle">
-        <div style="overflow:scroll;height:350px">
+        <div style="overflow:scroll;height:345px">
           <a-tree
             :treeData="orgTree"
             @select="handleClick"
@@ -53,7 +53,7 @@ export default {
   name: 'UserTransfer',
   data () {
     return {
-      bodyStyle: { 'height': '400px' },
+      bodyStyle: { 'height': '365px' },
       orgTree: [],
       // key userid value userinfo
       // 用于存储人员信息

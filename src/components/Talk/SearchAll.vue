@@ -16,7 +16,7 @@
     <a-drawer
       placement="left"
       getContainer=".talk-layout-sider"
-      :wrapStyle="{marginTop: '119px'}"
+      :wrapStyle="{marginTop: '118px'}"
       :maskStyle="{background: 'transparent'}"
       :width="280"
       :closable="false"
@@ -34,6 +34,7 @@
               v-for="(item, index) in groupResultList"
               :groupInfo="item"
               :key="index"
+              :activated="activated===item.groupId"
               @select="toTalk(item)"
             />
           </div>
@@ -45,6 +46,7 @@
               v-for="(item, index) in contResultList"
               :contactsInfo="item"
               :key="index"
+              :activated="activated===item.key"
               @select="toTalk(item)"
             />
           </div>
@@ -62,7 +64,6 @@
 <script>
 import { GroupItem, ContactItem } from '@/components/Talk'
 import { mapGetters } from 'vuex'
-import { getGroupInfo, getContactsInfo } from '@/api/talk'
 
 export default {
   name: 'SearchAll',
@@ -82,7 +83,9 @@ export default {
       // 群组的匹配结果
       groupResultList: [],
       // 联系人的匹配结果
-      contResultList: []
+      contResultList: [],
+      // 选中的id
+      activated: ''
     }
   },
   computed: {
@@ -100,8 +103,8 @@ export default {
   },
   methods: {
     exitSearch () {
-      [this.visible, this.searchText, this.groupResultList, this.contResultList] =
-      [false, '', [], []]
+      [this.visible, this.activated, this.searchText, this.groupResultList, this.contResultList] =
+      [false, '', '', [], []]
     },
     showDrawer () {
       this.visible = true
@@ -155,14 +158,14 @@ export default {
     },
     /** 跳转到研讨界面 */
     toTalk (item) {
+      let isGroup = false
       if (item.groupId) {
-        // 发送群组请求
-        console.log(item.groupId)
+        isGroup = true
+        this.activated = item.groupId
       } else {
-        // 发送联系人请求
-        console.log(item.key)
+        this.activated = item.key
       }
-      // 关闭抽屉
+      this.$emit('showDetail', item, isGroup)
     }
   }
 }
@@ -184,15 +187,17 @@ export default {
   }
 
   .result-container {
-    height: 100vh;
+    height: calc(100vh - 119px);
     background-color: #e6e8eb;
     margin: -24px;
     border-top: 1px #d5d8de solid;
+    overflow: auto;
 
     .category-label {
       margin: 0;
       padding-left: 17px;
       color: #a0a1a5;
+      background-color: #dcdcdc;
       border-bottom: 1px #d5d8de solid;
     }
   }

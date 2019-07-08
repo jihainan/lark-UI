@@ -1,6 +1,6 @@
 <template>
   <!-- 聊天消息框 -->
-  <div :class="['message-piece', {send: isMe(), receive: !isMe()}]">
+  <div :class="['message-piece', {send: isMe(), receive: !isMe()}]" >
 
     <!-- 消息时间 需要判断显示时间的条件 -->
     <div class="time-stamp">
@@ -33,7 +33,12 @@
                   【{{ JSON.parse(messageInfo.content.secretLevel) | fileSecret }}】
                 </span>
               </div>
-              <pre>{{ messageInfo.content.title }}</pre>
+              <!-- <pre>{{ messageInfo.content.title }}</pre> -->
+              <div
+                v-html="messageInfo.content.title"
+                style="display:inline"
+              >
+              </div>
             </div>
 
             <!-- 图片消息 -->
@@ -44,7 +49,7 @@
                   @error="handleImg"
                   @click="handlePreview('open')"
                   :src="imgPreviewUrl"
-                  :alt="messageInfo.content.title" >
+                  :alt="fileTitle" >
                 <a-button
                   v-if="imgLoading === 3"
                   @click="handleImg"
@@ -59,8 +64,7 @@
                       【{{ JSON.parse(messageInfo.content.secretLevel) | fileSecret }}】
                     </span>
                   </div>
-                  <a :href="downloadUrl" class="download" :download="fileDownloadTitle">下载</a>
-                  <!-- <span class="download">下载</span> -->
+                  <a :href="downloadUrl" class="download" download>下载</a>
                 </div>
               </a-spin>
 
@@ -68,7 +72,7 @@
                 <img
                   :alt="messageInfo.content.title"
                   style="width: 100%"
-                  :src="messageInfo.content.url" />
+                  :src="downloadUrl" />
               </a-modal>
             </div>
 
@@ -79,7 +83,7 @@
               </div>
               <div class="file-message-info">
                 <a-tooltip placement="topLeft" :title="messageInfo.content.title">
-                  <span>{{ messageInfo.content.title }}</span>
+                  <span>{{ fileTitle }}</span>
                 </a-tooltip>
 
                 <div class="file-option">
@@ -88,8 +92,7 @@
                       【{{ JSON.parse(messageInfo.content.secretLevel) | fileSecret }}】
                     </span>
                   </div>
-                  <!-- <span class="download">下载</span> -->
-                  <a :href="downloadUrl" class="download" :download="fileDownloadTitle">下载</a>
+                  <a :href="downloadUrl" class="download" download>下载</a>
                 </div>
               </div>
             </div>
@@ -127,37 +130,23 @@ export default {
     return {
       // 图片加载状态 0:无状态 1:加载中 2:加载成功 3:加载失败
       imgLoading: 0,
-      previewVisible: false
+      previewVisible: false,
+      imgPreviewUrl: api.imgPrevie + '?fileId=' + this.messageInfo.content.id + '&t=' + new Date().getTime(),
+      downloadUrl: api.fileDownload + '?fileId=' + this.messageInfo.content.id,
+      fileTitle: this.genFileTitle()
     }
   },
   computed: {
-    ...mapGetters(['avatar', 'userId']),
-    imgPreviewUrl () {
-      return api.imgPrevie + '?fileId=' + this.messageInfo.content.id
-    },
-    downloadUrl () {
-      return api.fileDownload + '?fileId=' + this.messageInfo.content.id
-    },
-    fileDownloadTitle () {
-      return '[' +
-        this.$options.filters.fileSecret(this.messageInfo.content.secretLevel) +
-        ']' +
-        this.messageInfo.content.title
-    }
-  },
-  watch: {
-    messageInfo: {
-      handler: function () {
-        // 处理图片的加载状态
-        if (this.messageInfo.content.type === 2) this.imgLoading = 1
-        else this.imgLoading = 0
-      },
-      immediate: true,
-      deep: true
-    }
+    ...mapGetters(['avatar', 'userId'])
   },
   filters: { timeFormat: toWeiXinString },
   methods: {
+    genFileTitle () {
+      const { secretLevel, extension, title } = this.messageInfo.content
+      const ext = extension === '0' || extension === '' ? '' : '.' + extension
+      const sec = this.$options.filters.fileSecret(secretLevel)
+      return '[' + sec + ']' + title + ext
+    },
     /**
      * 判断是否当前用户发送的消息
      * @param {String} fromId 消息发送者的id
@@ -177,7 +166,9 @@ export default {
         this.imgLoading = 3
       }
       if (event.type === 'click') {
-        this.imgPreviewUrl += '&t=' + Math.random()
+        if (this.messageInfo.content.type === 2) this.imgLoading = 1
+        else this.imgLoading = 0
+        this.imgPreviewUrl = api.imgPrevie + '?fileId=' + this.messageInfo.content.id + '&t=' + new Date().getTime()
       }
     },
     /**
@@ -314,7 +305,7 @@ export default {
 
             .img-message {
               img {
-                max-width: 400px;
+                max-width: 250px;
                 min-width: 100px;
               }
               &-option {

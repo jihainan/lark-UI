@@ -43,8 +43,7 @@
             <a-tag color v-if="newItem.levels === '30'">非密</a-tag>
           </div>
         </a>
-        <!-- <a class="down" :href="'/chat/zzFileManage/downloadFile'" onclick="return false">下载</a> -->
-        <a-button class="down" type="primary" icon="download" @click="down(newItem.fileId)" :disabled="flag"></a-button>
+        <a :href="genDownLoadPath(newItem.fileId)" class="down" download>下载</a>
       </li>
       <li>
         <div
@@ -63,6 +62,8 @@
 </template>
 <script>
 import { userfileGrabble, fileDownload } from '@/api/talk.js'
+import api from '@/api/talk'
+
 export default {
   name: 'Rabble',
   props: {
@@ -95,6 +96,10 @@ export default {
     })
   },
   methods: {
+    /** 生成下载路径 */
+    genDownLoadPath (fileId) {
+      return api.fileDownload + '?fileId=' + fileId
+    },
     onSearch (value) {
       console.log(value)
     },
@@ -222,10 +227,7 @@ export default {
 }
 .down{
   float:right;
-  // height: 55px;
-  // line-height: 55px;
-  // display: block
-  margin-top: 10px
+  line-height: 50px;
 }
 .nav_box {
   width: 100%;
@@ -236,7 +238,7 @@ export default {
       list-style: none;
       width: 50px;
       float: left;
-      font-size: 5px;
+      font-size: 11px;
       &:nth-child(1) {
         margin-right: 55px;
       }

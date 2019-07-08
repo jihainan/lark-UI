@@ -2,7 +2,9 @@
   <a-layout class="talk-layout">
     <a-layout-sider class="talk-layout-sider">
       <div class="search-bar">
-        <SearchAll :inputStyle="{height: '31px', width: '200px'}" />
+
+        <SearchAll :inputStyle="{height: '31px', width: '200px'}" @showDetail="showSearchDetail" />
+
         <a-tooltip title="发起研讨" placement="bottom" :overlayStyle="{fontSize: '12px'}">
           <a-button class="add-group-btn" @click="startTalk" icon="plus" size="small" />
         </a-tooltip>
@@ -119,7 +121,6 @@
 <script>
 import { ContactsTree, ContactsInfo, GroupInfo, RecentContactsItem, GroupItem, CreateTalk, SearchAll } from '@/components/Talk'
 
-import { mapGetters } from 'vuex'
 export default {
   name: 'ChatPanel',
   components: {
@@ -252,6 +253,15 @@ export default {
     },
     handleCloseSearchRecordModal () {
       this.searchRecordModalVisible = false
+    },
+    showSearchDetail (item, isGroup) {
+      if (isGroup) {
+        this.activeKey = '2'
+        this.activeGroup = item.groupId
+      } else {
+        this.activeKey = '3'
+        this.activeContacts = item.key
+      }
     }
   },
   activated: function () {}

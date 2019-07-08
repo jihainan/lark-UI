@@ -62,7 +62,6 @@ export default {
   watch: {
     activeOption (newValue) {
       if (newValue === 'talkHistory') {
-        console.log('在这里加载数据')
       }
     }
   },

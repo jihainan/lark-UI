@@ -3,20 +3,32 @@
     <a-row :gutter="8">
       <a-col :md="8" :lg="12">
         <a-form layout="vertical" :form="form">
-          <a-form-item
-            label="姓名"
-          >
-            <a-input :disabled="true" v-decorator="['name',{rules: [{ required: true, message: '请输入姓名' }]}]"/>
+          <a-form-item label="姓名">
+            <a-input
+              :disabled="true"
+              v-decorator="['name',{rules: [{ required: true, message: '请输入姓名' }]}]"
+            />
           </a-form-item>
-          <a-form-item
-            label="联系方式"
-          >
-            <a-input v-decorator="['oTel']"/>
+          <a-form-item label="联系方式">
+            <!-- <a-form-item
+              :labelCol="labelCol"
+              :wrapperCol="wrapperCol"
+              label="状态"
+              hasFeedback
+              validateStatus="warning"
+            >
+              <a-select
+                v-decorator="['status', {rules: [{ required: true, message: '请选择状态' }], initialValue: '1'}]"
+              >
+                <a-select-option :value="1">忙于工作</a-select-option>
+                <a-select-option :value="2">出差啦</a-select-option>
+                <a-select-option :value="3">休假中</a-select-option>
+              </a-select>
+            </a-form-item> -->
+            <a-input v-decorator="['otel']" />
           </a-form-item>
-          <a-form-item
-            label="描述"
-          >
-            <a-textarea rows="4" v-decorator="['discribe']"/>
+          <a-form-item label="描述">
+            <a-textarea rows="4" v-decorator="['description']" />
           </a-form-item>
           <a-form-item>
             <a-button type="primary" @click="submitInfo">提交</a-button>
@@ -24,7 +36,7 @@
         </a-form>
       </a-col>
       <a-col :md="8" :lg="4" :style="{ minHeight: '180px' }">
-        <div style="margin-left:100px" >
+        <div style="margin-left:100px">
           <a-upload
             name="avatar"
             listType="picture-card"
@@ -34,7 +46,7 @@
             @change="handleChange"
             :customRequest="customRequest"
           >
-            <img v-if="imageUrl" :src="imageUrl" alt="avatar" style="border-radius: 50%"/>
+            <img v-if="imageUrl" :src="imageUrl" alt="avatar" style="border-radius: 50%" />
             <div v-else>
               <a-icon :type="loading ? 'loading' : 'plus'" />
               <div class="ant-upload-text">上传头像</div>
@@ -43,8 +55,7 @@
         </div>
       </a-col>
     </a-row>
-    <avatar-modal ref="modal" @ok="uploadAvator">
-    </avatar-modal>
+    <avatar-modal ref="modal" @ok="uploadAvator"></avatar-modal>
   </div>
 </template>
 <script>
@@ -84,7 +95,7 @@ export default {
           this.user = Object.assign({}, res.result)
           this.$nextTick(() => {
             // 表单中绑定信息项
-            this.form.setFieldsValue(pick(res.result, 'name', 'telephone'))
+            this.form.setFieldsValue(pick(res.result, 'name', 'otel', 'description'))
             if (this.user.avatar) {
               this.imageUrl = FILE_SERVER_IP + this.user.avatar
             } else {
@@ -105,7 +116,7 @@ export default {
         if (res.status === 200) {
           // const imageUrl = res.result
           // vue-cropper插件img绑定url时，会有跨域问题，图片类型转base64传递到子组件
-          this.getBase64(data.file, (imageUrl) => {
+          this.getBase64(data.file, imageUrl => {
             this.$refs.modal.edit(imageUrl)
           })
         }
@@ -122,7 +133,7 @@ export default {
       uploadFile(formData).then(res => {
         if (res.status === 200) {
           this.imageUrl = res.result
-          this.saveInfo({ 'avatar': this.imageUrl })
+          this.saveInfo({ avatar: this.imageUrl })
           this.imageUrl = FILE_SERVER_IP + res.result
         }
       })
@@ -167,7 +178,11 @@ export default {
      */
     beforeUpload (file) {
       // 校验上传文件类型
-      const isImage = file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/bmp'
+      const isImage =
+        file.type === 'image/jpeg' ||
+        file.type === 'image/jpg' ||
+        file.type === 'image/png' ||
+        file.type === 'image/bmp'
       if (!isImage) {
         this.$notification['error']({
           message: '支持上传图片类型包含：jpeg/jpg/png/bmp，请注意上传文件的类型',
@@ -202,10 +217,9 @@ export default {
     saveInfo (values) {
       values.id = this.user.id
       values.pid = this.user.pid
-      updateuser(
-        values
-      ).then(
-        res => {
+      values.name = this.user.name
+      updateuser(values)
+        .then(res => {
           if (res.status === 200) {
             this.$notification['success']({
               message: '提交成功',
@@ -217,28 +231,28 @@ export default {
               duration: 4
             })
           }
-        }
-      ).catch(() =>
-        this.$notification['error']({
-          message: '发生异常，请联系系统管理员',
-          duration: 4
         })
-      )
+        .catch(() =>
+          this.$notification['error']({
+            message: '发生异常，请联系系统管理员',
+            duration: 4
+          })
+        )
     }
   }
 }
 </script>
 <style lang="less" scoped>
-  .avatar-uploader > .ant-upload {
-    width: 128px;
-    height: 128px;
-  }
-  .ant-upload-select-picture-card i {
-    font-size: 32px;
-    color: #999;
-  }
-  .ant-upload-select-picture-card .ant-upload-text {
-    margin-top: 8px;
-    color: #666;
-  }
+.avatar-uploader > .ant-upload {
+  width: 128px;
+  height: 128px;
+}
+.ant-upload-select-picture-card i {
+  font-size: 32px;
+  color: #999;
+}
+.ant-upload-select-picture-card .ant-upload-text {
+  margin-top: 8px;
+  color: #666;
+}
 </style>
