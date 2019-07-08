@@ -1,7 +1,10 @@
 import Menu from 'ant-design-vue/es/menu'
 import Icon from 'ant-design-vue/es/icon'
 
-const { Item, SubMenu } = Menu
+const {
+  Item,
+  SubMenu
+} = Menu
 
 export default {
   name: 'SMenu',
@@ -63,12 +66,30 @@ export default {
       }
       const props = {}
       typeof (icon) === 'object' ? props.component = icon : props.type = icon
-      return h(Icon, { props: { ...props } })
+      return h(Icon, {
+        style: {
+          fontSize: '21px'
+        },
+
+        props: {
+          ...props,
+          theme: 'filled'
+        }
+      })
     },
     renderMenuItem: function (h, menu, pIndex, index) {
       const target = menu.meta.target || null
-      return h(Item, { key: menu.path ? menu.path : 'item_' + pIndex + '_' + index }, [
-        h('router-link', { attrs: { to: { name: menu.name }, target: target } }, [
+      return h(Item, {
+        key: menu.path ? menu.path : 'item_' + pIndex + '_' + index
+      }, [
+        h('router-link', {
+          attrs: {
+            to: {
+              name: menu.name
+            },
+            target: target
+          }
+        }, [
           this.renderIcon(h, menu.meta.icon),
           h('span', [menu.meta.title])
         ])
@@ -76,7 +97,9 @@ export default {
     },
     renderSubMenu: function (h, menu, pIndex, index) {
       const this2_ = this
-      const subItem = [h('span', { slot: 'title' }, [this.renderIcon(h, menu.meta.icon), h('span', [menu.meta.title])])]
+      const subItem = [h('span', {
+        slot: 'title'
+      }, [this.renderIcon(h, menu.meta.icon), h('span', [menu.meta.title])])]
       const itemArr = []
       const pIndex_ = pIndex + '_' + index
       // console.log('menu', menu)
@@ -85,7 +108,9 @@ export default {
           itemArr.push(this2_.renderItem(h, item, pIndex_, i))
         })
       }
-      return h(SubMenu, { key: menu.path ? menu.path : 'submenu_' + pIndex + '_' + index }, subItem.concat(itemArr))
+      return h(SubMenu, {
+        key: menu.path ? menu.path : 'submenu_' + pIndex + '_' + index
+      }, subItem.concat(itemArr))
     },
     renderItem: function (h, menu, pIndex, index) {
       if (!menu.hidden) {
@@ -134,8 +159,7 @@ export default {
   },
   render (h) {
     return h(
-      Menu,
-      {
+      Menu, {
         props: {
           theme: this.$props.theme,
           mode: this.$props.mode,

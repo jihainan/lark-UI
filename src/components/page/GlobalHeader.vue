@@ -1,9 +1,13 @@
 <template>
   <!-- , width: fixedHeader ? `calc(100% - ${sidebarOpened ? 256 : 80}px)` : '100%'  -->
-  <a-layout-header v-if="!headerBarFixed" :class="[fixedHeader && 'ant-header-fixedHeader', widthCalculate() ]" :style="{ padding: '0' }">
+  <a-layout-header
+    v-if="!headerBarFixed"
+    :class="[fixedHeader && 'ant-header-fixedHeader', widthCalculate() ]"
+    :style="{ padding: '0' }"
+  >
     <div v-if="mode === 'sidemenu'" class="header">
       <!-- 侧边栏切换按钮 -->
-      <a-icon
+      <!-- <a-icon
         v-if="deviceType==='mobile'"
         class="trigger"
         :type="collapsed ? 'menu-fold' : 'menu-unfold'"
@@ -12,7 +16,7 @@
         v-else
         class="trigger"
         :type="collapsed ? 'menu-unfold' : 'menu-fold'"
-        @click="toggle"/>
+      @click="toggle"/>-->
       <!-- 窗口右上角功能区域 -->
       <div class="tools-wrapper">
         <!-- user-wrapper -->
@@ -21,23 +25,18 @@
         <!-- option-wrapper -->
         <window-option></window-option>
       </div>
-
     </div>
     <div v-else :class="['top-nav-header-index', theme]">
       <div class="header-index-wide">
         <div class="header-index-left">
           <logo class="top-nav-header" :show-title="deviceType !== 'mobile'" />
-          <s-menu
-            v-if="deviceType !== 'mobile'"
-            mode="horizontal"
-            :menu="menus"
-            :theme="theme"
-          ></s-menu>
+          <s-menu v-if="deviceType !== 'mobile'" mode="horizontal" :menu="menus" :theme="theme"></s-menu>
           <a-icon
             v-else
             class="trigger"
             :type="collapsed ? 'menu-fold' : 'menu-unfold'"
-            @click="toggle"></a-icon>
+            @click="toggle"
+          ></a-icon>
         </div>
         <!-- <user-menu class="header-index-right"></user-menu> -->
         <div class="tools-wrapper">
@@ -47,7 +46,6 @@
         </div>
       </div>
     </div>
-
   </a-layout-header>
 </template>
 
@@ -142,5 +140,4 @@ export default {
 </script>
 
 <style lang="less" scoped>
-
 </style>

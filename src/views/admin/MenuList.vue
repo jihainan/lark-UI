@@ -144,7 +144,7 @@ export default {
         { label: '增加', value: 'add' },
         { label: '修改', value: 'update' },
         { label: '删除', value: 'delete' },
-        { label: '查询', value: 'select' },
+        { label: '查询', value: 'query' },
         { label: '上传', value: 'upload' },
         { label: '下载', value: 'download' },
         { label: '导入', value: 'import' },

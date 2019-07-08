@@ -42,6 +42,8 @@
 </template>
 
 <script>
+import { MESSAGE_TYPE } from '@/utils/constants'
+
 export default {
   name: 'RecentContactsItem',
   props: {
@@ -99,12 +101,7 @@ export default {
     },
     lastMessage () {
       const { type, title } = this.contactsInfo.lastMessage
-      const messageCases = new Map([
-        [1, ''],
-        [2, '[图片]'],
-        [3, '[文件]']
-      ])
-      return messageCases.get(type || 1) + (title || '')
+      return MESSAGE_TYPE.get(type || 1) + (title || '')
     }
   }
 }

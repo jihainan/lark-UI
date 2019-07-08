@@ -10,7 +10,16 @@ const SECRETLEVEL_ENUM = new Map([
   [40, { people: '一般', file: '秘密' }],
   [50, { people: '一般', file: '秘密' }],
   [60, { people: '重要', file: '机密' }],
-  [70, { people: '重要', file: '机密' }]
+  [70, { people: '重要', file: '机密' }],
+  [80, { people: '重要', file: '机密' }],
+  [90, { people: '重要', file: '机密' }]
+])
+
+// 消息类型
+const MESSAGE_TYPE = new Map([
+  [1, ''],
+  [2, '[图片]'],
+  [3, '[文件]']
 ])
 
 // 错误类型
@@ -40,6 +49,7 @@ const FILE_SERVER_IP = 'http://10.11.24.5:80/'
 
 export {
   SECRETLEVEL_ENUM,
+  MESSAGE_TYPE,
   ErrorType,
   LandingStatus,
   FILE_SERVER_IP

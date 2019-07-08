@@ -32,7 +32,7 @@
         size="default"
         :columns="columns"
         :data="loadData"
-        :rowKey="(record) => record.feedBackId"
+        :rowKey="(record) => record.id"
       >
         <a slot="name" slot-scope="text, record" @click="openComment(record)">{{ record.title }}</a>
         <span slot="action" slot-scope="text, record">
@@ -378,7 +378,7 @@ export default {
      * 根据id获取评论列表
      */
     getCommentsById () {
-      getComment({ 'feedbackId': this.feedBackId }).then(res => {
+      getComment({ feedbackId: this.feedBackId }).then(res => {
         if (res.status === 200) {
           this.commentList = res.result.data
         }

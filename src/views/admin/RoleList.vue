@@ -1,12 +1,11 @@
 <template>
-
   <a-card :bordered="false">
     <div class="table-page-search-wrapper">
       <a-form layout="inline">
         <a-row :gutter="8" type="flex" justify="end">
           <a-col :md="6" :sm="24">
             <a-form-item label="角色名称">
-              <a-input placeholder="请输入" v-model="queryParam.name"/>
+              <a-input placeholder="请输入" v-model="queryParam.name" />
             </a-form-item>
           </a-col>
           <a-col :md="6" :sm="24">
@@ -21,19 +20,19 @@
             <span class="table-page-search-submitButtons">
               <a-button type="primary" @click="searchRole">查询</a-button>
               <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
-              <a-button type="primary" style="margin-left: 30px" @click="handleAdd()" v-action:add>新增角色</a-button>
+              <a-button
+                type="primary"
+                style="margin-left: 30px"
+                @click="handleAdd()"
+                v-action:add
+              >新增角色</a-button>
             </span>
           </a-col>
         </a-row>
       </a-form>
     </div>
 
-    <s-table
-      ref="stable"
-      size="default"
-      :columns="columns"
-      :data="loadData"
-    >
+    <s-table ref="stable" size="default" :columns="columns" :data="loadData">
       <!--TODO 目前只提供了按角色查询权限的接口，这部分提供方法后再做
       <div
         slot="expandedRowRender"
@@ -61,7 +60,8 @@
         <a-divider type="vertical" />
         <a-dropdown>
           <a class="ant-dropdown-link">
-            更多 <a-icon type="down" />
+            更多
+            <a-icon type="down" />
           </a>
           <a-menu slot="overlay">
             <a-menu-item>
@@ -87,20 +87,15 @@
       :confirmLoading="confirmLoading"
     >
       <a-form :form="editForm">
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="角色标识"
-        >
-          <a-input :disabled="inDetail||inEdit" v-decorator="['code']"/>
+        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="角色标识">
+          <a-input :disabled="inDetail||inEdit" v-decorator="['code']" />
         </a-form-item>
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="角色名称"
-          hasFeedback
-        >
-          <a-input placeholder="起一个名字" v-decorator="['name',{rules: [{ required: true, message: '请填写角色名称' }]}]" :disabled="inDetail"/>
+        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="角色名称" hasFeedback>
+          <a-input
+            placeholder="起一个名字"
+            v-decorator="['name',{rules: [{ required: true, message: '请填写角色名称' }]}]"
+            :disabled="inDetail"
+          />
         </a-form-item>
         <!--
         <a-form-item
@@ -116,13 +111,8 @@
           </a-select>
         </a-form-item>
         -->
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="描述"
-          hasFeedback
-        >
-          <a-textarea :rows="5" v-decorator="['description']" :disabled="inDetail"/>
+        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="描述" hasFeedback>
+          <a-textarea :rows="5" v-decorator="['description']" :disabled="inDetail" />
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
@@ -131,7 +121,7 @@
           hasFeedback
           v-if="inDetail"
         >
-          <a-input v-decorator="['creatorId']" :disabled="inDetail"/>
+          <a-input v-decorator="['creatorId']" :disabled="inDetail" />
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
@@ -140,7 +130,7 @@
           hasFeedback
           v-if="inDetail"
         >
-          <a-input v-decorator="['createTime']" :disabled="inDetail"/>
+          <a-input v-decorator="['createTime']" :disabled="inDetail" />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -153,31 +143,40 @@
       :confirmLoading="confirmLoading"
     >
       <a-form>
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="拥有权限"
-          hasFeedback
-        >
-          <a-row :gutter="16" v-for="(permission, index) in mdl.permissions" :key="index" >
-            <a-col :span="4">
-              {{ permission.title }}：
-            </a-col>
+        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="拥有权限" hasFeedback>
+          <a-row :gutter="16" v-for="(permission, index) in mdl.permissions" :key="index">
+            <a-col :span="4">{{ permission.title }}：</a-col>
             <a-col :span="20">
-              <a-checkbox-group :options="permission.actionEntitySetList" v-model="tempSelected[index]" :value="tempSelected[index]" @change="checkChange" :disabled="checkboxdisabled[index]"/>
+              <a-checkbox-group
+                :options="permission.actionEntitySetList"
+                v-model="tempSelected[index]"
+                :value="tempSelected[index]"
+                @change="checkChange"
+                :disabled="checkboxdisabled[index]"
+              />
             </a-col>
           </a-row>
         </a-form-item>
       </a-form>
     </a-modal>
-    <user-model ref="model" @ok="handleSaveOk"/>
+    <user-model ref="model" @ok="handleSaveOk" />
   </a-card>
 </template>
 
 <script>
 import { STable } from '@/components'
 import UserModel from '@/components/admin/UserTransferModel'
-import { getRoleList, getRolePermission, delRole, disabledRole, updateRole, addRole, updateRolePermission, getRoleUser, saveRoleUser } from '@/api/admin'
+import {
+  getRoleList,
+  getRolePermission,
+  delRole,
+  disabledRole,
+  updateRole,
+  addRole,
+  updateRolePermission,
+  getRoleUser,
+  saveRoleUser
+} from '@/api/admin'
 export default {
   name: 'Rolelist',
   components: {
@@ -230,10 +229,9 @@ export default {
       ],
       // 加载数据方法 必须为 Promise 对象
       loadData: parameter => {
-        return getRoleList(parameter)
-          .then(res => {
-            return res.result
-          })
+        return getRoleList(parameter).then(res => {
+          return res.result
+        })
       },
       // 角色权限map <key 角色id value 角色权限 json数组>
       rolePerMap: new Map(),
@@ -262,7 +260,7 @@ export default {
         const setlist = this.mdl.permissions[i].actionEntitySetList
         setlist.forEach(item => {
           item.defaultCheck = this.tempSelected[i].some(selected => {
-            return (selected === item.id)
+            return selected === item.id
           })
         })
       }
@@ -313,41 +311,45 @@ export default {
       this.tempSelected = []
       const permissionsAction = {}
       this.mdl = Object.assign({}, record)
-      getRolePermission({ id: this.mdl.id })
-        .then(res => {
-          const resData = res.result.data
-          // 隐藏“工作舱”
-          // resData.splice(resData.findIndex(item => item.title === '工作舱'), 1)
-          // 按钮多选框禁用‘工作舱’和‘登录’
-          resData.forEach((item, index) => {
-            if (item.title === '工作舱' || item.title === '登录' || item.title === '个人中心' || item.title === '协同研讨') {
-              this.checkboxdisabled[index] = true
-            } else {
-              this.checkboxdisabled[index] = false
-            }
-          })
-          this.mdl.permissions = Object.assign([], res.result.data)
-          this.mdl.permissions.forEach(permission => {
-            // 过滤需要选中的多选框
-            const defaultcheck = permission.actionEntitySetList.filter(entity => entity.defaultCheck === true)
-            permissionsAction[permission.menuId] = defaultcheck.map((entity, i) => entity.id)
-            // 指定多选框的隐藏值和显示值
-            // key 值在后面添加index 以保证其唯一性
-            permission.actionEntitySetList.forEach((per, i) => {
-              per.value = per.id
-              per.label = per.description
-            })
-          })
-          // 把权限表遍历一遍，设定要勾选的权限 action
-          this.mdl.permissions.forEach(permission => {
-            const selected = permissionsAction[permission.menuId]
-            permission.selected = selected || []
-          })
-          for (var i in this.mdl.permissions) {
-            this.tempSelected.push(this.mdl.permissions[i].selected)
-          }
-          this.perVisible = true
+      getRolePermission({ id: this.mdl.id }).then(res => {
+        const resData = res.result.data
+        // 隐藏“工作舱”
+        // resData.splice(resData.findIndex(item => item.title === '工作舱'), 1)
+        // 按钮多选框禁用‘工作舱’和‘登录’
+        resData.forEach((item, index) => {
+          // if (
+          //   item.title === '工作舱' ||
+          //   item.title === '登录' ||
+          //   item.title === '个人中心' ||
+          //   item.title === '协同研讨'
+          // ) {
+          //   this.checkboxdisabled[index] = true
+          // } else {
+          this.checkboxdisabled[index] = false
+          // }
         })
+        this.mdl.permissions = Object.assign([], res.result.data)
+        this.mdl.permissions.forEach(permission => {
+          // 过滤需要选中的多选框
+          const defaultcheck = permission.actionEntitySetList.filter(entity => entity.defaultCheck === true)
+          permissionsAction[permission.menuId] = defaultcheck.map((entity, i) => entity.id)
+          // 指定多选框的隐藏值和显示值
+          // key 值在后面添加index 以保证其唯一性
+          permission.actionEntitySetList.forEach((per, i) => {
+            per.value = per.id
+            per.label = per.description
+          })
+        })
+        // 把权限表遍历一遍，设定要勾选的权限 action
+        this.mdl.permissions.forEach(permission => {
+          const selected = permissionsAction[permission.menuId]
+          permission.selected = selected || []
+        })
+        for (var i in this.mdl.permissions) {
+          this.tempSelected.push(this.mdl.permissions[i].selected)
+        }
+        this.perVisible = true
+      })
     },
     /**
      * 编辑保存
@@ -362,10 +364,8 @@ export default {
           this.confirmLoading = true
           if (this.inAdd) {
             // 新增
-            return addRole(
-              values
-            ).then(
-              res => {
+            return addRole(values)
+              .then(res => {
                 if (res.status === 200) {
                   this.$notification['success']({
                     message: '操作成功',
@@ -381,22 +381,21 @@ export default {
                     duration: 4
                   })
                 }
-              }
-            ).catch(() =>
-              this.$notification['error']({
-                message: '出现异常，请联系系统管理员',
-                duration: 4
               })
-            ).finally(() => {
-              this.confirmLoading = false
-            })
+              .catch(() =>
+                this.$notification['error']({
+                  message: '出现异常，请联系系统管理员',
+                  duration: 4
+                })
+              )
+              .finally(() => {
+                this.confirmLoading = false
+              })
           } else {
             // 编辑
             values.id = this.mdl.id
-            return updateRole(
-              values
-            ).then(
-              res => {
+            return updateRole(values)
+              .then(res => {
                 if (res.status === 200) {
                   this.$notification['success']({
                     message: '操作成功',
@@ -412,15 +411,16 @@ export default {
                     duration: 4
                   })
                 }
-              }
-            ).catch(() =>
-              this.$notification['error']({
-                message: '出现异常，请联系系统管理员',
-                duration: 4
               })
-            ).finally(() => {
-              this.confirmLoading = false
-            })
+              .catch(() =>
+                this.$notification['error']({
+                  message: '出现异常，请联系系统管理员',
+                  duration: 4
+                })
+              )
+              .finally(() => {
+                this.confirmLoading = false
+              })
           }
         }
       })
@@ -431,10 +431,8 @@ export default {
     handlePerOk () {
       const _this = this
       _this.confirmLoading = true
-      return updateRolePermission(
-        { 'id': this.mdl.id, 'permissionList': this.mdl.permissions }
-      ).then(
-        res => {
+      return updateRolePermission({ id: this.mdl.id, permissionList: this.mdl.permissions })
+        .then(res => {
           if (res.status === 200) {
             _this.$notification['success']({
               message: '修改成功',
@@ -448,15 +446,16 @@ export default {
               duration: 4
             })
           }
-        }
-      ).catch(() =>
-        _this.$notification['error']({
-          message: '出现异常，请联系系统管理员',
-          duration: 4
         })
-      ).finally(() => {
-        _this.confirmLoading = false
-      })
+        .catch(() =>
+          _this.$notification['error']({
+            message: '出现异常，请联系系统管理员',
+            duration: 4
+          })
+        )
+        .finally(() => {
+          _this.confirmLoading = false
+        })
     },
     /**
      * 详情
@@ -488,10 +487,8 @@ export default {
         onOk () {
           this.confirmLoading = true
           // 在这里调用接口
-          return disabledRole(
-            record.id
-          ).then(
-            res => {
+          return disabledRole(record.id)
+            .then(res => {
               if (res.status === 200) {
                 this.$notification['success']({
                   message: '禁用成功',
@@ -503,15 +500,16 @@ export default {
                   duration: 4
                 })
               }
-            }
-          ).catch(() =>
-            this.$notification['error']({
-              message: '出现异常，请联系系统管理员',
-              duration: 4
             })
-          ).finally(() => {
-            this.confirmLoading = false
-          })
+            .catch(() =>
+              this.$notification['error']({
+                message: '出现异常，请联系系统管理员',
+                duration: 4
+              })
+            )
+            .finally(() => {
+              this.confirmLoading = false
+            })
         },
         onCancel: () => {
           this.$notification['info']({
@@ -535,10 +533,8 @@ export default {
         onOk () {
           _this.confirmLoading = true
           // 在这里调用删除接口
-          return delRole(
-            record.id
-          ).then(
-            res => {
+          return delRole(record.id)
+            .then(res => {
               if (res.status === 200) {
                 _this.$notification['success']({
                   message: '删除成功',
@@ -551,15 +547,16 @@ export default {
                   duration: 4
                 })
               }
-            }
-          ).catch(() =>
-            _this.$notification['error']({
-              message: '出现异常，请联系系统管理员',
-              duration: 4
             })
-          ).finally(() => {
-            _this.confirmLoading = false
-          })
+            .catch(() =>
+              _this.$notification['error']({
+                message: '出现异常，请联系系统管理员',
+                duration: 4
+              })
+            )
+            .finally(() => {
+              _this.confirmLoading = false
+            })
         },
         onCancel: () => {
           this.$notification['info']({
@@ -574,9 +571,7 @@ export default {
      */
     appointUsers (record) {
       this.roleid = record.id
-      return getRoleUser(
-        { 'id': record.id }
-      ).then(res => {
+      return getRoleUser({ id: record.id }).then(res => {
         if (res.status === 200) {
           this.$refs.model.begin(res.result.data)
         } else {
@@ -593,8 +588,8 @@ export default {
      */
     handleSaveOk (returnData) {
       const ids = returnData.map(item => item.id)
-      return saveRoleUser({ 'id': this.roleid, 'users': ids.join(',') }).then(
-        res => {
+      return saveRoleUser({ id: this.roleid, users: ids.join(',') })
+        .then(res => {
           if (res.status === 200) {
             this.$notification['success']({
               message: '操作成功',
@@ -606,15 +601,16 @@ export default {
               duration: 4
             })
           }
-        }
-      ).catch(() =>
-        this.$notification['error']({
-          message: '出现异常，请联系系统管理员',
-          duration: 4
         })
-      ).finally(() => {
-        this.confirmLoading = false
-      })
+        .catch(() =>
+          this.$notification['error']({
+            message: '出现异常，请联系系统管理员',
+            duration: 4
+          })
+        )
+        .finally(() => {
+          this.confirmLoading = false
+        })
     }
   }
 }

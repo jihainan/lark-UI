@@ -187,13 +187,11 @@ export default {
   }
 
   .result-container {
-    height: 100vh;
+    height: calc(100vh - 119px);
     background-color: #e6e8eb;
     margin: -24px;
     border-top: 1px #d5d8de solid;
-    &:hover {
-      overflow: overlay;
-    }
+    overflow: auto;
 
     .category-label {
       margin: 0;

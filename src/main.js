@@ -41,7 +41,7 @@ Vue.use(wysiwyg, {
 })
 Vue.prototype.publicPath = process.env.BASE_URL
 Vue.prototype.SocketGlobal = new SocketApi({
-  ip: '10.11.24.129',
+  ip: '127.0.0.1',
   port: '9326'
 })
 
