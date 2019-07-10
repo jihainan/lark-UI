@@ -1,6 +1,6 @@
 <template>
   <div class="main">
-    <a-form
+    <!-- <a-form
       id="formLogin"
       name="formLogin"
       class="user-layout-login"
@@ -48,7 +48,20 @@
           :disabled="state.loginBtn"
         >进入</a-button>
       </a-form-item>
-    </a-form>
+    </a-form> -->
+
+    <!-- 上面是原来的用户名密码登陆的代码 -->
+
+    <a-button
+      block
+      size="large"
+      type="primary"
+      @click="handleLogin"
+      class="no-login-button"
+      :loading="state.loginBtn"
+      :disabled="state.loginBtn"
+    >进入</a-button>
+
   </div>
 </template>
 
@@ -125,12 +138,31 @@ export default {
         description: '登陆出现错误，请稍后再试',
         duration: 4
       })
+    },
+    // 免用户名密码登陆的方法
+    handleLogin () {
+      const { Login, state } = this
+      state.loginBtn = true
+      Login({
+        username: 'username',
+        password: 'password'
+      })
+        .then(res => this.loginSuccess(res))
+        .catch(err => this.requestFailed(err))
+        .finally(() => {
+          state.loginBtn = false
+        })
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
+// 免密登陆的登陆按钮
+.no-login-button {
+  margin-top: 32px;
+}
+
 .user-layout-login {
   label {
     font-size: 14px;

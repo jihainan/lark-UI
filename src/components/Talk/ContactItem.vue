@@ -1,5 +1,5 @@
 <template>
-  <div :class="contactsItemClasses" @click="handleClick">
+  <div :class="contactsItemClasses" @click="handleClick" :key="contactsInfo.key">
     <div class="avatar">
       <a-avatar class="avatar-img" shape="square" :src="contactsInfo.icon" :size="30">
         <span>{{ contactsInfo.title }}</span>

@@ -98,6 +98,7 @@ export default {
     },
     toTalk () {
       this.visible = false
+      this.currentTab = 0
     },
     /** 创建成功后再次打开模态框回到第一步 */
     handleCloseModal () {

@@ -15,7 +15,7 @@
     :visible="memberVisible"
     @ok="clickOk"
     @cancel="handleCancel"
-    width="1300px"
+    width="1400px"
     :destroyOnClose="destroyOnClose"
   >
     <user-transfer ref="transfer" @ok="handleOk"/>

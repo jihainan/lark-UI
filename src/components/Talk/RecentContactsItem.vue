@@ -1,6 +1,6 @@
 <template>
   <!-- recent contacts item -->
-  <div :class="recentContactsClasses">
+  <div :class="recentContactsClasses" :key="contactsInfo.id">
 
     <div class="avatar">
       <a-badge

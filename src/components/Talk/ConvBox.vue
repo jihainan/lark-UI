@@ -9,7 +9,7 @@
     />
     <group-notice :activeOption="activeOption" @closeDrawer="triggerDrawer" />
     <talk-setting :groupId="chatInfo.id" :activeOption="activeOption" @closeDrawer="triggerDrawer" />
-    <talk-file :activeOption="activeOption" @closeDrawer="triggerDrawer" />
+    <talk-file :activeOption="activeOption" :groupId="chatInfo.id" @closeDrawer="triggerDrawer" />
     <user-file :contactId="chatInfo.id" :activeOption="activeOption" @closeDrawer="triggerDrawer" />
     <mark-message :groupId="chatInfo.id" :activeOption="activeOption" @closeDrawer="triggerDrawer" />
     <more-info :contactId="chatInfo.id" :activeOption="activeOption" @closeDrawer="triggerDrawer" />
@@ -109,16 +109,16 @@
         <div class="draft-input">
           <!-- 输入框 -->
           <div>
-            <wysiwyg
+            <!-- <wysiwyg
               v-model="messageContent"
               v-show="!Object.keys(fileUpload).length"
               class="textarea-input"
               @keydown.enter.stop.prevent.exact
               @keyup.alt.enter.exact="messageContent += '\n'"
               @keyup.ctrl.enter.exact="messageContent += '\n'"
-            />
+            /> -->
             <!-- @keyup.enter.native="sendMessage(sendSecretLevel)" -->
-            <!-- <textarea
+            <textarea
               v-show="!Object.keys(fileUpload).length"
               size="large"
               class="textarea-input"
@@ -127,7 +127,7 @@
               @keyup.enter.stop.prevent.exact="sendMessage(sendSecretLevel)"
               @keyup.alt.enter.exact="messageContent += '\n'"
               @keyup.ctrl.enter.exact="messageContent += '\n'"
-            /> -->
+            />
           </div>
           <!-- 文件上传进度 -->
           <div v-show="Object.keys(fileUpload).length" class="upload-display">
@@ -179,6 +179,20 @@
         </div>
       </div>
     </a-layout-footer>
+
+    <!-- 文件上传进度条 -->
+    <a-modal
+      v-model="progressVisible"
+      :closable="false"
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+    >
+      <a-progress
+        :percent="fileUpload.percent"
+        :status="uploadStatus[fileUpload.status]"
+      />
+    </a-modal>
   </a-layout>
 
   <a-layout v-else style="height: 100%; textAlign: center;">
@@ -208,6 +222,7 @@ import { mapGetters } from 'vuex'
 import uuidv4 from 'uuid/v4'
 import Face from './Face'
 import Watermark from '@/utils/waterMark'
+import { transform } from '@/utils/face'
 
 export default {
   name: 'ConvBox',
@@ -264,6 +279,8 @@ export default {
         done: 'success',
         error: 'exception'
       },
+      // 显示文件上传进度条
+      progressVisible: false,
       messageList: [],
 
       imgFormat: ['jpg', 'jpeg', 'png', 'gif'],
@@ -378,10 +395,13 @@ export default {
      * @param {Object} info {file, fileList}
      */
     handleUpload ({ file }) {
+      this.progressVisible = true
       this.fileUpload = file
       if (file.status === 'done') {
+        this.progressVisible = false
         this.$message.success(`${file.name} 上传成功`)
       } else if (file.status === 'error') {
+        this.progressVisible = false
         this.$message.error(`${file.name} 上传失败.`)
         this.fileUpload = {}
       }
@@ -480,7 +500,7 @@ export default {
        * "levels": ""
        */
       const { status } = this.fileUpload
-      const content = this.messageContent
+      const content = transform(this.messageContent)
       // 如果有文件消息，发送文件消息，忽略文字消息
       if (status === 'done') {
         const { fileId, fileName, readPath, fileExt } = this.fileUpload.response.result
@@ -578,7 +598,7 @@ export default {
       const index = this.imgFormat.indexOf(extension.toLowerCase())
       tweet.content = {
         id: id,
-        url: '/api/chat/zzFileManage/GetFile?fileId=eVN8UWex&t=1561193135178',
+        url: url,
         type: index < 0 ? 3 : 2,
         extension: extension,
         title: title,
@@ -590,7 +610,8 @@ export default {
     },
     /** 插入表情 */
     insertFace (item) {
-      this.messageContent = this.messageContent + `<img src="${item}" style="height: 1.5em">`
+      this.messageContent = this.messageContent + 'face' + item
+      this.faceVisible = false
     }
   },
   directives: {
@@ -722,7 +743,7 @@ export default {
         cursor: text;
         // 输入框
         .textarea-input {
-          height: 120px;
+          height: 90px;
           width: 100%;
           line-height: 20px;
           color: black;
@@ -730,7 +751,7 @@ export default {
           outline: none;
           border: none;
           z-index: 2;
-          margin-top: -40px;
+          // margin-top: -40px;
         }
         // 文件上传展示
         .upload-display {

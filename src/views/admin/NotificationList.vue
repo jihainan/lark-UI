@@ -72,7 +72,7 @@
           :wrapperCol="wrapperCol"
           label="标题"
         >
-          <a-input v-decorator="['title',{rules: [{ required: true, message: '请填写标题' }]}]" />
+          <a-input v-decorator="['title',{rules: [{ required: true, message: '请填写标题' },{ max: 100, message: '最多填写100个字' }]}]" />
         </a-form-item>
         <!-- <a-form-item
           :labelCol="labelCol"
@@ -121,7 +121,7 @@
           :wrapperCol="wrapperCol"
           label="内容"
         >
-          <a-textarea :rows="5" v-decorator="['content']"/>
+          <a-textarea :rows="5" v-decorator="['content',{rules: [{ max: 100, message: '最多填写2000个字' }]}]" />
         </a-form-item>
       </a-form>
     </a-modal>

@@ -10,7 +10,7 @@
     :visible="activeOption=='talkFile'"
     :destroyOnClose="true"
   >
-    <file-grabble></file-grabble>
+    <file-grabble :groupId="groupId"></file-grabble>
 
   </a-drawer>
 </template>
@@ -32,6 +32,11 @@ export default {
       type: String,
       default: '',
       required: true
+    },
+    groupId: {
+      type: String,
+      default: '',
+      required: true
     }
   },
   data () {
@@ -39,7 +44,8 @@ export default {
       data: []
     }
   },
-  created () {},
+  created () {
+  },
   watch: {
     activeOption (newValue) {
       if (newValue === 'talkFile') {

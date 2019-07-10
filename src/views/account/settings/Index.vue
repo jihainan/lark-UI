@@ -42,7 +42,7 @@
             </a-menu-item>
             <a-menu-item key="/account/settings/commontool">
               <router-link :to="{ name: 'CommonToolSettings' }">
-                常用工具设置
+                常用链接设置
               </router-link>
             </a-menu-item>
           </a-menu>

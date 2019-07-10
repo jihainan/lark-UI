@@ -193,7 +193,7 @@ export const asyncRouterMap = [
           name: 'CommonTools',
           component: () => import('@/views/admin/CommonTools'),
           meta: {
-            title: '常用工具管理',
+            title: '常用链接管理',
             icon: 'tool',
             keepAlive: false,
             permission: ['commontools']
@@ -401,7 +401,7 @@ export const asyncRouterMap = [
             name: 'CommonToolSettings',
             component: () => import('@/views/account/settings/CommonTool'),
             meta: {
-              title: '常用工具设置',
+              title: '常用链接设置',
               hidden: true,
               keepAlive: false,
               permission: ['self']

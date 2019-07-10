@@ -3,13 +3,13 @@
     <a-card>
       <div class="table-page-search-wrapper">
         <a-form layout="inline">
-          <a-row :gutter="32" type="flex" justify="end">
-            <a-col :md="6" :sm="24">
-              <a-form-item label="标题">
-                <a-input v-model="queryParam.title"/>
+          <a-row type="flex" justify="end" :gutter="8">
+            <a-col :span="12">
+              <a-form-item label="通知标题">
+                <a-input v-model="queryParam.title" placeholder="请在此输入..." />
               </a-form-item>
             </a-col>
-            <a-col :md="6" :sm="24">
+            <a-col :span="6">
               <a-form-item label="消息类型">
                 <a-select placeholder="请选择" v-model="queryParam.type">
                   <a-select-option value="admin">管理员公告</a-select-option>
@@ -17,23 +17,16 @@
                 </a-select>
               </a-form-item>
             </a-col>
-            <a-col :md="6" :sm="24">
-              <span class="table-page-search-submitButtons">
-                <a-button type="primary" @click="search">查询</a-button>
-                <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
-              </span>
+            <a-col :span="4">
+              <a-button-group>
+                <a-button @click="search">查询</a-button>
+                <a-button @click="() => queryParam = {}">重置</a-button>
+              </a-button-group>
             </a-col>
           </a-row>
         </a-form>
       </div>
-      <s-table
-        ref="stable"
-        size="default"
-        :columns="columns"
-        :data="loadData"
-        :alert="false"
-      >
-      </s-table>
+      <s-table ref="stable" size="default" :columns="columns" :data="loadData" :alert="false"></s-table>
     </a-card>
   </div>
 </template>
@@ -69,8 +62,8 @@ export default {
           key: 'type',
           customRender: function (type) {
             const config = {
-              'admin': '管理员公告',
-              'system': '系统消息'
+              admin: '管理员公告',
+              system: '系统消息'
             }
             return config[type]
           }

@@ -1,6 +1,6 @@
 <template>
   <!-- groups item -->
-  <div :class="groupItemClasses" @click="handleClick">
+  <div :class="groupItemClasses" @click="handleClick" :key="groupInfo.id">
 
     <div class="avatar">
       <a-avatar class="avatar-img" shape="square" :src="groupInfo.groupImg" :size="30">

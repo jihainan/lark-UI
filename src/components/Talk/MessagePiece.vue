@@ -1,6 +1,6 @@
 <template>
   <!-- 聊天消息框 -->
-  <div :class="['message-piece', {send: isMe(), receive: !isMe()}]" >
+  <div :class="['message-piece', {send: isMe(), receive: !isMe()}]" :key="messageInfo.id">
 
     <!-- 消息时间 需要判断显示时间的条件 -->
     <div class="time-stamp">
@@ -82,7 +82,7 @@
                 <a-icon type="file" theme="twoTone" style="fontSize: 26px" />
               </div>
               <div class="file-message-info">
-                <a-tooltip placement="topLeft" :title="messageInfo.content.title">
+                <a-tooltip placement="topLeft" :title="fileTitle">
                   <span>{{ fileTitle }}</span>
                 </a-tooltip>
 
@@ -130,23 +130,41 @@ export default {
     return {
       // 图片加载状态 0:无状态 1:加载中 2:加载成功 3:加载失败
       imgLoading: 0,
-      previewVisible: false,
-      imgPreviewUrl: api.imgPrevie + '?fileId=' + this.messageInfo.content.id + '&t=' + new Date().getTime(),
-      downloadUrl: api.fileDownload + '?fileId=' + this.messageInfo.content.id,
-      fileTitle: this.genFileTitle()
+      previewVisible: false
     }
   },
   computed: {
-    ...mapGetters(['avatar', 'userId'])
-  },
-  filters: { timeFormat: toWeiXinString },
-  methods: {
-    genFileTitle () {
+    ...mapGetters(['avatar', 'userId']),
+    imgPreviewUrl: {
+      get: function () {
+        return api.imgPrevie + '?fileId=' + this.messageInfo.content.id
+      },
+      set: function () {
+      }
+    },
+    downloadUrl () {
+      return api.fileDownload + '?fileId=' + this.messageInfo.content.id
+    },
+    fileTitle () {
       const { secretLevel, extension, title } = this.messageInfo.content
       const ext = extension === '0' || extension === '' ? '' : '.' + extension
       const sec = this.$options.filters.fileSecret(secretLevel)
       return '[' + sec + ']' + title + ext
-    },
+    }
+  },
+  watch: {
+    messageInfo: {
+      handler: function () {
+        // 处理图片的加载状态
+        if (this.messageInfo.content.type === 2) this.imgLoading = 1
+        else this.imgLoading = 0
+      },
+      immediate: true,
+      deep: true
+    }
+  },
+  filters: { timeFormat: toWeiXinString },
+  methods: {
     /**
      * 判断是否当前用户发送的消息
      * @param {String} fromId 消息发送者的id
@@ -166,9 +184,7 @@ export default {
         this.imgLoading = 3
       }
       if (event.type === 'click') {
-        if (this.messageInfo.content.type === 2) this.imgLoading = 1
-        else this.imgLoading = 0
-        this.imgPreviewUrl = api.imgPrevie + '?fileId=' + this.messageInfo.content.id + '&t=' + new Date().getTime()
+        this.messageInfo.content.id += '&t=' + Math.random()
       }
     },
     /**
