@@ -8,6 +8,7 @@
     :visible="activeOption=='moreInfo'"
     :wrapStyle="{overflow: 'auto',paddingBottom: '108px', marginTop: '64px' }"
     :destroyOnClose="true"
+    :closable="false"
   >
     <div class="talk-setting" ref="settingDrawer">
       <!-- <a-row :gutter="8" class="group-setting-row">
@@ -55,7 +56,7 @@
       </div>
       <div style="margin-top: 30px">
         <h4 class="float">创建人:</h4>
-        <p class="line_height">{{ setting.creator }}</p>
+        <p class="line_height">{{ setting.creatorName }}</p>
       </div>
       <div style="margin-top: 30px">
         <h4 class="float">描述:</h4>
@@ -172,7 +173,7 @@
     <ul class="setting_ul">
       <li v-for="(item) in userList" :key="item.key">
         <a-avatar shape="square" :src="item.avartar" style="height: 50px" >{{ item.name }}</a-avatar>
-        <a-tooltip title="setting.userName">
+        <a-tooltip :title="item.name">
           <span class="setting_ul_sp">{{ item.name }}</span>
         </a-tooltip>
       </li>

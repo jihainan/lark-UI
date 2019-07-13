@@ -54,7 +54,7 @@ export function messagePopup (message) {
  */
 function parseInfo (message) {
   let info = message.username + ':'
-  const { type, title } = message
+  const { type, title } = message.content
   info = info + MESSAGE_TYPE.get(type || 1) + (title || '')
   return info
 }

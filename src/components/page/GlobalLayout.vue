@@ -556,7 +556,7 @@ body {
     padding-left: 24px;
     -webkit-transition: all 0.3s;
     transition: all 0.3s;
-    background: #0052cc;
+    background: #0246aa;
     overflow: hidden;
 
     img,

@@ -66,3 +66,17 @@
                             src\views\dashboard\NotificationList.vue
                             src\api\workplace.js
                             src\config\router.config.js
+- 20190709 push by fanjiao:filepath--【工作舱卡片及卡片内数据完全获取到后显示，加载中添加等待样式】
+                            src\views\dashboard\Card.vue
+                            src\views\dashboard\Workplace.vue
+- 20190709 push by fanjiao:filepath--【工作舱常用工具点击链接新窗口】
+                            src\views\dashboard\Workplace.vue
+- 20190709 push by fanjiao:filepath--【公告及消息的标题和内容添加最大长度】
+                            src\views\admin\NotificationList.vue
+                            src\views\dashboard\Feedback.vue         
+- 20190709 push by fanjiao:filepath--【用户管理添加性别】
+                            src\views\admin\UserList.vue
+- 20190710 push by fanjiao:filepath--【调整窗口宽度】
+                            src\components\admin\UserTransferModel.vue
+- 20190710 push by fanjiao:filepath--【个人常用工具设置页样式调整list调整为table】
+                            src\views\account\settings\CommonTool.vue

@@ -26,7 +26,7 @@
             <div @click="isCurrent(item.content.title)" :class="{'current':flag}" v-html="item.content.title"></div>
           </div>
           <div class="history_right">
-            <span>{{ item.time }}</span>
+            <span>{{ item.sendTimeShort }}</span>
             <div class="secret" style="margin: 6px 0 0 20px">
               <a-tag color="orange" v-if="item.content.secretLevel == '40'">秘密</a-tag>
               <a-tag color="tomato" v-if="item.content.secretLevel == '60'">机密</a-tag>
@@ -43,7 +43,7 @@
             <img :src="item.content.url" alt="图片加载失败" class="content_img">
           </div>
           <div class="history_right">
-            <span>{{ item.time }}</span>
+            <span>{{ item.sendTimeShort }}</span>
             <div class="secret" style="margin: 6px 0 0 20px">
               <a-tag color="orange" v-if="item.content.secretLevel == '40'">秘密</a-tag>
               <a-tag color="tomato" v-if="item.content.secretLevel == '60'">机密</a-tag>
@@ -51,7 +51,7 @@
             </div>
 
           </div>
-          <a :href="genDownLoadPath(item.content.id)" class="down dow_height" download>下载</a>
+          <a :href="genDownLoadPath(item.content.id)" class="down dow_height">下载</a>
         </div>
         <div class="borderDiv" v-if="item.content.type == 3">
           <!-- <img :src="item.avatar" class="content_l" alt> -->
@@ -66,18 +66,21 @@
             </dir>
           </div>
           <div class="history_right">
-            <span>{{ item.time }}</span>
+            <span>{{ item.sendTimeShort }}</span>
             <div class="secret" style="margin: 6px 0 0 20px">
-              <a-tag color="orange" v-if="item.content.secretLevel == '70'">秘密</a-tag>
-              <a-tag color="tomato" v-if="item.content.secretLevel == '80'">机密</a-tag>
-              <a-tag color="" v-if="item.content.secretLevel == '60'">非密</a-tag>
+              <a-tag color="orange" v-if="item.content.secretLevel == '40'">秘密</a-tag>
+              <a-tag color="tomato" v-if="item.content.secretLevel == '60'">机密</a-tag>
+              <a-tag color="" v-if="item.content.secretLevel == '30'">非密</a-tag>
             </div>
           </div>
-          <a :href="genDownLoadPath(item.content.id)" class="down dow_height" download>下载</a>
+          <a :href="genDownLoadPath(item.content.id)" class="down dow_height">下载</a>
         </div>
       </li>
     </ul>
     <a-button v-if="isShow" @click="getHistory" style="margin: auto; display: block;"> 加载失败，点击重试</a-button>
+    <div v-if="!isShow" class="login_img">
+      没有更多信息...
+    </div>
   </div>
 
 </template>
@@ -124,15 +127,12 @@ export default {
   beforeDestroy () {
     this.activeOption = ''
   },
-  updated () {
-  },
   methods: {
     /** 生成下载路径 */
     genDownLoadPath (fileId) {
       return api.fileDownload + '?fileId=' + fileId
     },
     onSearch (value) {
-      console.log(value)
     },
     isCurrent (str) {
       if (str.length > 100) {
@@ -152,8 +152,9 @@ export default {
     getHistory () {
       this.userId = this.$store.getters.userId
       talkHistoryAll(this.userId, this.hisGrop, this.contactId, this.page).then(data => {
+        this.isShow = false
         const datas = data.result.data
-        datas.map((item, index, array) => {
+        datas.map((item) => {
           this.items.push(item)
         })
       }).catch(res => {
@@ -325,5 +326,9 @@ export default {
     height: 15px
   }
 
+}
+.login_img{
+  text-align: center;
+  color: #cccccc;
 }
 </style>

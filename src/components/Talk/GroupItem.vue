@@ -1,10 +1,10 @@
 <template>
   <!-- groups item -->
-  <div :class="groupItemClasses" @click="handleClick">
+  <div :class="groupItemClasses" @click="handleClick" :key="groupInfo.id">
 
     <div class="avatar">
       <a-avatar class="avatar-img" shape="square" :src="groupInfo.groupImg" :size="30">
-        <span>{{ groupInfo.groupName }}</span>
+        <span>{{ groupInfo.groupName.substr(0, 2) }}</span>
       </a-avatar>
     </div>
 
@@ -96,7 +96,7 @@ export default {
 
     &-img {
       border-radius: 2px;
-      background-color: rgb(0, 162, 174);
+      background-color: #4da6fa;
       span {
         color: #fff;
       }

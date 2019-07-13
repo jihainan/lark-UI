@@ -15,9 +15,7 @@
     key="2"
   >
     <sou :contactId="contactId" :hisGrop="hisGrop"></sou>
-    <div class="login_img">
-      没有更多信息...
-    </div>
+
   </a-drawer>
 </template>
 
@@ -86,9 +84,5 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.login_img{
-  text-align: center;
-  color: #cccccc;
-}
 
 </style>

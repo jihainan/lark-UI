@@ -8,11 +8,11 @@
       >
         <a-input
           v-decorator="['groupName', {rules: [{
-            required: true, message: '研讨组名称不能为空',
+            required: true, message: '不能为空',
           }, {
-            max: 20, message: '名字太长了'
+            max: 20, message: '不能超过20个字符'
           }, {
-            whitespace: true, message: '名称不能为空'
+            whitespace: true, message: '不能为空'
           }]}]"
           placeholder="给研讨组起一个名字"
         />
@@ -25,7 +25,7 @@
       >
         <a-select
           v-decorator="['levels', {rules: [{
-            required: true, message: '研讨组密级不能为空',
+            required: true, message: '不能为空',
           }]}]"
           placeholder="设置研讨组密级"
         >
@@ -42,9 +42,11 @@
       >
         <a-input
           v-decorator="['pname', {rules: [{
-            required: true, message: '项目不能为空',
+            required: true, message: '不能为空',
+          }, {
+            max: 20, message: '不能超过20个字符'
           }]}]"
-          placeholder="请填写研讨组所属项目"
+          placeholder="请填写研讨组所属项目名称"
         />
       </a-form-item>
 

@@ -44,11 +44,11 @@
           </div>
           <div>
             <p class="attr">电话:</p>
-            <p class="val">{{ contactsInfo.phone }}</p>
+            <p class="val">{{ contactsInfo.otel }}</p>
           </div>
           <div>
-            <p class="attr">职称:</p>
-            <p class="val">{{ contactsInfo.proTitle }}</p>
+            <p class="attr">邮箱:</p>
+            <p class="val">{{ contactsInfo.oemail }}</p>
           </div>
         </div>
       </div>
@@ -105,7 +105,6 @@ export default {
     sendMessage () {
       this.$emit('clickSend')
       const contactItem = this.contactsInfo
-      console.log('asdf')
       this.$router.push({
         path: '/talk/ChatPanel/ChatBox',
         query: new RecentContact(contactItem)
@@ -186,7 +185,7 @@ export default {
         right: 0;
         top: 0;
         border-radius: 2px;
-        background-color: rgb(0, 162, 174);
+        background-color: #4da6fa;
 
         span {
           color: #fff;

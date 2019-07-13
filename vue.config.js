@@ -82,9 +82,9 @@ module.exports = {
           'card-inner-head-padding': '6px',
           'card-padding-base': '12px',
           'card-padding-wider': '16px',
-          'layout-sider-background': '#0052CC',
+          'layout-sider-background': '#0246aa',
           'menu-dark-submenu-bg': '#0544a3',
-          'menu-dark-bg': '#0052CC',
+          'menu-dark-bg': '#0246aa',
           'menu-item-height': '48px',
           'menu-inline-toplevel-item-height': '48px'
         },

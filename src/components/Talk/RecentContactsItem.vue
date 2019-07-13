@@ -1,6 +1,6 @@
 <template>
   <!-- recent contacts item -->
-  <div :class="recentContactsClasses">
+  <div :class="recentContactsClasses" :key="contactsInfo.id">
 
     <div class="avatar">
       <a-badge
@@ -11,7 +11,7 @@
         :numberStyle="badgeNumStyle">
 
         <a-avatar class="avatar-img" shape="square" :src="contactsInfo.avatar" :size="40">
-          <span>{{ contactsInfo.name }}</span>
+          <span>{{ contactsInfo.name.substr(0, 4) }}</span>
         </a-avatar>
 
       </a-badge>
@@ -34,7 +34,8 @@
         <span v-if="contactsInfo.sender && contactsInfo.isGroup">{{ contactsInfo.sender }}:</span>
 
         <!-- 分类显示消息内容 -->
-        <div v-html="lastMessage" class="msg-content"></div>
+        {{ lastMessage }}
+        <!-- <div v-html="lastMessage" class="msg-content"></div> -->
       </div>
     </div>
 
@@ -141,7 +142,7 @@ export default {
 
     &-img {
       border-radius: 2px;
-      background-color: rgb(0, 162, 174);
+      background-color: #4da6fa;
       span {
         color: #fff;
       }
@@ -169,11 +170,6 @@ export default {
       color: rgb(140, 141, 143);
       overflow: hidden;
       text-overflow: ellipsis;
-      // TODO: 临时添加，需要修改
-      display: flex;
-      &-content {
-        display: flex;
-      }
 
       .at-me {
         color: red;

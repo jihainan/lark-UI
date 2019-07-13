@@ -1,8 +1,8 @@
 <template>
   <div>
     <ul class="faces">
-      <li v-for="item in faceMap" :key="item">
-        <img :src="item" @click="insertFace(item)"/>
+      <li v-for="(item, index) in faceList" :key="index">
+        <img :src="faceMap[item]" :alt="item" :title="item" @click="insertFace(item)"/>
       </li>
     </ul>
     <div class="clear"></div>
@@ -15,7 +15,7 @@ export default {
   components: {},
   data () {
     return {
-      // faceList: faceUtils.faceItems,
+      faceList: faceUtils.alt,
       faceMap: faceUtils.faces()
     }
   },
@@ -24,7 +24,6 @@ export default {
   methods: {
     insertFace: function (item) {
       this.$emit('insertFace', item)
-      this.$emit('getfocus')
     }
   }
 }

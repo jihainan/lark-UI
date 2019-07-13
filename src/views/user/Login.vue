@@ -1,6 +1,7 @@
 <template>
   <div class="main">
     <a-form
+      v-show="systemAdmin"
       id="formLogin"
       name="formLogin"
       class="user-layout-login"
@@ -39,16 +40,29 @@
       <a-form-item style="margin-top:32px">
         <a-button
           size="large"
-          type="primary"
+          type="danger"
           htmlType="submit"
           name="submit"
           id="submit"
           class="login-button"
           :loading="state.loginBtn"
           :disabled="state.loginBtn"
-        >进入</a-button>
+        >管理员进入</a-button>
       </a-form-item>
     </a-form>
+
+    <!-- 上面是原来的用户名密码登陆的代码 -->
+
+    <a-button
+      block
+      size="large"
+      type="primary"
+      @click="handleLogin"
+      class="no-login-button"
+      :loading="state.loginBtn"
+      :disabled="state.loginBtn"
+    >进入</a-button>
+    <a-icon type="yuque" :style="{'fontSize':'1px'}" @click="systemAdmin=!systemAdmin"/>
   </div>
 </template>
 
@@ -59,6 +73,7 @@ import { timeFix } from '@/utils/util'
 export default {
   data () {
     return {
+      systemAdmin: false,
       loginBtn: false,
       loginType: 0,
       form: this.$form.createForm(this),
@@ -125,12 +140,31 @@ export default {
         description: '登陆出现错误，请稍后再试',
         duration: 4
       })
+    },
+    // 免用户名密码登陆的方法
+    handleLogin () {
+      const { Login, state } = this
+      state.loginBtn = true
+      Login({
+        username: 'username',
+        password: 'password'
+      })
+        .then(res => this.loginSuccess(res))
+        .catch(err => this.requestFailed(err))
+        .finally(() => {
+          state.loginBtn = false
+        })
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
+// 免密登陆的登陆按钮
+.no-login-button {
+  margin-top: 32px;
+}
+
 .user-layout-login {
   label {
     font-size: 14px;

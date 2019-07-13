@@ -18,111 +18,99 @@ function handleWsOpen () {
   store.commit('SET_ONLINE_STATE', LandingStatus.ONLINE)
 }
 
-/** 接收到新消息 */
-function handleWsMessage (messageEvent) {
-  const received = JSON.parse(messageEvent.data)
-  switch (received.code) {
-    // 处理消息 更新消息缓存-->最近联系人列表
-    case 0:
-    case 1:
-      store
-        .dispatch('UpdateTalkMap', received.data)
-        .then(() => {
-          store.dispatch('UpdateRecentContacts', {
-            ...received.data.contactInfo,
-            reOrder: true,
-            addUnread: true
-          })
-        })
-        .catch(error => {
-          console.log(error)
-          const key = `talk${Date.now()}`
-          notification.warning({
-            message: '消息同步出错',
-            description: '研讨消息同步出错，点击同步按钮重新同步',
-            duration: null,
-            btn: (h) => {
-              return h('a-button', {
-                props: {
-                  type: 'primary',
-                  size: 'small',
-                  icon: 'reload'
-                },
-                on: {
-                  click: () => {
-                    store.dispatch('GetTalkMap')
-                      .then(() => {
-                        store.dispatch('GetRecentContacts')
-                      })
-                      .then(() => notification.close(key))
-                  }
-                }
-              }, '同步')
+/** 处理私聊和群组消息 */
+function handleMessage (data) {
+  store
+    .dispatch('UpdateTalkMap', data)
+    .then(() => {
+      store.dispatch('UpdateRecentContacts', {
+        ...data.contactInfo,
+        reOrder: true,
+        addUnread: true
+      })
+    })
+    .catch(error => {
+      console.log(error)
+      const key = `talk${Date.now()}`
+      notification.warning({
+        message: '消息同步出错',
+        description: '研讨消息同步出错，点击同步按钮重新同步',
+        duration: null,
+        btn: (h) => {
+          return h('a-button', {
+            props: {
+              type: 'primary',
+              size: 'small',
+              icon: 'reload'
             },
-            key
-          })
-        })
-      // 向客户端发送提醒
-      messagePopup(received)
-      break
-    case 10:
-      // 接收到创建群组的消息-->更新最近联系人-->更新群组列表
-      const {
-        groupId,
-        groupName,
-        groupImg,
-        levels
-      } = received.data.zzGroup
-      store
-        .dispatch('UpdateRecentContacts', {
-          id: groupId,
-          name: groupName,
-          avatar: groupImg,
-          secretLevel: levels,
-          memberNum: received.data.userList.length,
-          isGroup: true,
-          reOrder: true,
-          addUnread: false
-        })
-        .then(() => {
-          store.dispatch('GetGroupList')
-        })
-        .catch(error => {
-          console.log(error)
-          const key = `talk${Date.now()}`
-          notification.warning({
-            message: '有新的群组',
-            description: '新增群组同步出错，点击手动同步',
-            duration: null,
-            btn: (h) => {
-              return h('a-button', {
-                props: {
-                  type: 'primary',
-                  size: 'small',
-                  icon: 'reload'
-                },
-                on: {
-                  click: () => {
+            on: {
+              click: () => {
+                store.dispatch('GetTalkMap')
+                  .then(() => {
                     store.dispatch('GetRecentContacts')
-                      .then(() => {
-                        store.dispatch('GetGroupList')
-                      })
-                      .then(() => notification.close(key))
-                  }
-                }
-              }, '同步')
+                  })
+                  .then(() => notification.close(key))
+              }
+            }
+          }, '同步')
+        },
+        key
+      })
+    })
+  // 向客户端发送提醒
+  messagePopup(data)
+}
+
+function handleCreateGroup (data) {
+  // 接收到创建群组的消息-->更新最近联系人-->更新群组列表
+  const {
+    groupId,
+    groupName,
+    groupImg,
+    levels
+  } = data.zzGroup
+  store
+    .dispatch('UpdateRecentContacts', {
+      id: groupId,
+      name: groupName,
+      avatar: groupImg,
+      secretLevel: levels,
+      memberNum: data.userList.length,
+      isGroup: true,
+      reOrder: true,
+      addUnread: false
+    })
+    .then(() => {
+      store.dispatch('GetGroupList')
+    })
+    .catch(error => {
+      console.log(error)
+      const key = `talk${Date.now()}`
+      notification.warning({
+        message: '有新的群组',
+        description: '新增群组同步出错，点击手动同步',
+        duration: null,
+        btn: (h) => {
+          return h('a-button', {
+            props: {
+              type: 'primary',
+              size: 'small',
+              icon: 'reload'
             },
-            key
-          })
-        })
-      break
-    case 4:
-      // 创建群组时给服务端返回code为4的数据
-      this.ws.send(messageEvent.data)
-      break
-    default:
-      break
-  }
+            on: {
+              click: () => {
+                store.dispatch('GetRecentContacts')
+                  .then(() => {
+                    store.dispatch('GetGroupList')
+                  })
+                  .then(() => notification.close(key))
+              }
+            }
+          }, '同步')
+        },
+        key
+      })
+    })
 }
 
 class SocketApi {
@@ -192,7 +180,24 @@ class SocketApi {
     // 收到websocket消息
     ws.onmessage = messageEvent => {
       const time = new Date()
-      handleWsMessage()
+      const received = JSON.parse(messageEvent.data)
+      switch (received.code) {
+        // 处理消息 更新消息缓存-->最近联系人列表
+        case 0:
+        case 1:
+          handleMessage(received.data)
+          break
+        case 10:
+          handleCreateGroup(received.data)
+          break
+        case 4:
+          // 创建群组时给服务端返回code为4的数据
+          this.ws.send(messageEvent.data)
+          break
+        default:
+          break
+      }
+
       self.lastInteractionTime(time.getTime())
     }
 

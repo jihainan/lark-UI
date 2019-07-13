@@ -85,7 +85,7 @@ export default {
     .user-node-avatar {
       border-radius: 2px;
       margin:0 5px 4px 0px;
-      background-color: rgb(0, 162, 174);
+      background-color: #4da6fa;
       span {
         color: #fff;
       }

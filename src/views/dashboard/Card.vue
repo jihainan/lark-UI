@@ -116,6 +116,10 @@ export default {
     cardData: {
       type: Object,
       required: true
+    },
+    unRequstType: {
+      type: Array,
+      required: true
     }
   },
   computed: {
@@ -124,11 +128,17 @@ export default {
     }
   },
   created () {
-    if (this.content.type !== 'intro' && this.content.type !== 'local' && this.content.type !== 'activity') {
+    // 过滤需要请求接口数据的卡片类型 by fanjiao
+    let check = false
+    if (this.unRequstType.indexOf(this.content.type) === -1) {
+      check = true
+    }
+    if (check) {
       this.$http.get('portal' + this.content.url + '?' + 'orgCode=' + this.userInfo.orgCode)
         .then(res => {
           this.loading = false
           this.contentData = res.result.data
+          this.$emit('loadingDone')
         })
     }
   },

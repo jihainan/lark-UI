@@ -1,8 +1,8 @@
 <template>
-  <div :class="contactsItemClasses" @click="handleClick">
+  <div :class="contactsItemClasses" @click="handleClick" :key="contactsInfo.key">
     <div class="avatar">
       <a-avatar class="avatar-img" shape="square" :src="contactsInfo.icon" :size="30">
-        <span>{{ contactsInfo.title }}</span>
+        <span>{{ contactsInfo.title.substr(0, 2) }}</span>
       </a-avatar>
     </div>
     <div class="extra">
@@ -82,7 +82,7 @@ export default {
 
     &-img {
       border-radius: 2px;
-      background-color: rgb(0, 162, 174);
+      background-color: #4da6fa;
       span {
         color: #fff;
       }

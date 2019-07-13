@@ -4,54 +4,48 @@
       style="margin-top: 24px"
       :bordered="false"
       title="工具列表">
-
-      <div slot="extra">
-        <!-- <a-radio-group>
-          <a-radio-button>全部</a-radio-button>
-          <a-radio-button>已选</a-radio-button>
-          <a-radio-button>未选</a-radio-button>
-        </a-radio-group> -->
-        <a-input-search style="margin-left: 16px; width: 272px;" />
+      <div class="table-page-search-wrapper">
+        <a-form layout="inline">
+          <a-row type="flex" justify="end" :gutter="8">
+            <a-col :span="12">
+              <a-form-item label="工具名称">
+                <a-input v-model="queryParam.title" placeholder="在此输入..." />
+              </a-form-item>
+            </a-col>
+            <a-col :span="4">
+              <a-button-group>
+                <a-button @click="search">查询</a-button>
+                <a-button @click="() => queryParam = {}">重置</a-button>
+              </a-button-group>
+            </a-col>
+          </a-row>
+        </a-form>
       </div>
-
-      <a-list size="large">
-        <a-list-item :key="index" v-for="(item, index) in data">
-          <a-list-item-meta :description="item.description">
-            <a-avatar slot="avatar" size="large" shape="square" :src="'/tools/Icon-'+item.description+'.png'"/>
-            <a slot="title">{{ item.title }}</a>
-          </a-list-item-meta>
-          <div slot="actions">
-            <a @click="addId(item.id), isShow($event, index)" v-if="flag[index]">加入常用</a>
-            <a @click="removeId(item.id), isShow($event, index)" v-if="flags[index]">已添加</a>
-          </div>
-          <div class="list-content">
-            <!-- <div class="list-content-item">
-              <span>所属部门</span>
-              <p>{{ item.owner }}</p>
-            </div> -->
-            <!-- <div class="list-content-item">
-              <span>使用量</span>
-              <p>{{ item.downloadNum }}</p>
-            </div> -->
-            <div class="list-content-item">
-              <span>更新时间</span>
-              <p>{{ item.startAt }}</p>
-            </div>
-            <div class="list-content-item">
-              <a-rate :defaultValue="item.star" disabled />
-            </div>
-          </div>
-        </a-list-item>
-      </a-list>
-      <div v-text="t" style="display:none"></div>
+      <s-table
+        ref="stable"
+        size="default"
+        :columns="columns"
+        :data="loadData"
+        :rowKey="(record) => record.id"
+      >
+        <span slot="name" slot-scope="text, record">
+          <a-avatar slot="avatar" size="large" shape="square" :src="'/tools/Icon-'+record.description+'.png'"/><span style="margin-left:10px">{{ record.title }}</span>
+        </span>
+        <span slot="action" slot-scope="text, record">
+          <a @click="addId(record.id)" v-if="record.defaultChecked === false">加入常用</a>
+          <a @click="removeId(record.id)" v-if="record.defaultChecked === true">取消常用</a>
+        </span>
+      </s-table>
     </a-card>
   </div>
 </template>
 <script>
 import { setCheckCommonTools, getSelfCommonTools, delCheckCommonTools } from '@/api/setting'
+import { STable } from '@/components'
 export default {
   name: 'StandardList',
   components: {
+    STable
   },
   data () {
     return {
@@ -59,7 +53,38 @@ export default {
       flag: [],
       data: [],
       t: '',
-      user: {}
+      user: {},
+      // 查询参数
+      queryParam: {},
+      // 表头
+      columns: [
+        {
+          title: '工具名称',
+          dataIndex: 'title',
+          scopedSlots: { customRender: 'name' }
+        },
+        {
+          title: '描述',
+          dataIndex: 'description'
+        },
+        {
+          title: 'uri',
+          dataIndex: 'uri'
+        },
+        {
+          title: '操作',
+          width: '200px',
+          dataIndex: 'action',
+          scopedSlots: { customRender: 'action' }
+        }
+      ],
+      // 加载数据方法 必须为 Promise 对象
+      loadData: parameter => {
+        parameter.orgCode = this.user.orgCode
+        return getSelfCommonTools(parameter).then(res => {
+          return res.result
+        })
+      }
     }
   },
   computed: {
@@ -69,9 +94,15 @@ export default {
   },
   created () {
     this.user = Object.assign({}, this.userInfo)
-    this.getData()
+    // this.getData()
   },
   methods: {
+    /**
+     * 搜索
+     */
+    search () {
+      this.$refs.stable.loadData({}, this.queryParam, {})
+    },
     /**
      * 添加个人常用工具
      */
@@ -83,6 +114,7 @@ export default {
               message: '操作成功',
               duration: 2
             })
+            this.search()
           }
         })
     },
@@ -97,34 +129,9 @@ export default {
               message: '取消常用',
               duration: 2
             })
+            this.search()
           }
         })
-    },
-    /**
-     * 加入常用/已添加 按钮切换
-     */
-    isShow ($event, index) {
-      this.t = Math.random()
-      this.flag[index] = !this.flag[index]
-      this.flags[index] = !this.flags[index]
-    },
-    /**
-     * 获取工具
-     */
-    getData () {
-      getSelfCommonTools({ 'orgCode': this.user.orgCode }).then(res => {
-        const datas = res.result.data
-        datas.map(item => {
-          this.data.push(item)
-          if (item.defaultChecked === true) {
-            this.flags.push(true)
-            this.flag.push(false)
-          } else {
-            this.flags.push(false)
-            this.flag.push(true)
-          }
-        })
-      })
     }
   }
 }
