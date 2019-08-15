@@ -32,7 +32,7 @@
       </div>
 
       <div class="message-bubble left right">
-        <div class="bubble-content">
+        <div class="bubble-content" v-contextmenu:messageCM>
           <div class="plain">
             <!-- 纯文本信息 -->
             <div v-if="messageInfo.content.type === 1" class="text-message">
@@ -116,6 +116,11 @@
         </div>
       </div>
     </div>
+
+    <!-- 消息气泡右键菜单 -->
+    <v-contextmenu ref="messageCM">
+      <v-contextmenu-item @click="handleMsgCopy">复制</v-contextmenu-item>
+    </v-contextmenu>
   </div>
 </template>
 
@@ -234,6 +239,18 @@ export default {
       }).catch(() => {
         this.$message.error('下载失败，请稍后再试')
       })
+    },
+    /**
+     * 右键菜单-复制
+     */
+    handleMsgCopy (vm, event) {
+      // 使用vue-clipboard2插件
+      this.$copyText(this.messageInfo.content.title)
+        .then(e => {
+          this.$message.success('复制成功！')
+        }, () => {
+          this.$message.success('复制失败！')
+        })
     }
   }
 }
