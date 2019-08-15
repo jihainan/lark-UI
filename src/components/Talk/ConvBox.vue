@@ -312,6 +312,12 @@ export default {
               this.messageContent = this.$store.state.talk.draftMap.get(newId) || ''
             })
           })
+        // 加水印
+        if (typeof newId !== 'undefined' && typeof oldId === 'undefined') {
+          this.$nextTick(() => {
+            this.printWaterMark(this.nickname)
+          })
+        }
       },
       immediate: true
     },
@@ -319,11 +325,6 @@ export default {
       // 滚动到最下方
       this.scrollToBottom()
     }
-  },
-  mounted () {
-    // 页面创建时，消息滚动到最近一条
-    this.scrollToBottom()
-    this.printWaterMark(this.nickname)
   },
   methods: {
     /** 给研讨界面添加水印 */
@@ -339,6 +340,7 @@ export default {
         yOffset: 5
       }
       const watermark = new Watermark(config)
+      watermark.remove('user-name-mask')
       watermark.embed('.conv-box-message', 'user-name-mask')
     },
     /**
