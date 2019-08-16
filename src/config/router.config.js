@@ -114,7 +114,7 @@ export const asyncRouterMap = [
         meta: {
           title: '系统管理',
           icon: 'appstore',
-          permission: ['user', 'org', 'role', 'notice', 'menu', 'gatelog']
+          permission: ['user', 'org', 'role', 'notice', 'menu', 'gatelog', 'privateMsg', 'groupMsg']
         },
         children: [{
           path: 'user-list',
