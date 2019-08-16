@@ -245,7 +245,7 @@ export const asyncRouterMap = [
             title: '个人消息审计',
             icon: 'reconciliation',
             keepAlive: false,
-            permission: ['gatelog']
+            permission: ['privateMsg']
           }
         },
         {
@@ -256,7 +256,7 @@ export const asyncRouterMap = [
             title: '群组消息审计',
             icon: 'reconciliation',
             keepAlive: false,
-            permission: ['gatelog']
+            permission: ['groupMsg']
           }
         }
         ]
