@@ -56,9 +56,9 @@ const api = {
   // 群组管理
   groupAll: 'chat/zzGroup/groupListMonitoring',
   // 个人消息审计
-  queryAllMessagePrivate: 'chat/zzMessageInfo/queryAllMessagePrivate',
+  queryAllMessagePrivate: 'admin/zzMessageInfo/queryAllMessagePrivate',
   // 群组消息审计
-  queryAllMessageGroup: 'chat/zzMessageInfo/queryAllMessageGroup'
+  queryAllMessageGroup: 'admin/zzMessageInfo/queryAllMessageGroup'
 }
 
 export default api
