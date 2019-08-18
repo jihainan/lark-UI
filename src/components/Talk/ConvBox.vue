@@ -39,7 +39,11 @@
       <div class="talk-main-box">
         <div v-if="messageList.length" class="talk-main">
           <div v-for="(item, index) in messageList" :key="index" class="talk-item">
-            <message-piece :messageInfo="item" @imgLoaded="scrollToBottom" />
+            <message-piece
+              :messageInfo="item"
+              :isTimeVisible="timeVisibleSet.has(index)"
+              @imgLoaded="scrollToBottom"
+            />
           </div>
         </div>
 
@@ -269,7 +273,9 @@ export default {
         'psd'
       ],
       // 抽屉宽度
-      drawerWidth: ''
+      drawerWidth: '',
+      // 显示时间的消息集合
+      timeVisibleSet: new Set()
     }
   },
   activated () {
@@ -299,20 +305,11 @@ export default {
   },
   watch: {
     'chatInfo.id': {
+      // 切换当前联系人
       handler: function (newId, oldId) {
         this.handleSendSecretLevel()
-        // 设置输入框信息
-        this.$store
-          .dispatch('UpdateDraftMap', [oldId + 'file', this.fileUpload])
-          .then(() => {
-            this.fileUpload = this.$store.state.talk.draftMap.get(newId + 'file') || {}
-          })
-          .then(() => {
-            this.$store.dispatch('UpdateDraftMap', [oldId, this.messageContent]).then(() => {
-              this.messageContent = this.$store.state.talk.draftMap.get(newId) || ''
-            })
-          })
-        // 加水印
+        this.setDraft(newId, oldId)
+        // 设置水印
         if (typeof newId !== 'undefined' && typeof oldId === 'undefined') {
           this.$nextTick(() => {
             this.printWaterMark(this.nickname)
@@ -322,8 +319,8 @@ export default {
       immediate: true
     },
     messageList: function () {
-      // 滚动到最下方
       this.scrollToBottom()
+      this.setTimeVisibleSet()
     }
   },
   methods: {
@@ -342,6 +339,37 @@ export default {
       const watermark = new Watermark(config)
       watermark.remove('user-name-mask')
       watermark.embed('.conv-box-message', 'user-name-mask')
+    },
+    /**
+     * 设置当前研讨的草稿信息
+     * @param {String} preId 上一个研讨ID
+     * @param {String} curId 当前研讨ID
+     */
+    setDraft (curId, preId) {
+      const { $store } = this
+      $store
+        .dispatch('UpdateDraftMap', [preId + 'file', this.fileUpload]).then(() => {
+          this.fileUpload = $store.state.talk.draftMap.get(curId + 'file') || {}
+        }).then(() => {
+          $store.dispatch('UpdateDraftMap', [preId, this.messageContent]).then(() => {
+            this.messageContent = $store.state.talk.draftMap.get(curId) || ''
+          })
+        })
+    },
+    /** 设置显示时间的消息集合 */
+    setTimeVisibleSet () {
+      const { timeVisibleSet, messageList } = this
+      timeVisibleSet.clear()
+      if (messageList.length) {
+        let lastVisibleTime = messageList[0].time
+        messageList.forEach((item, index) => {
+          const interval = new Date(item.time) - new Date(lastVisibleTime)
+          if (interval > 3 * 60 * 1000 || interval === 0) {
+            timeVisibleSet.add(index)
+            lastVisibleTime = item.time
+          }
+        })
+      }
     },
     /**
      * 文件上传状态变化时触发
@@ -515,19 +543,10 @@ export default {
         secretLevel: secretLevel
       }
     },
-    showFaceBox: function () {
-      this.faceVisible = !this.faceVisible
-    },
     /** 插入表情 */
     insertFace (item) {
       this.messageContent = this.messageContent + 'face' + item
       this.faceVisible = false
-    }
-  },
-  directives: {
-    // 使元素获得焦点
-    focus: el => {
-      el.focus()
     }
   }
 }
