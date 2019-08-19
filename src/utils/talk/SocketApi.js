@@ -69,7 +69,8 @@ const handleCreateGroup = (data) => {
     groupId,
     groupName,
     groupImg,
-    levels
+    levels,
+    groupOwnerId
   } = data.zzGroup
   store
     .dispatch('UpdateRecentContacts', {
@@ -79,6 +80,7 @@ const handleCreateGroup = (data) => {
       secretLevel: levels,
       memberNum: data.userList.length,
       isGroup: true,
+      groupOwnerId,
       reOrder: true,
       addUnread: false
     })

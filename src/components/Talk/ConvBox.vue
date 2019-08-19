@@ -494,8 +494,8 @@ export default {
     addContactInfo (tweet) {
       tweet.contactInfo = {}
       if (tweet.isGroup) {
-        const { chatInfo: { id, name, avatar, secretLevel, memberNum } } = this
-        tweet.contactInfo = { id, name, avatar, secretLevel, memberNum }
+        const { chatInfo: { id, name, avatar, secretLevel, memberNum, groupOwnerId } } = this
+        tweet.contactInfo = { id, name, avatar, secretLevel, memberNum, groupOwnerId }
         tweet.contactInfo.isGroup = true
       } else {
         const { userId, nickname, avatar, userSecretLevel } = this
@@ -505,6 +505,7 @@ export default {
         tweet.contactInfo.secretLevel = userSecretLevel
         tweet.contactInfo.memberNum = 2
         tweet.contactInfo.isGroup = false
+        tweet.contactInfo.groupOwnerId = ''
       }
     },
     /** 生成消息体中的基本信息 */
