@@ -1,6 +1,10 @@
 <template>
   <!-- 聊天消息框 -->
-  <div :class="['message-piece', {send: isMe(), receive: !isMe()}]" :key="messageInfo.id">
+  <div
+    :class="['message-piece', {send: isMe(), receive: !isMe()}]"
+    :key="messageInfo.id"
+    :id="messageInfo.id"
+  >
     <!-- 消息时间 -->
     <div v-if="isTimeVisible" class="time-stamp">
       <div>{{ messageInfo.time | timeFormat }}</div>
