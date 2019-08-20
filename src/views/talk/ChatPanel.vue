@@ -5,37 +5,48 @@
 
         <SearchAll :inputStyle="{height: '31px', width: '200px'}" @showDetail="showSearchDetail" />
 
-        <a-tooltip title="发起研讨" placement="bottom" :overlayStyle="{fontSize: '12px'}">
-          <a-button class="add-group-btn" @click="startTalk" icon="plus" size="small" />
-        </a-tooltip>
+        <a-dropdown placement="bottomLeft">
+          <a-button class="add-group-btn" icon="plus" size="small" />
+          <a-menu slot="overlay">
+            <a-menu-item key="talk" @click="startTalk">
+              <a-icon type="message" />发起研讨
+            </a-menu-item>
+            <a-menu-item key="meeting" @click="startMeeting" disabled title="功能未完成">
+              <a-icon type="coffee" />发起会议
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
+
       </div>
       <a-tabs
         :activeKey="activeKey"
         @change="changePane"
-        :tabBarGutter="0"
-        :tabBarStyle="{ margin: '0 20px' }"
+        :tabBarGutter="10"
+        :tabBarStyle="{margin: '0 20px'}"
         animated
       >
         <a-tab-pane key="1" forceRender>
           <span slot="tab">
-            <a-icon type="clock-circle" style="{fontSize: 16px}" />最近
+            <a-tooltip placement="top" title="最近" :overlayStyle="tabOverLayStyle">
+              <a-icon type="clock-circle" style="fontSize: 18px" />
+            </a-tooltip>
           </span>
           <div class="recent-contacts-container tab-content-container">
             <div v-for="(item, index) in recentContacts" :key="index" @click="showConvBox(item)">
-              <recent-contacts-item :contactsInfo="item" :activated="item.id === activeChat"></recent-contacts-item>
+              <RecentContactsItem :contactsInfo="item" :activated="item.id === activeChat" />
             </div>
 
             <!-- 没有最新联系人或者联系人加载失败时的提示信息 -->
             <div v-if="!recentContacts || !recentContacts.length" class="empty-tips">
               <p>
-                暂无聊天信息，
-                <a-button
+                暂无聊天信息
+                <!-- <a-button
                   type="primary"
                   ghost
                   size="small"
                   :loading="recentLoading"
                   @click="getRecentContacts"
-                >重新加载</a-button>
+                >重新加载</a-button> -->
               </p>
             </div>
           </div>
@@ -43,12 +54,14 @@
 
         <a-tab-pane key="2" forceRender>
           <span slot="tab">
-            <a-icon type="team" style="{fontSize: 16px}" />群组
+            <a-tooltip placement="top" title="群组" :overlayStyle="tabOverLayStyle">
+              <a-icon type="team" style="fontSize: 18px" />
+            </a-tooltip>
           </span>
 
           <div class="group-contacts-container tab-content-container">
             <div v-for="(item, index) in groupList" :key="index" @click="showGroup(item)">
-              <group-item :groupInfo="item" :activated="item.groupId === activeGroup"></group-item>
+              <GroupItem :groupInfo="item" :activated="item.groupId === activeGroup" />
             </div>
 
             <!-- 没有群组或者群组加载失败时的提示信息 -->
@@ -69,7 +82,9 @@
 
         <a-tab-pane key="3" forceRender>
           <span slot="tab">
-            <a-icon type="user" style="{fontSize: 18px, margin: 0}" />联系人
+            <a-tooltip placement="top" title="联系人" :overlayStyle="tabOverLayStyle">
+              <a-icon type="user" style="fontSize: 18px" />
+            </a-tooltip>
           </span>
 
           <div class="contacts-container tab-content-container">
@@ -94,6 +109,21 @@
             </div>
           </div>
         </a-tab-pane>
+
+        <a-tab-pane key="4" forceRender>
+          <span slot="tab">
+            <a-tooltip placement="top" title="会议" :overlayStyle="tabOverLayStyle">
+              <a-icon type="coffee" style="fontSize: 18px" />
+            </a-tooltip>
+          </span>
+
+          <div class="contacts-container tab-content-container">
+            <!-- 无会议时提示信息 -->
+            <div v-if="true" class="empty-tips">
+              <p>暂无会议</p>
+            </div>
+          </div>
+        </a-tab-pane>
       </a-tabs>
     </a-layout-sider>
 
@@ -104,11 +134,15 @@
         </keep-alive>
       </div>
       <div v-show="activeKey == '2'" class="info-area">
-        <group-info :selected="activeGroup" @clickSend="handleClickSend"></group-info>
+        <GroupInfo :selected="activeGroup" @clickSend="handleClickSend" />
       </div>
 
       <div v-show="activeKey == '3'" class="info-area">
-        <contacts-info :selected="activeContacts" @clickSend="handleClickSend"></contacts-info>
+        <ContactsInfo :selected="activeContacts" @clickSend="handleClickSend" />
+      </div>
+
+      <div v-show="activeKey == '4'" class="info-area">
+        <p>暂无会议</p>
       </div>
     </a-layout>
 
@@ -144,10 +178,6 @@ export default {
       // 是否显示创建研讨的模态框
       showCreateModal: () => false,
 
-      searchObj: {
-        searchValue: ''
-      },
-
       // 记录当前选中的联系人/群组信息
       activeContacts: '',
       activeGroup: '',
@@ -155,7 +185,9 @@ export default {
       // 加载状态
       recentLoading: false,
       groupLoading: false,
-      contactsLoading: false
+      contactsLoading: false,
+
+      tabOverLayStyle: { fontSize: '12px' }
     }
   },
   computed: {
@@ -177,18 +209,19 @@ export default {
     changePane (activeKey) {
       this.activeKey = activeKey
     },
-    handleSaveOk () {},
     /** 发起研讨 */
     startTalk () {
       this.showCreateModal = () => true
     },
-    handleSaveClose () {},
+    /** 发起会议 */
+    startMeeting () {
+      console.log('发起会议')
+    },
     /**
      * 展示研讨对话框
-     * @param {Object} selectedItem 当前研讨
+     * @param {RecentContact} selectedItem 当前研讨
      */
     showConvBox (selectedItem) {
-      // 路由跳转
       this.$router.push({ name: 'ChatBox' })
       this.$store.dispatch('UpdateRecentContacts', { ...selectedItem, reOrder: false, addUnread: false })
         .then(() => {
@@ -203,33 +236,28 @@ export default {
     showContacts (key) {
       this.activeContacts = key
     },
-    /**
-     * 加载群组列表
-     */
+    /** 加载群组列表 */
     getGroupList () {
       this.groupLoading = true
       this.$store.dispatch('GetGroupList').finally(() => {
         this.groupLoading = false
       })
     },
-    /**
-     * 加载联系人树
-     */
+    /**  加载联系人树 */
     getContactsTree () {
       this.contactsLoading = true
       this.$store.dispatch('GetContactsTree').finally(() => {
         this.contactsLoading = false
       })
     },
-    /**
-     * 获取最近联系列表
-     */
+    /** 获取最近联系列表 */
     getRecentContacts () {
       this.recentLoading = true
       this.$store.dispatch('GetRecentContacts').finally(() => {
         this.recentLoading = false
       })
     },
+    /** 查看搜索结果详情 */
     showSearchDetail (item, isGroup) {
       if (isGroup) {
         this.activeKey = '2'
@@ -239,8 +267,7 @@ export default {
         this.activeContacts = item.key
       }
     }
-  },
-  activated: function () {}
+  }
 }
 </script>
 
