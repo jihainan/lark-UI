@@ -6,7 +6,13 @@
           <a-form-item label="姓名">
             <a-input
               :disabled="true"
-              v-decorator="['name',{rules: [{ required: true, message: '请输入姓名' }]}]"
+              v-decorator="['name']"
+            />
+          </a-form-item>
+          <a-form-item label="组织机构">
+            <a-input
+              :disabled="true"
+              v-decorator="['orgName']"
             />
           </a-form-item>
           <a-form-item label="联系方式">
@@ -95,7 +101,7 @@ export default {
           this.user = Object.assign({}, res.result)
           this.$nextTick(() => {
             // 表单中绑定信息项
-            this.form.setFieldsValue(pick(res.result, 'name', 'otel', 'description'))
+            this.form.setFieldsValue(pick(res.result, 'name', 'orgName', 'otel', 'description'))
             if (this.user.avatar) {
               this.imageUrl = FILE_SERVER_IP + this.user.avatar
             } else {

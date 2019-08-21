@@ -148,6 +148,15 @@
                 <a-form-item
                   :labelCol="labelCol"
                   :wrapperCol="wrapperCol"
+                  label="人员排序"
+                >
+                  <a-input-number :min="1" :max="99999" v-decorator="['orderId']" style="width:100%"/>
+                </a-form-item>
+              </a-col>
+              <a-col :span="10" :offset="1">
+                <a-form-item
+                  :labelCol="labelCol"
+                  :wrapperCol="wrapperCol"
                   label="状态"
                 >
                   <a-switch defaultChecked v-decorator="['status']"/>
@@ -176,8 +185,13 @@
               </a-form-item>
             </a-col>
           </a-row>
+          <a-row type="flex" justify="end">
+            <a-col>
+              <a-button type="primary" @click="saveUserInfo">保存</a-button>
+            </a-col>
+          </a-row>
         </a-card>
-        <a-card :bordered="true" title="角色信息" v-show="editvisible">
+        <!-- <a-card :bordered="true" title="角色信息" v-show="editvisible">
           <a-row>
             <a-col :span="10" :offset="1">
               <a-form-item
@@ -194,7 +208,7 @@
               <a-button type="primary" @click="saveUserInfo">保存</a-button>
             </a-col>
           </a-row>
-        </a-card>
+        </a-card> -->
       </a-spin>
     </a-row>
   </div>
@@ -269,13 +283,13 @@ export default {
         {
           title: '状态',
           dataIndex: 'status'
-        },
-        {
-          title: '操作',
-          width: '120px',
-          dataIndex: 'action',
-          scopedSlots: { customRender: 'action' }
         }
+        // {
+        //   title: '操作',
+        //   width: '120px',
+        //   dataIndex: 'action',
+        //   scopedSlots: { customRender: 'action' }
+        // }
       ],
       // 加载数据方法 必须为 Promise 对象
       loadData: parameter => {
@@ -463,7 +477,8 @@ export default {
             secretLevel: this.userinfo.secretLevel,
             pid: this.userinfo.pid,
             status: this.userinfo.status === '启用',
-            gender: this.userinfo.gender
+            gender: this.userinfo.gender,
+            orderId: this.userinfo.orderId
           })
         }, 0)
         this.orgid = item.orgCode === undefined ? '' : item.orgCode + 'select'
@@ -483,7 +498,8 @@ export default {
             secretLevel: '',
             pid: '',
             status: true,
-            gender: ''
+            gender: '',
+            orderId: ''
           })
         }, 0)
         this.orgid = ''

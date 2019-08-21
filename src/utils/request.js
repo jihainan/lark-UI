@@ -16,10 +16,21 @@ const err = (error) => {
     const data = error.response.data
     const token = Vue.ls.get(ACCESS_TOKEN)
     if (error.response.status === 403) {
-      notification.error({ message: 'Forbidden', description: data.message })
+      notification.error({ message: '错误', description: data.message })
     }
     if (error.response.status === 401) {
-      notification.error({ message: 'Unauthorized', description: 'Authorization verification failed' })
+      notification.error({ message: '未授权', description: '权限验证失败' })
+      if (token) {
+        store.dispatch('Logout').then(() => {
+          setTimeout(() => {
+            window.location.reload()
+          }, 1500)
+        })
+      }
+    }
+    // token过期处理
+    if (error.response.status === 40301) {
+      notification.error({ message: '错误', description: '登录时间过长，请重新登陆' })
       if (token) {
         store.dispatch('Logout').then(() => {
           setTimeout(() => {

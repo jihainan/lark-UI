@@ -22,7 +22,7 @@
           <a href="_self">条款</a>
         </div>
         <div class="copyright">
-          Copyright &copy; 2018 云雀技术组出品
+          Copyright &copy; 2019 云雀技术组出品
         </div>
       </div>
     </div>

@@ -7,9 +7,6 @@ import {
   GeneralView,
   MonitorView
 } from '@/components/layouts'
-import {
-  RecentContact
-} from '@/utils/talk'
 
 export const asyncRouterMap = [
 
@@ -39,7 +36,7 @@ export const asyncRouterMap = [
         children: [{
           path: 'workplace',
           name: 'Workplace',
-          component: () => import('@/views/dashboard/Workplace'),
+          component: () => import(/* webpackChunkName: "workplace" */ '@/views/dashboard/Workplace'),
           meta: {
             title: '工作台',
             keepAlive: true,
@@ -51,7 +48,7 @@ export const asyncRouterMap = [
         {
           path: '/dashboard/feedback',
           name: 'Feedback',
-          component: () => import('@/views/dashboard/Feedback'),
+          component: () => import(/* webpackChunkName: "feedback" */ '@/views/dashboard/Feedback'),
           meta: {
             title: '问题反馈',
             hidden: true,
@@ -61,8 +58,8 @@ export const asyncRouterMap = [
         },
         {
           path: 'msg-list',
-          name: 'myNotice',
-          component: () => import('@/views/dashboard/NotificationList'),
+          name: 'MyNotice',
+          component: () => import(/* webpackChunkName: "myNotice" */ '@/views/dashboard/NotificationList'),
           meta: {
             title: '消息列表',
             icon: 'bell',
@@ -77,7 +74,7 @@ export const asyncRouterMap = [
         path: 'talk',
         name: 'Talk',
         component: RouteView,
-        redirect: '/talk/chatpanel',
+        redirect: '/talk/chatpanel/chatbox',
         meta: {
           title: '研讨',
           icon: 'message',
@@ -89,7 +86,7 @@ export const asyncRouterMap = [
         children: [{
           path: 'chatpanel',
           name: 'ChatPanel',
-          component: () => import('@/views/talk/ChatPanel'),
+          component: () => import(/* webpackChunkName: "chatPanel" */ '@/views/talk/ChatPanel'),
           meta: {
             title: '研讨面板',
             keepAlive: true,
@@ -99,33 +96,30 @@ export const asyncRouterMap = [
           children: [{
             path: 'chatbox',
             name: 'ChatBox',
-            component: () => import('@/views/talk/ChatBox'),
+            component: () => import(/* webpackChunkName: "chatPanel" */ '@/views/talk/ChatBox'),
             meta: {
               title: '研讨面板',
               keepAlive: true,
               permission: ['talk'],
               hidden: true
-            },
-            props: (route) => ({
-              currentTalk: new RecentContact(route.query)
-            })
+            }
           }]
         }]
       },
       {
-        path: 'list',
-        name: 'List',
+        path: 'syslist',
+        name: 'sysList',
         component: PageView,
         redirect: '/list/user-list',
         meta: {
           title: '系统管理',
           icon: 'appstore',
-          permission: ['user', 'org', 'role', 'notice', 'menu', 'gatelog']
+          permission: ['user', 'org', 'role', 'notice', 'menu']
         },
         children: [{
           path: 'user-list',
           name: 'UserList',
-          component: () => import('@/views/admin/UserList'),
+          component: () => import(/* webpackChunkName: "userList" */ '@/views/admin/UserList'),
           meta: {
             title: '用户管理',
             icon: 'smile',
@@ -136,7 +130,7 @@ export const asyncRouterMap = [
         {
           path: 'org-list',
           name: 'OrgList',
-          component: () => import('@/views/admin/OrgList'),
+          component: () => import(/* webpackChunkName: "orgList" */ '@/views/admin/OrgList'),
           meta: {
             title: '组织管理',
             icon: 'contacts',
@@ -147,7 +141,7 @@ export const asyncRouterMap = [
         {
           path: 'role-list',
           name: 'RoleList',
-          component: () => import('@/views/admin/RoleList'),
+          component: () => import(/* webpackChunkName: "roleList" */ '@/views/admin/RoleList'),
           meta: {
             title: '角色管理',
             icon: 'credit-card',
@@ -156,71 +150,128 @@ export const asyncRouterMap = [
           }
         },
         {
-          path: 'msg-list',
-          name: 'MsgList',
-          component: () => import('@/views/admin/NotificationList'),
-          meta: {
-            title: '消息列表',
-            icon: 'sound',
-            keepAlive: false,
-            permission: ['notice']
-          }
-        },
-        {
           path: 'menu-list',
           name: 'MenuList',
-          component: () => import('@/views/admin/MenuList'),
+          component: () => import(/* webpackChunkName: "menuList" */ '@/views/admin/MenuList'),
           meta: {
             title: '菜单管理',
             icon: 'profile',
             keepAlive: false,
             permission: ['menu']
           }
-        },
-        {
-          path: '/list/word-list',
-          name: 'WordList',
-          component: () => import('@/views/admin/DictWord'),
-          meta: {
-            title: '敏感词汇管理',
-            icon: 'alert',
-            keepAlive: false,
-            permission: ['word']
-          }
-        },
-        {
-          path: '/list/commontools',
-          name: 'CommonTools',
-          component: () => import('@/views/admin/CommonTools'),
-          meta: {
-            title: '常用链接管理',
-            icon: 'tool',
-            keepAlive: false,
-            permission: ['commontools']
-          }
-        },
-        {
-          path: '/list/log-list',
-          name: 'LogList',
-          component: () => import('@/views/admin/LogList'),
-          meta: {
-            title: '日志列表',
-            icon: 'reconciliation',
-            keepAlive: false,
-            permission: ['gatelog']
-          }
-        },
-        {
-          path: 'service-list',
-          name: 'ServiceList',
-          component: () => import('@/views/admin/ServiceList'),
-          meta: {
-            title: '服务管理',
-            icon: 'database',
-            keepAlive: false,
-            permission: ['service']
-          }
         }
+        ]
+      },
+      {
+        path: 'businisslist',
+        name: 'businissList',
+        component: PageView,
+        redirect: '/',
+        meta: {
+          title: '业务管理',
+          icon: 'setting',
+          permission: ['notice', 'word', 'commontools', 'filemanager', 'groupmaneger', 'gatelog', 'privateMsg', 'groupMsg']
+        },
+        children: [
+          {
+            path: 'msg-list',
+            name: 'MsgList',
+            component: () => import(/* webpackChunkName: "msgList" */ '@/views/admin/NotificationList'),
+            meta: {
+              title: '消息列表',
+              icon: 'sound',
+              keepAlive: false,
+              permission: ['notice']
+            }
+          },
+          {
+            path: '/list/word-list',
+            name: 'WordList',
+            component: () => import(/* webpackChunkName: "wordList" */ '@/views/admin/DictWord'),
+            meta: {
+              title: '敏感词汇管理',
+              icon: 'alert',
+              keepAlive: false,
+              permission: ['word']
+            }
+          },
+          {
+            path: '/list/commontools',
+            name: 'CommonTools',
+            component: () => import(/* webpackChunkName: "commonTools" */ '@/views/admin/CommonTools'),
+            meta: {
+              title: '常用链接管理',
+              icon: 'tool',
+              keepAlive: false,
+              permission: ['commontools']
+            }
+          },
+          {
+            path: '/list/log-list',
+            name: 'LogList',
+            component: () => import(/* webpackChunkName: "logList" */ '@/views/admin/LogList'),
+            meta: {
+              title: '日志列表',
+              icon: 'reconciliation',
+              keepAlive: false,
+              permission: ['gatelog']
+            }
+          },
+          {
+            path: 'file-list',
+            name: 'FileManeger',
+            component: () => import(/* webpackChunkName: "fileManeger" */ '@/views/admin/FileTable'),
+            meta: {
+              title: '文件管理',
+              icon: 'file',
+              keepAlive: false,
+              permission: ['filemanager']
+            }
+          },
+          {
+            path: 'group-list',
+            name: 'GroupManeger',
+            component: () => import(/* webpackChunkName: "groupManeger" */ '@/views/admin/GroupTable'),
+            meta: {
+              title: '研讨组管理',
+              icon: 'message',
+              keepAlive: false,
+              permission: ['groupmaneger']
+            }
+          },
+          {
+            path: '/list/privateMsg',
+            name: 'privateMsg',
+            component: () => import(/* webpackChunkName: "privateMsg" */ '@/views/admin/privateMsg'),
+            meta: {
+              title: '个人消息审计',
+              icon: 'tag',
+              keepAlive: false,
+              permission: ['privateMsg']
+            }
+          },
+          {
+            path: '/list/groupMsg',
+            name: 'groupMsg',
+            component: () => import(/* webpackChunkName: "groupMsg" */ '@/views/admin/groupMsg'),
+            meta: {
+              title: '群组消息审计',
+              icon: 'tags',
+              keepAlive: false,
+              permission: ['groupMsg']
+            }
+          }
+          // {
+          //   path: 'service-list',
+          //   name: 'ServiceList',
+          //   component: () => import(/* webpackChunkName: "serviceList" */ '@/views/admin/ServiceList'),
+          //   meta: {
+          //     title: '服务管理',
+          //     icon: 'database',
+          //     keepAlive: false,
+          //     permission: ['service']
+          //   }
+          // },
         ]
       },
       // result
@@ -304,7 +355,6 @@ export const asyncRouterMap = [
         component: GeneralView,
         redirect: '/account/center',
         name: 'Account',
-        // 在侧导航中隐藏
         hidden: true,
         meta: {
           title: '个人页',
@@ -315,7 +365,7 @@ export const asyncRouterMap = [
         children: [{
           path: 'center',
           name: 'Center',
-          component: () => import('@/views/account/center/Index'),
+          component: () => import(/* webpackChunkName: "account-center" */ '@/views/account/center/Index'),
           meta: {
             title: '个人中心',
             keepAlive: true,
@@ -325,7 +375,7 @@ export const asyncRouterMap = [
         {
           path: 'settings',
           name: 'Settings',
-          component: () => import('@/views/account/settings/Index'),
+          component: () => import(/* webpackChunkName: "account-settings" */ '@/views/account/settings/Index'),
           meta: {
             title: '个人设置',
             hideHeader: true,
@@ -337,7 +387,7 @@ export const asyncRouterMap = [
           children: [{
             path: 'base',
             name: 'BaseSettings',
-            component: () => import('@/views/account/settings/BaseSetting'),
+            component: () => import(/* webpackChunkName: "account-settings" */ '@/views/account/settings/BaseSetting'),
             meta: {
               title: '基本设置',
               hidden: true,
@@ -354,7 +404,7 @@ export const asyncRouterMap = [
           {
             path: 'custom',
             name: 'CustomSettings',
-            component: () => import('@/views/account/settings/Custom'),
+            component: () => import(/* webpackChunkName: "account-settings" */ '@/views/account/settings/Custom'),
             meta: {
               title: '个性化设置',
               hidden: true,
@@ -365,7 +415,7 @@ export const asyncRouterMap = [
           {
             path: 'notification',
             name: 'NotificationSettings',
-            component: () => import('@/views/account/settings/Notification'),
+            component: () => import(/* webpackChunkName: "account-settings" */ '@/views/account/settings/Notification'),
             meta: {
               title: '新消息通知',
               hidden: true,
@@ -388,7 +438,7 @@ export const asyncRouterMap = [
           {
             path: 'workplace',
             name: 'WorkPlaceSettings',
-            component: () => import('@/views/account/settings/Workplace'),
+            component: () => import(/* webpackChunkName: "account-settings" */ '@/views/account/settings/Workplace'),
             meta: {
               title: '卡片设置',
               hidden: true,
@@ -399,7 +449,7 @@ export const asyncRouterMap = [
           {
             path: 'commontool',
             name: 'CommonToolSettings',
-            component: () => import('@/views/account/settings/CommonTool'),
+            component: () => import(/* webpackChunkName: "account-settings" */ '@/views/account/settings/CommonTool'),
             meta: {
               title: '常用链接设置',
               hidden: true,

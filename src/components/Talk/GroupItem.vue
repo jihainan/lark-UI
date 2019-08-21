@@ -1,11 +1,13 @@
 <template>
   <!-- groups item -->
   <div :class="groupItemClasses" @click="handleClick" :key="groupInfo.id">
-
     <div class="avatar">
-      <a-avatar class="avatar-img" shape="square" :src="groupInfo.groupImg" :size="30">
-        <span>{{ groupInfo.groupName }}</span>
-      </a-avatar>
+      <a-avatar
+        class="avatar-img"
+        shape="square"
+        :src="groupInfo.groupImg"
+        :size="30"
+      >{{ groupInfo.groupName.substr(0, 2) }}</a-avatar>
     </div>
 
     <div class="extra">
@@ -17,7 +19,6 @@
     <div class="info">
       <p class="nickname">{{ groupInfo.groupName }}</p>
     </div>
-
   </div>
 </template>
 
@@ -52,7 +53,7 @@ export default {
     groupItemClasses () {
       return {
         'group-item': true,
-        'activated': this.activated
+        activated: this.activated
       }
     }
   },
@@ -65,72 +66,71 @@ export default {
 </script>
 
 <style lang="less" scoped>
-  .activated {
-    background-color: rgb(195, 197, 199)!important;
+.activated {
+  background-color: #d3d6dc !important;
+}
+.on-line {
+  color: rgba(43, 162, 69, 1);
+}
+.group-item {
+  width: 100%;
+  height: 50px;
+  min-height: 50px;
+  max-height: 50px;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 10px 18px 9px;
+  background-color: #ebeff5;
+  border-bottom: 1px solid #e4e8ec;
+
+  &:hover {
+    background-color: #d3d6dc99;
   }
-  .on-line {
-    color: rgba(43, 162, 69, 1);
+}
+
+.avatar {
+  float: left;
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+
+  &-img {
+    border-radius: 2px;
+    background-color: #4da6fa;
+    span {
+      color: #fff;
+    }
   }
-  .group-item {
-    width: 100%;
-    height: 50px;
-    min-height: 50px;
-    max-height: 50px;
-    cursor: pointer;
+}
+
+.info {
+  height: 30px;
+  line-height: 30px;
+  word-wrap: normal;
+  white-space: nowrap;
+
+  .nickname {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 400;
+    color: rgb(0, 0, 0);
     overflow: hidden;
-    padding: 10px 18px 9px;
-    background-color: rgb(230, 232, 235);
-    border-bottom: 1px solid rgb(218, 220, 223);
-
-    &:hover {
-      background-color: rgb(215, 217, 219);
-    }
-
+    text-overflow: ellipsis;
   }
+}
 
-  .avatar {
-    float: left;
-    width: 30px;
-    height: 30px;
-    margin-right: 10px;
+.extra {
+  float: right;
+  height: 30px;
+  width: 30px;
+  font-size: 12px;
+  text-align: right;
+  color: rgb(140, 141, 143);
 
-    &-img {
-      border-radius: 2px;
-      background-color: rgb(0, 162, 174);
-      span {
-        color: #fff;
-      }
-    }
-  }
-
-  .info {
+  .attr {
     height: 30px;
     line-height: 30px;
-    word-wrap: normal;
-    white-space: nowrap;
-
-    .nickname {
-      margin: 0;
-      font-size:16px;
-      font-weight: 400;
-      color: rgb(0, 0, 0);
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    margin: 0;
   }
-
-  .extra {
-    float: right;
-    height: 30px;
-    width: 30px;
-    font-size: 12px;
-    text-align: right;
-    color: rgb(140, 141, 143);
-
-    .attr {
-      height: 30px;
-      line-height: 30px;
-      margin: 0;
-    }
-  }
+}
 </style>

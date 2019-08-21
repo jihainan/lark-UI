@@ -4,10 +4,15 @@
       <a-list
         itemLayout="horizontal"
         :bordered="bordered"
-        :dataSource="listData.slice(0, 6)"
+        :dataSource="listData.slice(0, 5)"
         class="card-list"
       >
-        <a-list-item style="padding: 3px 21px 3px 21px" slot="renderItem" slot-scope="item">
+        <a-list-item
+          style="padding: 3px 21px 3px 21px"
+          slot="renderItem"
+          slot-scope="item"
+          @click="handle2Talk"
+        >
           <a-list-item-meta v-if="item.msgType==='1'" :description="item.msg">
             <a slot="title" href="#">{{ item.msgSender }}</a>
             <a-avatar slot="avatar" :src="fileurl+''+item.avatar" />
@@ -42,7 +47,15 @@ export default {
     }
   },
   filters: { timeFormat: toWeiXinString },
-  mounted () {}
+  mounted () {},
+  methods: {
+    // 跳转到研讨页
+    handle2Talk () {
+      this.$router.push({
+        name: 'ChatPanel'
+      })
+    }
+  }
 }
 </script>
 <style lang="less" scoped>

@@ -86,7 +86,7 @@ const user = {
     /**
      * 退出登录
      */
-    Logout ({ commit, state }) {
+    Logout ({ commit, state, dispatch }) {
       return new Promise((resolve) => {
         commit('SET_TOKEN', '')
         commit('SET_ROLES', [])
@@ -94,7 +94,8 @@ const user = {
 
         // 断开websocket连接
         Vue.prototype.SocketGlobal.close(3400, '退出登录')
-
+        // 关闭消息超时定时器
+        dispatch('ClearMessageTimer')
         logout(state.token).then(() => {
           resolve()
         }).catch(() => {

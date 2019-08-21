@@ -35,26 +35,28 @@ export default {
       // 弹出框可见
       memberVisible: false,
       userArr: [],
-      returnUsers: []
+      returnUsers: [],
+      returnUserids: []
     }
   },
   props: {
   },
   methods: {
-    begin: function (userArr) {
+    begin: function (userArr, filter) {
       this.userArr = userArr
       this.memberVisible = true
       // ref本身是作为渲染结果被创建的，在初始渲染时不能访问
       // $refs也不是响应式的，这里使用nexttick获取子组件对象
       this.$nextTick(() => {
-        this.$refs.transfer.beginChooseUser(userArr)
+        this.$refs.transfer.beginChooseUser(userArr, filter)
       })
     },
-    handleOk (users) {
+    handleOk (users, userids) {
       this.returnUsers = users
+      this.returnUserids = userids
     },
     clickOk () {
-      this.$emit('ok', this.returnUsers)
+      this.$emit('ok', this.returnUsers, this.returnUserids)
       this.memberVisible = false
     },
     /**

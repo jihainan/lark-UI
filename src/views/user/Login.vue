@@ -1,6 +1,7 @@
 <template>
   <div class="main">
-    <!-- <a-form
+    <a-form
+      v-show="systemAdmin"
       id="formLogin"
       name="formLogin"
       class="user-layout-login"
@@ -39,16 +40,16 @@
       <a-form-item style="margin-top:32px">
         <a-button
           size="large"
-          type="primary"
+          type="danger"
           htmlType="submit"
           name="submit"
           id="submit"
           class="login-button"
           :loading="state.loginBtn"
           :disabled="state.loginBtn"
-        >进入</a-button>
+        >管理员进入</a-button>
       </a-form-item>
-    </a-form> -->
+    </a-form>
 
     <!-- 上面是原来的用户名密码登陆的代码 -->
 
@@ -58,10 +59,11 @@
       type="primary"
       @click="handleLogin"
       class="no-login-button"
+      v-show="!systemAdmin"
       :loading="state.loginBtn"
       :disabled="state.loginBtn"
     >进入</a-button>
-
+    <a-icon type="yuque" :style="{'fontSize':'1px', 'color':'#ced9e3'}" @click="systemAdmin=!systemAdmin"/>
   </div>
 </template>
 
@@ -72,6 +74,7 @@ import { timeFix } from '@/utils/util'
 export default {
   data () {
     return {
+      systemAdmin: false,
       loginBtn: false,
       loginType: 0,
       form: this.$form.createForm(this),
@@ -83,7 +86,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['Login', 'Logout']),
+    ...mapActions(['Login']),
     // handler
     handleUsernameOrEmail (rule, value, callback) {
       const { state } = this
@@ -132,10 +135,9 @@ export default {
       })
     },
     requestFailed (err) {
-      console.log('TCL: requestFailed -> err', ((err.response || {}).data || {}).message)
       this.$notification['error']({
         message: '错误',
-        description: '登陆出现错误，请稍后再试',
+        description: ((err.response || {}).data || {}).message,
         duration: 4
       })
     },

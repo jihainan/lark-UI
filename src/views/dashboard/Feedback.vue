@@ -72,14 +72,14 @@
           <p style="margin-left:20px">{{ fdRecord.content }}</p>
         </a-card>
       </a-row>
-      <a-row>
+      <!-- <a-row>
         <a-card style="padding: 20px;">
           <span v-if="commentList.length === 0">暂时没有评论</span>
           <a-comment v-for="comment in commentList" :key="comment.commentId">
             <a-avatar
               style="color: #f56a00; backgroundColor: #fde3cf"
               slot="avatar"
-            >{{ fdRecord.crtName }}</a-avatar>
+            >{{ comment.crtName }}</a-avatar>
             <span slot="content">{{ comment.content }}</span>
             <div v-if="fdRecord.crtUser===user.id">
               <span slot="actions">
@@ -88,32 +88,10 @@
             </div>
             <a-divider />
           </a-comment>
-          <!-- <a-comment>
-          <a-avatar
-            style="color: #f56a00; backgroundColor: #fde3cf"
-            slot="avatar"
-          >{{ fdRecord.crtName }}</a-avatar>
-          <p slot="content">{{ fdRecord.title }}     {{ fdRecord.content }}</p>
-          <span v-if="commentList.length === 0">暂时没有评论</span>
-          <a-comment v-for="comment in commentList" :key="comment.commentId">
-            <a-avatar
-              style="color: #f56a00; backgroundColor: #fde3cf"
-              slot="avatar"
-            >{{ fdRecord.crtName }}</a-avatar>
-            <span slot="content">{{ comment.content }}
-            </span>
-            <div v-if="fdRecord.crtUser===user.id">
-              <span slot="actions">
-                <a @click="deleteComment(comment)">删除</a>
-              </span>
-            </div>
-          </a-comment>
-          </a-comment>-->
         </a-card>
       </a-row>
       <a-row>
         <a-card style="padding: 20px;">
-          <!-- 提交 -->
           <a-comment>
             <a-avatar style="color: #f56a00; backgroundColor: #fde3cf" slot="avatar">{{ user.name }}</a-avatar>
             <div slot="content">
@@ -131,7 +109,7 @@
             </div>
           </a-comment>
         </a-card>
-      </a-row>
+      </a-row> -->
     </a-card>
   </div>
 </template>

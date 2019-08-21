@@ -1,13 +1,13 @@
 /**
  * 研讨状态模块
- * @author jihainan
  */
-import modules from './conf'
-import router from '@/router'
 import Vue from 'vue'
-import { getGroupList, getContactsTree, getRecentContacts, getTalkMap } from '@/api/talk'
+import { getGroupList,
+  getContactsTree,
+  getRecentContacts,
+  getTalkMap } from '@/api/talk'
 import { Tweet, RecentContact, SocketMessage } from '@/utils/talk'
-import { LandingStatus } from '@/utils/constants'
+import { ONLINE_STATUS } from '@/utils/constants'
 import { format } from '@/utils/util'
 
 /**
@@ -42,7 +42,7 @@ function setIsMute (groupList, isGroup, id) {
  * @param {Array} recentContacts 最近联系人
  * @param {String} id 联系人id
  * @param {Boolean} addUnread 增加未读消息数
- * @param {String} currentId 当前联系人id
+ * @param {String} currentId 当前激活研讨的id
  * @returns {Boolean}
  */
 function setUnreadNum (recentContacts, id, addUnread, currentId) {
@@ -56,7 +56,7 @@ function setUnreadNum (recentContacts, id, addUnread, currentId) {
 }
 
 /**
- * 设置消息相关信息
+ * 设置最近联系人项中消息的相关信息
  * @param {Map} talkMap 存储研讨消息的Map
  * @param {String} id 联系人id
  * @param {Object} recentContact 要处理的项
@@ -107,9 +107,9 @@ function syncUnread2Server (newUnreasNum, online, reviser, sender) {
 }
 
 /**
- * 格式化联系人数据
+ * 格式化联系人结构树
  * @param {Array} target 目标数组
- * @param {Array} target 待处理数组
+ * @param {Array} todoList 待处理数组
  */
 function formatTree (target, todoList) {
   todoList.forEach(function (element) {
@@ -148,9 +148,7 @@ function formatTree (target, todoList) {
 
 const talk = {
   state: {
-    /** 用户的在线状态
-     *  0-离线，1-重连，2-在线
-     */
+    /** 用户的在线状态 @/utils/constants.js->ONLINE_STATUS */
     onlineState: 3,
     /** 最新联系人列表 */
     recentContacts: [],
@@ -160,10 +158,22 @@ const talk = {
     contactsTree: [],
     /** 存储研讨消息的Map */
     talkMap: new Map(),
-    /** 当前正在进行的研讨 */
+    /** 当前研讨页面的相关信息 */
     currentTalk: {},
     /** 草稿Map */
-    draftMap: new Map()
+    draftMap: new Map(),
+    // *****消息可靠性相关*****
+    /** 发送中的消息 Map<messageId, slotIndex> */
+    sendingMap: new Map(),
+    /** 发送失败的消息 Set<messageId> */
+    failSet: new Set(),
+    // *****超时定时器相关*****
+    /** 循环队列，长度=超时时间+1 */
+    listLoop: new Array(7),
+    /** 循环队列的当前位置 */
+    currentSlotIndex: 1,
+    /** 定时器标识 */
+    messageTimer: 0
   },
 
   mutations: {
@@ -203,20 +213,52 @@ const talk = {
      * }
      */
     SET_TALK_MAP (state, talkMapObject) {
+      const { talkMap } = state
       if (talkMapObject.fromServer) {
         talkMapObject.talkMapData.forEach(function (item) {
-          state.talkMap.set(item[0], item.slice(1))
+          talkMap.set(item[0], item.slice(1))
         })
       } else {
         talkMapObject.talkMapData.forEach(function (item) {
           if (item[1] instanceof Array) {
-            state.talkMap.set(item[0], item[1])
+            talkMap.set(item[0], item[1])
           }
         })
       }
+      state.talkMap = new Map(talkMap)
     },
-    SET_CURRENT_TALK (state, currentTalk) {
-      state.currentTalk = currentTalk
+    /**
+     * 将消息id重设为与服务端一致
+     * @param {Object} data {oId, nId, contactId}
+     */
+    RESET_MESSAGE_ID (state, data) {
+      const messageList = state.talkMap.get(data.contactId)
+      if (messageList) {
+        const index = messageList.findIndex(item =>
+          item.id === data.oId
+        )
+        if (index > -1) {
+          messageList[index].id = data.nId
+        }
+      }
+    },
+    /**
+     * 设置当前研讨相关信息
+     * @param {String} id 联系人ID
+     */
+    SET_CURRENT_TALK (state, id) {
+      const index = state.recentContacts.findIndex(element =>
+        element.id === id
+      )
+      if (index > -1) {
+        // 更新当前研讨
+        const {
+          id, name, avatar, secretLevel, memberNum, isGroup, groupOwnerId
+        } = state.recentContacts[index]
+        state.currentTalk = {
+          id, name, avatar, secretLevel, memberNum, isGroup, groupOwnerId
+        }
+      }
     },
     /**
      * 更新draftMap
@@ -225,6 +267,100 @@ const talk = {
      */
     SET_DRAFT_MAP (state, draft) {
       state.draftMap.set(draft[0], draft[1])
+    },
+    /**
+     * 新增发送中的消息
+     * @param {Object} item [messageId, slotIndex]
+     */
+    SET_SENDING_MAP (state, item) {
+      state.sendingMap = new Map(state.sendingMap.set(
+        item[0], item[1]
+      ))
+    },
+    /**
+     * 移除发送中的信息
+     * @param {String} messageId 消息id
+     */
+    DEL_SENDING_MAP (state, messageId) {
+      const { sendingMap } = state
+      sendingMap.delete(messageId)
+      state.sendingMap = new Map(sendingMap)
+    },
+    /**
+     * 新增发送失败的消息
+     * @param {String} messageId 消息id
+     */
+    ADD_FAIL_SET (state, messageId) {
+      state.failSet = new Set(state.failSet.add(messageId))
+    },
+    /**
+     * 移除发送失败的消息
+     * @param {String} messageId 消息id
+     */
+    DEl_FAIL_SET (state, messageId) {
+      const { failSet } = state
+      failSet.delete(messageId)
+      state.failSet = new Set(failSet)
+    },
+    /**
+     * 设置定时器
+     * @param {Number} timer 定时器
+     */
+    SET_MESSAGE_TIMER (state, timer) {
+      state.messageTimer = timer
+    },
+    /**
+     * 设置循环队列的当前位置
+     * @param {Number} index 新位置标识
+     */
+    SET_CURRENT_SLOT_INDEX (state, index) {
+      state.currentSlotIndex = index
+    },
+    /**
+     * 清除循环队列中对应的插槽
+     * @param {Number} slotIndex 插槽序号
+     */
+    CLEAR_LIST_LOOP_SLOT (state, slotIndex) {
+      // 这里未进行数据类型的判断
+      // 使用该方法前需要进行判断
+      state.listLoop[slotIndex].clear()
+    },
+    /**
+     * 增加定时任务 (考虑做成action)
+     * @param {String} messageId 消息id
+     */
+    ADD_TIMING_TASK (state, messageId) {
+      const { sendingMap } = state
+      // 如果循环队列中已存在该uid，需要先干掉，重新计时
+      let slotIndex = sendingMap.get(messageId)
+      if (typeof slotIndex !== 'undefined') {
+        state.listLoop[slotIndex].delete(messageId)
+      }
+      // 将该uid重现添加到循环队列中
+      // 周期7，新插入的置入当前的后一个（即，6s后可以扫描到它）
+      // 更新map中这个uid的最新slotIndex
+      slotIndex = state.currentSlotIndex - 1
+      const index = slotIndex < 0 ? 6 : slotIndex
+      state.listLoop[index] = state.listLoop[index]
+        ? state.listLoop[index].add(messageId)
+        : new Set().add(messageId)
+      // 添加到发送中队列
+      sendingMap.set(messageId, index)
+      state.sendingMap = new Map(sendingMap)
+    },
+    /**
+     * 删除定时任务 (考虑做成action)
+     * @param {String} messageId 消息id
+     */
+    DEL_TIMING_TASK (state, messageId) {
+      const { sendingMap } = state
+      const slotIndex = sendingMap.get(messageId)
+      if (typeof slotIndex !== 'undefined') {
+        state.listLoop[slotIndex].delete(messageId)
+
+        sendingMap.delete(messageId)
+        state.sendingMap = new Map(sendingMap)
+      }
     }
   },
 
@@ -289,7 +425,7 @@ const talk = {
      * addUnread: 增加未读消息数量
      */
     UpdateRecentContacts ({ commit, state, rootGetters }, freshItem) {
-      const { recentContacts, groupList, talkMap } = state
+      const { recentContacts, groupList, talkMap, currentTalk } = state
       const index = recentContacts.findIndex(element => element.id === freshItem.id)
       const newItem = new RecentContact(freshItem)
       // 设置状态
@@ -297,16 +433,13 @@ const talk = {
       newItem.isMute = setIsMute(groupList, freshItem.isGroup, freshItem.id)
       setMessageInfo(freshItem.id, talkMap, newItem)
       newItem.unreadNum = setUnreadNum(
-        recentContacts,
-        freshItem.id,
-        freshItem.addUnread,
-        router.currentRoute.query.id)
+        recentContacts, freshItem.id, freshItem.addUnread, currentTalk.id)
       // 告知服务器未读消息的状态
       // TODO: 告知服务器的条件还要再加判断
       if (newItem.unreadNum === 0) {
         syncUnread2Server(
           newItem.unreadNum,
-          rootGetters.onlineState === LandingStatus.ONLINE,
+          rootGetters.onlineState === ONLINE_STATUS.ONLINE,
           rootGetters.userId,
           freshItem.id)
       }
@@ -351,17 +484,29 @@ const talk = {
       })
     },
     /**
-     * 更新缓存中的消息map
-     * @param {Tweet} newMessage 新消息
+     * 收到消息后 更新缓存中的talkMap
+     * @param {Object} messageObj {direction(send/receive), message}
      */
-    UpdateTalkMap ({ state, commit, rootGetters }, newMessage) {
-      if (newMessage.fromId === rootGetters.userId) return
-      const tempMessageList = state.talkMap.get(newMessage.contactInfo.id) || []
-      tempMessageList.push(new Tweet(newMessage))
-      commit('SET_TALK_MAP', {
-        fromServer: false,
-        talkMapData: [[newMessage.contactInfo.id, tempMessageList]]
-      })
+    UpdateTalkMap ({ state, commit, rootGetters }, messageObj) {
+      const { direction, message } = messageObj
+      if (direction === 'receive' && message.fromId === rootGetters.userId) return
+      let tempMessageList = []
+      if (direction === 'receive') {
+        tempMessageList = state.talkMap.get(message.contactInfo.id) || []
+        tempMessageList.push(new Tweet(message))
+        commit('SET_TALK_MAP', {
+          fromServer: false,
+          talkMapData: [[message.contactInfo.id, tempMessageList]]
+        })
+      }
+      if (direction === 'send') {
+        tempMessageList = state.talkMap.get(message.toId) || []
+        tempMessageList.push(new Tweet(message))
+        commit('SET_TALK_MAP', {
+          fromServer: false,
+          talkMapData: [[message.toId, tempMessageList]]
+        })
+      }
     },
     /**
      * 更新缓存中的草稿信息
@@ -374,9 +519,40 @@ const talk = {
       }).catch(error => {
         throw (error)
       })
+    },
+    /**
+     * 开启超时定时器
+     */
+    StartMessageTimer ({ state, commit, dispatch }) {
+      dispatch('ClearMessageTimer')
+        .then(() => {
+          const timer = setInterval(() => {
+            const slotSet = state.listLoop[state.currentSlotIndex]
+            if (slotSet && slotSet.size > 0) {
+              for (const uid of slotSet.values()) {
+                // 将执行完的uid从sendingMap中剔除
+                commit('DEL_SENDING_MAP', uid)
+                // 添加到失败列表中
+                commit('ADD_FAIL_SET', uid)
+                console.log(`消息：<${uid}>超时，发送失败！`)
+              }
+              // 置空该集合
+              slotSet.clear()
+              commit('CLEAR_LIST_LOOP_SLOT', state.currentSlotIndex)
+            }
+            // 继续循环
+            commit('SET_CURRENT_SLOT_INDEX', (++state.currentSlotIndex) % 7)
+          }, 1000)
+          commit('SET_MESSAGE_TIMER', timer)
+        })
+    },
+    /**
+     * 清除消息定时器
+     */
+    ClearMessageTimer ({ state }) {
+      clearInterval(state.messageTimer)
     }
   },
-  modules,
   strict: process.env.NODE_ENV !== 'production'
 }
 

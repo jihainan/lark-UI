@@ -1,18 +1,14 @@
 <template>
   <a-layout v-if="Object.keys(chatInfo).length" class="conv-box">
     <!-- 聊天设置选项的抽屉组件 -->
-    <talk-history
+    <talk-drawer
       :contactId="chatInfo.id"
-      :hisGrop="JSON.stringify(chatInfo.isGroup)"
       :activeOption="activeOption"
+      :isGroup="JSON.stringify(chatInfo.isGroup)"
+      :width="drawerWidth"
+      :secretLevel="chatInfo.secretLevel"
       @closeDrawer="triggerDrawer"
     />
-    <group-notice :activeOption="activeOption" @closeDrawer="triggerDrawer" />
-    <talk-setting :groupId="chatInfo.id" :activeOption="activeOption" @closeDrawer="triggerDrawer" />
-    <talk-file :activeOption="activeOption" :groupId="chatInfo.id" @closeDrawer="triggerDrawer" />
-    <user-file :contactId="chatInfo.id" :activeOption="activeOption" @closeDrawer="triggerDrawer" />
-    <mark-message :groupId="chatInfo.id" :activeOption="activeOption" @closeDrawer="triggerDrawer" />
-    <more-info :contactId="chatInfo.id" :activeOption="activeOption" @closeDrawer="triggerDrawer" />
     <a-layout-header class="conv-box-header">
       <div class="conv-title">
         <!-- 需要对名字的字数做限制 -->
@@ -34,7 +30,7 @@
             <template slot="title">
               <span>{{ item.message }}</span>
             </template>
-            <a-icon @click="triggerDrawer(item.name)" style="marginLeft: 20px" :type="item.type" />
+            <a-icon @click="triggerDrawer(item.name, item.message)" style="marginLeft: 20px" :type="item.type" />
           </a-tooltip>
         </div>
       </div>
@@ -44,7 +40,11 @@
       <div class="talk-main-box">
         <div v-if="messageList.length" class="talk-main">
           <div v-for="(item, index) in messageList" :key="index" class="talk-item">
-            <message-piece :messageInfo="item" @imgLoaded="scrollToBottom" />
+            <message-piece
+              :messageInfo="item"
+              :isTimeVisible="timeVisibleSet.has(index)"
+              @imgLoaded="scrollToBottom"
+            />
           </div>
         </div>
 
@@ -70,10 +70,9 @@
               overlayClassName="emojis-picker"
             >
               <template slot="content">
-                <face @insertFace="insertFace" />
+                <Face @insertFace="insertFace" />
               </template>
               <a-icon style="marginRight: 20px" type="smile" />
-              <!-- @click="getfocus(); insertHtmlAtCaret();" -->
             </a-popover>
           </a-tooltip>
         </div>
@@ -91,7 +90,6 @@
             :beforeUpload="beforeUpload"
             :openFileDialogOnClick="!Object.keys(fileUpload).length"
           >
-            <!-- :customRequest="customRequest" -->
             <a-tooltip
               placement="top"
               :title="Object.keys(fileUpload).length ? '有未发送文件' : '选择文件'"
@@ -109,15 +107,6 @@
         <div class="draft-input">
           <!-- 输入框 -->
           <div>
-            <!-- <wysiwyg
-              v-model="messageContent"
-              v-show="!Object.keys(fileUpload).length"
-              class="textarea-input"
-              @keydown.enter.stop.prevent.exact
-              @keyup.alt.enter.exact="messageContent += '\n'"
-              @keyup.ctrl.enter.exact="messageContent += '\n'"
-            /> -->
-            <!-- @keyup.enter.native="sendMessage(sendSecretLevel)" -->
             <textarea
               v-show="!Object.keys(fileUpload).length"
               size="large"
@@ -157,6 +146,7 @@
 
           <!-- 发送键 -->
           <div class="send-toolbar">
+            <a-tag color="red">试运行阶段，请不要发送涉密信息。</a-tag>
             <div style="marginLeft: auto">
               <!-- 发送键 -->
               <a-radio-group @change="handleSendSecretLevel" v-model="sendSecretLevel">
@@ -191,6 +181,7 @@
       <a-progress
         :percent="fileUpload.percent"
         :status="uploadStatus[fileUpload.status]"
+        :format="(percent)=>parseInt(percent) + '%'"
       />
     </a-modal>
   </a-layout>
@@ -206,44 +197,25 @@
 <script>
 import {
   MessagePiece,
-  TalkHistory,
-  MoreInfo,
-  GroupNotice,
-  TalkSetting,
-  MarkMessage,
-  TalkFile,
-  UserFile
+  Face,
+  TalkDrawer
 } from '@/components/Talk'
-import { LandingStatus } from '@/utils/constants'
+import { ONLINE_STATUS } from '@/utils/constants'
 import api from '@/api/talk'
 import { SocketMessage, Tweet } from '@/utils/talk'
 import { mapGetters } from 'vuex'
 // 生成随机uuid
 import uuidv4 from 'uuid/v4'
-import Face from './Face'
 import Watermark from '@/utils/waterMark'
-import { transform } from '@/utils/face'
 
 export default {
   name: 'ConvBox',
   components: {
     MessagePiece,
-    TalkHistory,
-    GroupNotice,
-    TalkSetting,
-    MarkMessage,
-    TalkFile,
-    MoreInfo,
-    UserFile,
-    Face
+    Face,
+    TalkDrawer
   },
   props: {
-    /** 聊天对话框的基本信息--结构同最近联系人 */
-    chatInfo: {
-      type: Object,
-      default: () => ({}),
-      required: true
-    },
     /** 是否为弹框式的聊天窗口 */
     isPopup: {
       type: Boolean,
@@ -254,7 +226,7 @@ export default {
   data () {
     return {
       // 被激活的抽屉
-      activeOption: '',
+      activeOption: {},
       // 是否是群聊消息
       // isGroupMessage,
       // 所有被at用的id
@@ -281,7 +253,6 @@ export default {
       },
       // 显示文件上传进度条
       progressVisible: false,
-      messageList: [],
 
       imgFormat: ['jpg', 'jpeg', 'png', 'gif'],
       fileFormat: [
@@ -301,80 +272,59 @@ export default {
         'sql',
         'apk',
         'psd'
-      ]
+      ],
+      // 抽屉宽度
+      drawerWidth: '',
+      // 显示时间的消息集合
+      timeVisibleSet: new Set()
     }
   },
+  activated () {
+    this.scrollToBottom()
+  },
   computed: {
-    ...mapGetters(['onlineState', 'userSecretLevel', 'userId', 'avatar', 'nickname', 'token']),
+    ...mapGetters({
+      onlineState: 'onlineState',
+      userSecretLevel: 'userSecretLevel',
+      userId: 'userId',
+      avatar: 'avatar',
+      nickname: 'nickname',
+      token: 'token',
+      chatInfo: 'currentTalk' }),
     // 发送按钮的可用状态
     sendDisabled () {
-      if (this.onlineState === LandingStatus.ONLINE) {
+      if (this.onlineState === ONLINE_STATUS.ONLINE) {
         return this.fileUpload.status && this.fileUpload.status !== 'done'
       } else return true
     },
     fileUploadUrl () {
       return api.fileUpload
+    },
+    messageList () {
+      return this.$store.getters.getTalkHistory(this.chatInfo.id)
     }
   },
   watch: {
     'chatInfo.id': {
+      // 切换当前联系人
       handler: function (newId, oldId) {
-        // 设置当前联系人
-        this.$store.commit('SET_CURRENT_TALK', this.chatInfo)
-        // TODO: 更新最近联系人列表的唯独消息数
-        // ···
-        this.getCacheMessage()
-        this.scrollToBottom()
         this.handleSendSecretLevel()
-
-        // 设置输入框信息
-        this.$store
-          .dispatch('UpdateDraftMap', [oldId + 'file', this.fileUpload])
-          .then(() => {
-            this.fileUpload = this.$store.state.talk.draftMap.get(newId + 'file') || {}
+        this.setDraft(newId, oldId)
+        // 设置水印
+        if (typeof newId !== 'undefined' && typeof oldId === 'undefined') {
+          this.$nextTick(() => {
+            this.printWaterMark(this.nickname)
           })
-          .then(() => {
-            this.$store.dispatch('UpdateDraftMap', [oldId, this.messageContent]).then(() => {
-              this.messageContent = this.$store.state.talk.draftMap.get(newId) || ''
-            })
-          })
+        }
       },
       immediate: true
     },
-    messageList: function (newValue) {
-      this.$store.commit('SET_TALK_MAP', {
-        fromServer: false,
-        talkMapData: [[this.chatInfo.id, newValue]]
-      })
-      // 滚动到最下方
+    messageList: function () {
       this.scrollToBottom()
+      this.setTimeVisibleSet()
     }
   },
-  mounted () {
-    // 页面创建时，消息滚动到最近一条
-    this.scrollToBottom()
-    // this.$nextTick(() => {
-    this.printWaterMark(this.nickname)
-    // })
-  },
   methods: {
-    /**
-     * 重写上传action方法
-     */
-    // customRequest (data) {
-    //   const formData = new FormData()
-    //   formData.append('file', data.file)
-    //   data.onProgress()
-    //   uploadFile(formData).then(res => {
-    //     if (res.status === 200) {
-    //       // const imageUrl = res.result
-    //       // vue-cropper插件img绑定url时，会有跨域问题，图片类型转base64传递到子组件
-    //       this.getBase64(data.file, (imageUrl) => {
-    //         this.$refs.modal.edit(imageUrl)
-    //       })
-    //     }
-    //   })
-    // },
     /** 给研讨界面添加水印 */
     printWaterMark (username) {
       const config = {
@@ -384,11 +334,43 @@ export default {
         density: 0.8,
         rotate: (-1 / 6) * Math.PI,
         z_index: 999,
-        color: 'rgba(178, 178, 178, 0.3)',
-        yOffset: 1
+        color: 'rgba(252, 252, 252, 0.6)',
+        yOffset: 5
       }
       const watermark = new Watermark(config)
-      watermark.embed('.conv-box-message', 'qqqqq')
+      watermark.remove('user-name-mask')
+      watermark.embed('.conv-box-message', 'user-name-mask')
+    },
+    /**
+     * 设置当前研讨的草稿信息
+     * @param {String} preId 上一个研讨ID
+     * @param {String} curId 当前研讨ID
+     */
+    setDraft (curId, preId) {
+      const { $store } = this
+      $store
+        .dispatch('UpdateDraftMap', [preId + 'file', this.fileUpload]).then(() => {
+          this.fileUpload = $store.state.talk.draftMap.get(curId + 'file') || {}
+        }).then(() => {
+          $store.dispatch('UpdateDraftMap', [preId, this.messageContent]).then(() => {
+            this.messageContent = $store.state.talk.draftMap.get(curId) || ''
+          })
+        })
+    },
+    /** 设置显示时间的消息集合 */
+    setTimeVisibleSet () {
+      const { timeVisibleSet, messageList } = this
+      timeVisibleSet.clear()
+      if (messageList.length) {
+        let lastVisibleTime = messageList[0].time
+        messageList.forEach((item, index) => {
+          const interval = new Date(item.time) - new Date(lastVisibleTime)
+          if (interval > 3 * 60 * 1000 || interval === 0) {
+            timeVisibleSet.add(index)
+            lastVisibleTime = item.time
+          }
+        })
+      }
     },
     /**
      * 文件上传状态变化时触发
@@ -409,9 +391,7 @@ export default {
     beforeUpload () {
       this.headers.authorization = this.token
     },
-    /**
-     * 清除上传的文件
-     */
+    /** 清除上传的文件 */
     removeFile () {
       this.fileUpload = {}
       // TODO: 向后台发送请求
@@ -430,17 +410,16 @@ export default {
         }
       })
     },
-    /**
-     * 通过isGroup属性过滤聊天选项
-     */
+    /** 通过isGroup属性过滤聊天选项 */
     optionFilter (isGroup) {
       // 聊天操作选项
       const optionList = [
         // { group: true, name: 'groupNotice', message: '群公告', type: 'notification' },
         // { group: true, name: 'markMessage', message: '标记信息', type: 'tags' },
-        { group: false, name: 'talkHistory', message: '聊天内容', type: 'file-text' },
-        { group: false, name: isGroup ? 'talkFile' : 'userFile', message: '文件', type: 'folder-open' },
-        { group: false, name: isGroup ? 'moreInfo' : 'personMoreInfo', message: '更多', type: 'ellipsis' }
+        { group: false, name: 'talkHistory', message: '聊天历史', type: 'file-text' },
+        { group: false, name: isGroup ? 'groupFile' : 'userFile', message: '文件', type: 'folder-open' },
+        { group: false, name: isGroup ? 'moreInfo' : 'personMoreInfo', message: '组信息', type: 'profile' },
+        { group: true, name: isGroup ? 'teamMember' : 'personMoreInfo', message: '组成员', type: 'team' }
       ]
 
       return isGroup ? optionList : optionList.filter(item => !item.group)
@@ -448,12 +427,17 @@ export default {
     /**
      * 根据drawerName打开对应的抽屉
      */
-    triggerDrawer (drawerName) {
-      this.activeOption = drawerName
+    triggerDrawer (drawerType, drawerName) {
+      this.activeOption = { 'drawerType': drawerType, 'drawerName': drawerName }
+      // this.drawerWidth = '500px'
+      // 组成员抽屉
+      if (drawerType === 'groupFile') {
+        this.drawerWidth = '650px'
+      } else {
+        this.drawerWidth = '450px'
+      }
     },
-    /**
-     * 设置发送消息的密级
-     */
+    /** 设置发送消息的密级 */
     handleSendSecretLevel (even) {
       const secretLevel = even ? parseInt(event.target.value) : 30
       const allSendMenu = [30, 40, 60].filter(item => item <= this.userSecretLevel)
@@ -461,114 +445,70 @@ export default {
       this.sendSecretLevel = secretLevel
       this.sendSecretList = allSendMenu.filter(item => item <= curTalkSecret)
     },
-    /**
-     * 获取缓存消息
-     */
-    getCacheMessage () {
-      const hasCache = this.$store.state.talk.talkMap.has(this.chatInfo.id)
-      if (!hasCache) {
-        this.$store.commit('SET_TALK_MAP', {
-          fromServer: false,
-          talkMapData: [[this.chatInfo.id, []]]
-        })
-      }
-      this.messageList = this.$store.state.talk.talkMap.get(this.chatInfo.id)
-    },
-    /**
-     * 发送消息
-     */
+    /** 发送消息 */
     sendMessage (secretLevel) {
       if (this.sendDisabled) {
         this.$message.warning('还不能发送消息！')
         return
       }
       const tweet = new Tweet()
-      /**
-       * 文件上传响应体中包含以下属性
-       * "fileId": "AAAWUHAAGAAAAxkAAG",
-       * "fileName": "api-ms-win-core-namedpipe-l1-1-0.dll",
-       * "fileExt": "",
-       * "fileType": "",
-       * "sizes": 18744,
-       * "path": "20190619",
-       * "readPath": "",
-       * "createTime": "2019-06-19 14:52:22",
-       * "creator": "登录人id_测试",
-       * "updateTime": "2019-06-19 14:52:22",
-       * "updator": "登录人id_测试",
-       * "groupId": "",
-       * "levels": ""
-       */
-      const { status } = this.fileUpload
-      const content = transform(this.messageContent)
+      const { fileUpload, messageContent: content } = this
       // 如果有文件消息，发送文件消息，忽略文字消息
-      if (status === 'done') {
-        const { fileId, fileName, readPath, fileExt } = this.fileUpload.response.result
+      if (fileUpload.status === 'done') {
+        const { fileId, fileName, readPath, fileExt } = fileUpload.response.result
         this.generateFileMsg(tweet, fileId, readPath, fileExt, fileName, secretLevel)
       } else {
         // 没有文件消息，验证文字消息的合法性
         if (content.replace(/\n/g, '').trim() === '') {
           this.$message.warning('消息内容不能为空')
+          return
         } else if (content.length > 2000) {
           this.$message.warning('消息内容不能超过2000个字符')
+          return
         } else {
           this.generateTextMsg(tweet, content, secretLevel)
         }
       }
-      // 如果消息类型属性存在，消息内容创建成功
-      if (tweet.content && tweet.content.type) {
-        this.generateBaseInfo(tweet, secretLevel)
-        // this.updateChatInfo(tweet)
-        this.addSenderInfo(tweet)
-        const baseMessage = new SocketMessage({
-          code: this.chatInfo.isGroup ? 1 : 0,
-          data: tweet
-        }).toString()
-        this.SocketGlobal.send(baseMessage)
-        // 将消息放进当前的消息列表
-        this.messageList.push(tweet)
-        this.$store.dispatch('UpdateRecentContacts', {
-          ...this.chatInfo,
-          reOrder: true,
-          addUnread: false
-        })
+      this.generateBaseInfo(tweet, secretLevel)
+      this.addContactInfo(tweet)
+      const baseMessage = new SocketMessage({
+        code: this.chatInfo.isGroup ? 1 : 0,
+        data: tweet
+      }).toString()
+      this.SocketGlobal.send(baseMessage)
+      // 添加定时任务 添加到发送队列
+      this.$store.commit('ADD_TIMING_TASK', tweet.id)
+      // 更新消息列表
+      this.$store.dispatch('UpdateTalkMap', {
+        direction: 'send',
+        message: tweet
+      })
+      this.$store.dispatch('UpdateRecentContacts', {
+        ...this.chatInfo,
+        reOrder: true,
+        addUnread: false
+      })
 
-        this.scrollToBottom()
-        tweet.content.type === 1 ? (this.messageContent = '') : (this.fileUpload = {})
-      }
+      this.scrollToBottom()
+      tweet.content.type === 1 ? (this.messageContent = '') : (this.fileUpload = {})
     },
-    /** 添加发信人信息或者群组信息 */
-    addSenderInfo (tweet) {
-      const { chatInfo, userId, nickname, avatar, userSecretLevel } = this
+    /** 添加消息发送人或所在群组信息 */
+    addContactInfo (tweet) {
       tweet.contactInfo = {}
       if (tweet.isGroup) {
-        tweet.contactInfo.id = chatInfo.id
-        tweet.contactInfo.name = chatInfo.name
-        tweet.contactInfo.avatar = chatInfo.avatar
-        tweet.contactInfo.secretLevel = chatInfo.secretLevel
-        tweet.contactInfo.memberNum = chatInfo.memberNum
+        const { chatInfo: { id, name, avatar, secretLevel, memberNum, groupOwnerId } } = this
+        tweet.contactInfo = { id, name, avatar, secretLevel, memberNum, groupOwnerId }
         tweet.contactInfo.isGroup = true
       } else {
+        const { userId, nickname, avatar, userSecretLevel } = this
         tweet.contactInfo.id = userId
         tweet.contactInfo.name = nickname
         tweet.contactInfo.avatar = avatar
         tweet.contactInfo.secretLevel = userSecretLevel
         tweet.contactInfo.memberNum = 2
         tweet.contactInfo.isGroup = false
+        tweet.contactInfo.groupOwnerId = ''
       }
-    },
-    /** 更新当前联系人信息 */
-    // TODO: 这个地方可以不处理，在刷新最近联系人列表处统一处理
-    updateChatInfo (tweet) {
-      // this.chatInfo.time = format(tweet.time, 'hh:mm')
-      // if (tweet.content.type === 1) {
-      //   this.chatInfo.lastMessage.title = tweet.content.title
-      //   this.messageContent = ''
-      // } else if (tweet.type === 2) {
-      //   this.chatInfo.lastMessage = '[图片]:' + tweet.content.title
-      // } else if (tweet.type === 3) {
-      //   this.chatInfo.lastMessage = '[文件]:' + tweet.content.title
-      // }
     },
     /** 生成消息体中的基本信息 */
     generateBaseInfo (tweet, secretLevel) {
@@ -578,6 +518,7 @@ export default {
       tweet.avatar = avatar
       tweet.fromId = userId
       tweet.toId = chatInfo.id
+      tweet.toName = chatInfo.name
       tweet.atId = []
       tweet.time = new Date()
       tweet.isGroup = chatInfo.isGroup
@@ -605,19 +546,10 @@ export default {
         secretLevel: secretLevel
       }
     },
-    showFaceBox: function () {
-      this.faceVisible = !this.faceVisible
-    },
     /** 插入表情 */
     insertFace (item) {
       this.messageContent = this.messageContent + 'face' + item
       this.faceVisible = false
-    }
-  },
-  directives: {
-    // 使元素获得焦点
-    focus: el => {
-      el.focus()
     }
   }
 }

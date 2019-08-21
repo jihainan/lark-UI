@@ -123,7 +123,19 @@ export default {
             temp.url = dataTemp[i].url
             this.cardList.push(temp)
           }
+          // 当常用卡片个数为0 或设置的卡片全部不需要请求后台数据时，加载样式关闭
           if (dataTemp.length === 0) {
+            this.loading = false
+          }
+          let check = false
+          check = this.config.some(item => {
+            dataTemp.forEach(card => {
+              if (item !== card.type) {
+                return true
+              }
+            })
+          })
+          if (!check) {
             this.loading = false
           }
         })

@@ -1,26 +1,31 @@
 <template>
   <!-- recent contacts item -->
   <div :class="recentContactsClasses" :key="contactsInfo.id">
-
     <div class="avatar">
       <a-badge
         :dot="JSON.parse(contactsInfo.isMute)"
         :count="JSON.parse(contactsInfo.unreadNum)"
         :overflowCount="99"
         :offset="badgeoffset"
-        :numberStyle="badgeNumStyle">
-
-        <a-avatar class="avatar-img" shape="square" :src="contactsInfo.avatar" :size="40">
-          <span>{{ contactsInfo.name }}</span>
-        </a-avatar>
-
+        :numberStyle="badgeNumStyle"
+      >
+        <a-avatar
+          class="avatar-img"
+          shape="square"
+          :src="contactsInfo.avatar"
+          :size="40"
+        >{{ contactsInfo.name.substr(0, 4) }}</a-avatar>
       </a-badge>
     </div>
 
     <div class="extra">
       <p class="attr">{{ contactsInfo.time }}</p>
       <p class="attr">
-        <a-icon v-if="contactsInfo.isMute && contactsInfo.isGroup" type="eye-invisible" theme="filled" />
+        <a-icon
+          v-if="contactsInfo.isMute && contactsInfo.isGroup"
+          type="eye-invisible"
+          theme="filled"
+        />
       </p>
     </div>
 
@@ -29,15 +34,17 @@
       <div class="msg">
         <span v-if="contactsInfo.atMe && contactsInfo.isGroup" class="at-me">[有人@我]</span>
         <!-- 群组被静音后提示未读消息条数 -->
-        <span v-if="contactsInfo.isGroup && contactsInfo.isMute && contactsInfo.unreadNum">[{{ contactsInfo.unreadNum }}条]</span>
+        <span
+          v-if="contactsInfo.isGroup && contactsInfo.isMute && contactsInfo.unreadNum"
+        >[{{ contactsInfo.unreadNum }}条]</span>
         <!-- 群组提示消息发送者姓名 -->
         <span v-if="contactsInfo.sender && contactsInfo.isGroup">{{ contactsInfo.sender }}:</span>
 
         <!-- 分类显示消息内容 -->
-        <div v-html="lastMessage" class="msg-content"></div>
+        {{ lastMessage }}
+        <!-- <div v-html="lastMessage" class="msg-content"></div> -->
       </div>
     </div>
-
   </div>
 </template>
 
@@ -82,12 +89,12 @@ export default {
     recentContactsClasses () {
       return {
         'recent-contacts': true,
-        'top': this.contactsInfo.isTop && !this.activated,
-        'activated': this.activated
+        top: this.contactsInfo.isTop && !this.activated,
+        activated: this.activated
       }
     },
     badgeoffset () {
-      return this.contactsInfo.isMute ? [] : [ -5, 5 ]
+      return this.contactsInfo.isMute ? [] : [-5, 5]
     },
     badgeNumStyle () {
       return this.contactsInfo.isMute
@@ -97,7 +104,8 @@ export default {
           boxShadow: 'none',
           height: '16px',
           minWidth: '16px',
-          lineHeight: '16px' }
+          lineHeight: '16px'
+        }
     },
     lastMessage () {
       const { type, title } = this.contactsInfo.lastMessage
@@ -108,90 +116,81 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.activated {
+  background-color: #d3d6dc !important;
+}
 
-  .activated {
-    background-color: rgb(195, 197, 199)!important;
+.top {
+  background-color: #e6e9ed !important;
+}
+
+.recent-contacts {
+  width: 100%;
+  height: 64px;
+  min-height: 64px;
+  max-height: 64px;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 12px 18px 11px;
+  background-color: #ebeff5;
+  border-bottom: 1px solid #e4e8ec;
+
+  &:hover {
+    background-color: #d4d7dc99;
   }
+}
 
-  .top {
-    background-color: rgb(220, 222, 224)!important;
+.avatar {
+  float: left;
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+
+  &-img {
+    border-radius: 2px;
+    background-color: #4da6fa;
   }
+}
 
-  .recent-contacts {
-    width: 100%;
-    height: 64px;
-    min-height: 64px;
-    max-height: 64px;
-    cursor: pointer;
+.info {
+  height: 40px;
+  line-height: 20px;
+  word-wrap: normal;
+  white-space: nowrap;
+
+  .nickname {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 400;
+    color: rgb(0, 0, 0);
     overflow: hidden;
-    padding: 12px 18px 11px;
-    background-color: rgb(230, 232, 235);
-    border-bottom: 1px solid rgb(218, 220, 223);
-
-    &:hover {
-      background-color: rgb(215, 217, 219);
-    }
+    text-overflow: ellipsis;
   }
 
-  .avatar {
-    float: left;
-    width: 40px;
-    height: 40px;
-    margin-right: 10px;
-
-    &-img {
-      border-radius: 2px;
-      background-color: rgb(0, 162, 174);
-      span {
-        color: #fff;
-      }
-    }
-  }
-
-  .info {
-    height: 40px;
-    line-height: 20px;
-    word-wrap: normal;
-    white-space: nowrap;
-
-    .nickname {
-      margin: 0;
-      font-size:16px;
-      font-weight: 400;
-      color: rgb(0, 0, 0);
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .msg {
-      margin: 0;
-      font-size: 13px;
-      color: rgb(140, 141, 143);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      // TODO: 临时添加，需要修改
-      display: flex;
-      &-content {
-        display: flex;
-      }
-
-      .at-me {
-        color: red;
-      }
-    }
-  }
-
-  .extra {
-    float: right;
-    height: 40px;
-    // width: 40px;
-    font-size: 12px;
-    text-align: right;
+  .msg {
+    margin: 0;
+    font-size: 13px;
     color: rgb(140, 141, 143);
+    overflow: hidden;
+    text-overflow: ellipsis;
 
-    .attr {
-      height: 20px;
-      margin: 0;
+    .at-me {
+      color: red;
     }
   }
+}
+
+.extra {
+  float: right;
+  height: 40px;
+  // width: 40px;
+  font-size: 12px;
+  text-align: right;
+  color: rgb(140, 141, 143);
+
+  .attr {
+    height: 20px;
+    margin: 0;
+  }
+}
 </style>

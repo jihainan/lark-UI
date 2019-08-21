@@ -14,13 +14,12 @@
         @change="changePane"
         :tabBarGutter="0"
         :tabBarStyle="{ margin: '0 20px' }"
-        :animated="false"
+        animated
       >
         <a-tab-pane key="1" forceRender>
           <span slot="tab">
             <a-icon type="clock-circle" style="{fontSize: 16px}" />最近
           </span>
-          <!-- 最近里面每一项 -->
           <div class="recent-contacts-container tab-content-container">
             <div v-for="(item, index) in recentContacts" :key="index" @click="showConvBox(item)">
               <recent-contacts-item :contactsInfo="item" :activated="item.id === activeChat"></recent-contacts-item>
@@ -42,7 +41,7 @@
           </div>
         </a-tab-pane>
 
-        <a-tab-pane key="2">
+        <a-tab-pane key="2" forceRender>
           <span slot="tab">
             <a-icon type="team" style="{fontSize: 16px}" />群组
           </span>
@@ -68,7 +67,7 @@
           </div>
         </a-tab-pane>
 
-        <a-tab-pane key="3">
+        <a-tab-pane key="3" forceRender>
           <span slot="tab">
             <a-icon type="user" style="{fontSize: 18px, margin: 0}" />联系人
           </span>
@@ -119,8 +118,14 @@
 </template>
 
 <script>
-import { ContactsTree, ContactsInfo, GroupInfo, RecentContactsItem, GroupItem, CreateTalk, SearchAll } from '@/components/Talk'
-
+import { ContactsTree,
+  ContactsInfo,
+  GroupInfo,
+  RecentContactsItem,
+  GroupItem,
+  CreateTalk,
+  SearchAll } from '@/components/Talk'
+import { mapGetters } from 'vuex'
 export default {
   name: 'ChatPanel',
   components: {
@@ -146,39 +151,22 @@ export default {
       // 记录当前选中的联系人/群组信息
       activeContacts: '',
       activeGroup: '',
-      activeChat: '',
 
       // 加载状态
       recentLoading: false,
       groupLoading: false,
-      contactsLoading: false,
-
-      searchRecordModalVisible: false
+      contactsLoading: false
     }
   },
   computed: {
-    currentTalk () {
-      return this.$store.state.talk.currentTalk
-    },
-    recentContacts: {
-      get: function () {
-        return this.$store.state.talk.recentContacts
-      },
-      set: function (recentContacts) {
-        this.$store.commit('SET_RECENT_CONTACTS', recentContacts)
-      }
-    },
-    groupList () {
-      return this.$store.state.talk.groupList
-    },
-    contactsTree () {
-      return this.$store.state.talk.contactsTree
-    }
-  },
-  watch: {
-    currentTalk (newValue) {
-      // 监听当前研讨的变化，更新最近联系人选中状态
-      this.activeChat = newValue.id
+    ...mapGetters([
+      'recentContacts',
+      'groupList',
+      'contactsTree'
+    ]),
+    // 当前激活的研讨ID
+    activeChat () {
+      return this.$store.getters.currentTalk.id
     }
   },
   methods: {
@@ -197,21 +185,15 @@ export default {
     handleSaveClose () {},
     /**
      * 展示研讨对话框
-     * @param {Object} currentTalk 当前研讨
+     * @param {Object} selectedItem 当前研讨
      */
-    showConvBox: function (currentTalk) {
-      this.activeChat = currentTalk.id
-      // 未读消息置为0
-      currentTalk.unreadNum = 0
-      // 初始化sotre中的当前会话
-      // this.currentTalk = currentTalk
-      this.$store.dispatch('UpdateRecentContacts', { ...currentTalk, reOrder: false, addUnread: false })
-
+    showConvBox (selectedItem) {
       // 路由跳转
-      this.$router.push({
-        path: '/talk/chatpanel/chatbox',
-        query: currentTalk
-      })
+      this.$router.push({ name: 'ChatBox' })
+      this.$store.dispatch('UpdateRecentContacts', { ...selectedItem, reOrder: false, addUnread: false })
+        .then(() => {
+          this.$store.commit('SET_CURRENT_TALK', selectedItem.id)
+        })
     },
     /** 展示群组详细信息 */
     showGroup (group) {
@@ -248,12 +230,6 @@ export default {
         this.recentLoading = false
       })
     },
-    handleOpenSearchRecordModal () {
-      this.searchRecordModalVisible = true
-    },
-    handleCloseSearchRecordModal () {
-      this.searchRecordModalVisible = false
-    },
     showSearchDetail (item, isGroup) {
       if (isGroup) {
         this.activeKey = '2'
@@ -279,7 +255,7 @@ export default {
   max-width: 280px !important;
   flex: 0 0 280px !important;
 
-  background: rgb(230, 232, 235);
+  background-color: #ebeff5;
   border-right: 1px solid #dcdee0;
 
   // 聊天搜索栏样式 该部分高度为48px
@@ -290,7 +266,7 @@ export default {
       margin-left: 10px;
       width: 31px;
       height: 31px;
-      background: #d1d2d4;
+      background-color: #d3d6dc;
       color: #7c7a7a;
       font-size: 18px;
     }

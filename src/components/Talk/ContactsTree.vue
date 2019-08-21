@@ -11,7 +11,7 @@
     <template slot="userNode" slot-scope="{title, icon, online}">
 
       <a-avatar :class="['user-node-avatar', online ? '' : 'off-line']" shape="square" :src="icon" :size="24">
-        <span>{{ title.slice(0, 1) }}</span>
+        {{ title.slice(0, 1) }}
       </a-avatar>
 
       <span :class="['user-node-title', online ? '' : 'off-line']">{{ title }}</span>
@@ -85,7 +85,7 @@ export default {
     .user-node-avatar {
       border-radius: 2px;
       margin:0 5px 4px 0px;
-      background-color: rgb(0, 162, 174);
+      background-color: #4da6fa;
       span {
         color: #fff;
       }

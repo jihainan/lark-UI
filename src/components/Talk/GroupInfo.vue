@@ -29,7 +29,7 @@
         </div>
 
         <a-avatar class="avatar-img" shape="square" :src="groupInfo.avatar" :size="75">
-          <span>{{ groupInfo.name }}</span>
+          {{ groupInfo.name.substr(0, 6) }}
         </a-avatar>
       </div>
 
@@ -44,8 +44,12 @@
             <p class="val">{{ groupInfo.subject }}</p>
           </div>
           <div>
+            <p class="attr">群主</p>
+            <p class="val">{{ groupInfo.groupOwnerName }}</p>
+          </div>
+          <div>
             <p class="attr">创建人</p>
-            <p class="val">{{ groupInfo.creator }}</p>
+            <p class="val">{{ groupInfo.creatorName }}</p>
           </div>
           <div>
             <p class="attr">创建时间</p>
@@ -61,7 +65,6 @@
 
 <script>
 import { getGroupInfo } from '@/api/talk'
-import { RecentContact } from '@/utils/talk/index.js'
 
 export default {
   name: 'GroupInfo',
@@ -104,24 +107,26 @@ export default {
         }
       )
     },
-    sendMessage (event) {
-      const { id, name, avatar, securityClass, memberNum } = this.groupInfo
-      const groupItem = {
-        id: id,
-        name: name,
-        avatar: avatar,
-        secretLevel: JSON.parse(securityClass),
-        memberNum: memberNum,
-        isGroup: true
-      }
+    /** 跳转到研讨页 */
+    sendMessage () {
       this.$emit('clickSend')
-      this.$router.push({
-        path: '/talk/ChatPanel/ChatBox',
-        query: new RecentContact(groupItem)
-      })
-      groupItem.reOrder = true
-      groupItem.addUnread = false
+      const { id, name, avatar, securityClass, memberNum, groupOwnerId } = this.groupInfo
+      const groupItem = {
+        id,
+        name,
+        avatar,
+        memberNum,
+        secretLevel: JSON.parse(securityClass),
+        isGroup: true,
+        groupOwnerId,
+        reOrder: true,
+        addUnread: false
+      }
+      this.$router.push({ name: 'ChatBox' })
       this.$store.dispatch('UpdateRecentContacts', groupItem)
+        .then(() => {
+          this.$store.commit('SET_CURRENT_TALK', id)
+        })
     }
   }
 }
@@ -193,7 +198,7 @@ export default {
       right: 0;
       top: 0;
       border-radius: 2px;
-      background-color: rgb(0, 162, 174);
+      background-color: #4da6fa;
 
       span {
         color: #fff;

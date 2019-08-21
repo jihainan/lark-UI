@@ -19,9 +19,12 @@
           :offset="[-10, 23]"
           :numberStyle="{padding: '4px'}"
         >
-          <a-avatar class="avatar" size="small" :src="avatar" style="backgroundColor: #f49d2a">
-            <span>{{ nickname.slice(0,1) }}</span>
-          </a-avatar>
+          <a-avatar
+            class="avatar"
+            size="small"
+            :src="avatar"
+            style="backgroundColor: #f49d2a"
+          >{{ nickname.slice(0,1) }}</a-avatar>
         </a-badge>
         <span>{{ nickname }}</span>
       </span>
@@ -46,7 +49,7 @@
         <a-menu-item key="3">
           <a href="javascript:;" @click="handleLogout">
             <a-icon type="logout" />
-            <span>退出登录</span>
+            <span>注销</span>
           </a>
         </a-menu-item>
       </a-menu>
@@ -58,7 +61,7 @@
 import HeaderNotice from './HeaderNotice'
 import { mapActions, mapGetters } from 'vuex'
 import Utils from '../../../src/utils/utils.js'
-import { LandingStatus } from '@/utils/constants'
+import { ONLINE_STATUS } from '@/utils/constants'
 
 export default {
   name: 'UserMenu',
@@ -68,10 +71,10 @@ export default {
   data () {
     return {
       statusMap: new Map([
-        [LandingStatus.LANDING, 'warning'],
-        [LandingStatus.ONLINE, 'success'],
-        [LandingStatus.EXITING, 'error'],
-        [LandingStatus.OFFLINE, 'default']
+        [ONLINE_STATUS.LANDING, 'warning'],
+        [ONLINE_STATUS.ONLINE, 'success'],
+        [ONLINE_STATUS.EXITING, 'error'],
+        [ONLINE_STATUS.OFFLINE, 'default']
       ])
     }
   },

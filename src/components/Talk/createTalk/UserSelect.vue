@@ -1,21 +1,13 @@
 <template>
   <div>
     <a-form style="max-width: 650px; margin: 40px auto 0;">
-      <a-alert
-        :closable="true"
-        message="下列用户已根据群组密级进行了筛选"
-        style="margin-bottom: 24px;"
-      />
+      <a-alert :closable="true" :message="alertMessage" style="margin-bottom: 12px;" />
 
-      <UserTransfer
-        ref="groupUserTransfer"
-        @ok="handleUserSelect"
-        :listStyle="listStyle"
-      />
+      <UserTransfer ref="groupUserTransfer" @ok="handleUserSelect" :listStyle="listStyle" />
 
-      <a-form-item :wrapperCol="{span: 14, offset: 10}">
-        <a-button :loading="loading" type="primary" @click="nextStep">提交</a-button>
-        <a-button style="margin-left: 8px" @click="prevStep">上一步</a-button>
+      <a-form-item :wrapperCol="{span: 14, offset: 10}" style="margin-top: 8px;">
+        <a-button @click="prevStep">上一步</a-button>
+        <a-button style="margin-left: 8px" :loading="loading" type="primary" @click="nextStep">创 建</a-button>
       </a-form-item>
     </a-form>
   </div>
@@ -40,7 +32,8 @@ export default {
       loading: false,
       userList: [],
       listStyle: {
-        width: '190px', height: '414px'
+        width: '188px',
+        height: '400px'
       }
     }
   },
@@ -59,12 +52,30 @@ export default {
     })
   },
   methods: {
+    alertMessage () {
+      switch (this.groupInfo.levels) {
+        case 60:
+          return '机密级群组成员数量不能超过50'
+        case 40:
+          return '秘密级群组成员数量不能超过100'
+        case 30:
+        default:
+          return '下列用户已根据群组密级进行了筛选'
+      }
+    },
     nextStep () {
-      if (this.userList.length < 1) {
+      const memberNum = this.userList.length
+      if (memberNum < 1) {
         this.$notification.warning({ message: '请选择群组成员' })
         return
-      } else if (this.userList.length < 2) {
+      } else if (memberNum < 2) {
         this.$notification.warning({ message: '成员数量不满足要求' })
+        return
+      } else if (this.groupInfo.levels === 40 && memberNum >= 100) {
+        this.$notification.warning({ message: '秘密级群组成员数量不能超过100' })
+        return
+      } else if (this.groupInfo.levels === 60 && memberNum >= 50) {
+        this.$notification.warning({ message: '机密级群组成员数量不能超过50' })
         return
       }
       const members = this.userList.map(item => {
@@ -93,13 +104,12 @@ export default {
 </script>
 
 <style lang="less" scoped>
-  .stepFormText {
-    margin-bottom: 24px;
+.stepFormText {
+  margin-bottom: 24px;
 
-    .ant-form-item-label,
-    .ant-form-item-control {
-      line-height: 22px;
-    }
+  .ant-form-item-label,
+  .ant-form-item-control {
+    line-height: 22px;
   }
-
+}
 </style>

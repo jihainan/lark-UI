@@ -17,14 +17,11 @@
         支持更改穿梭框尺寸 listStyle 默认 430px 430px
 -->
 <template>
-  <a-row :gutter="10">
+  <a-row :gutter="8">
     <a-col :span="7">
       <a-card title="组织信息" :bodyStyle="bodyStyle">
-        <div style="overflow:scroll;height:345px">
-          <a-tree
-            :treeData="orgTree"
-            @select="handleClick"
-          />
+        <div style="overflow:scroll;height:344px">
+          <a-tree :treeData="orgTree" @select="handleClick" />
         </div>
       </a-card>
     </a-col>
@@ -40,8 +37,7 @@
           @change="handleChange"
           :render="renderItem"
           :operations="['添加','移除']"
-        >
-        </a-transfer>
+        ></a-transfer>
       </a-spin>
     </a-col>
   </a-row>
@@ -53,7 +49,7 @@ export default {
   name: 'UserTransfer',
   data () {
     return {
-      bodyStyle: { 'height': '365px' },
+      bodyStyle: { height: '352px' },
       orgTree: [],
       // key userid value userinfo
       // 用于存储人员信息
@@ -70,7 +66,7 @@ export default {
   },
   created () {
     // 获取树形组织信息
-    getOrgTree({ 'parentTreeId': 'root' }).then(res => {
+    getOrgTree({ parentTreeId: 'root' }).then(res => {
       this.orgTree = this.handleVal(res.result.data)
     })
   },
@@ -79,12 +75,12 @@ export default {
       type: Object,
       required: false,
       default: () => ({
-        width: '430px', height: '430px'
+        width: '400px',
+        height: '400px'
       })
     }
   },
   methods: {
-
     /**
      * 打开人员选择器
      * userArr 非必填 transfer组件中已选中的人员
@@ -116,7 +112,7 @@ export default {
       if (item.length > 0 && item[0] === 'key-01') {
         return
       }
-      this.queryparamter = { 'orgCode': item[0] }
+      this.queryparamter = { orgCode: item[0] }
       // 获取组织节点对应的人员信息
       this.getUsers()
     },
@@ -132,7 +128,7 @@ export default {
         })
       } else {
         // 右侧数据只能绑定key值，需要将信息补全后进行过滤
-        this.targetKeys.filter((item) => {
+        this.targetKeys.filter(item => {
           const userinfo = this.userMap.get(item)
           if (userinfo.title.indexOf(searchvalue) > -1) {
             return true
@@ -157,29 +153,31 @@ export default {
         this.queryparamter.secretLevels = ''
         this.queryparamter.pId = ''
       }
-      getUserList(this.queryparamter).then((res) => {
-        const members = res.result.data
-        // 每次刷新更改绑定数据源时，需要合并右侧已选中的集合
-        this.joinDs(this.targetKeys, members)
-        this.tLoading = false
-      }).catch(() =>
-        this.$notification['error']({
-          message: '出现异常，请联系系统管理员',
-          duration: 4
+      getUserList(this.queryparamter)
+        .then(res => {
+          const members = res.result.data
+          // 每次刷新更改绑定数据源时，需要合并右侧已选中的集合
+          this.joinDs(this.targetKeys, members)
+          this.tLoading = false
         })
-      )
+        .catch(() =>
+          this.$notification['error']({
+            message: '出现异常，请联系系统管理员',
+            duration: 4
+          })
+        )
     },
     /**
      * 合并数据源
      * 同时给新数据源指定key和title值
      */
     joinDs (oldds, newds) {
-      newds.forEach((item) => {
+      newds.forEach(item => {
         item.key = item.id
         item.title = item.name
         this.userMap.set(item.id, item)
       })
-      oldds.forEach((oldval) => {
+      oldds.forEach(oldval => {
         let check = false
         check = newds.some(newval => {
           if (newval.id === oldval) {
@@ -198,16 +196,14 @@ export default {
     handleChange (targetKeys, direction, moveKeys) {
       this.targetKeys = targetKeys
       const userarr = []
-      this.targetKeys.forEach(item => { userarr.push(this.userMap.get(item)) })
-      this.$emit('ok', userarr)
+      this.targetKeys.forEach(item => {
+        userarr.push(this.userMap.get(item))
+      })
+      this.$emit('ok', userarr, this.targetKeys)
     },
     // 如需在人员信息上拼接其他人员信息 {item.title} - {item.orgname} - {item.secretLevel}
     renderItem (item) {
-      const customLabel = (
-        <span class="custom-item">
-          {item.title}
-        </span>
-      )
+      const customLabel = <span class="custom-item">{item.title}</span>
       return {
         // for displayed item
         label: customLabel,

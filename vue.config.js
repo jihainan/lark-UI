@@ -74,19 +74,20 @@ module.exports = {
         modifyVars: {
           /* less 变量覆盖，用于自定义 ant design 主题 */
           // 'link-color': '#FFFFFF'
-          'padding-lg': '12px',
+          'padding-lg': '16px',
           'padding-md': '8px',
-          'padding-sm': '6px',
-          'padding-xs': '4px',
-          'card-head-padding': '8px',
-          'card-inner-head-padding': '6px',
-          'card-padding-base': '12px',
-          'card-padding-wider': '16px',
+          'padding-sm': '4px',
+          'padding-xs': '0px',
+          'card-head-padding': '4px',
+          'card-inner-head-padding': '4px',
+          'card-padding-base': '4px',
+          'card-padding-wider': '8px',
           'layout-sider-background': '#0246aa',
           'menu-dark-submenu-bg': '#0544a3',
           'menu-dark-bg': '#0246aa',
           'menu-item-height': '48px',
-          'menu-inline-toplevel-item-height': '48px'
+          'menu-inline-toplevel-item-height': '48px',
+          'form-item-margin-bottom': '16px'
         },
         javascriptEnabled: true
       }
@@ -98,7 +99,7 @@ module.exports = {
 
       '/api': {
         // target: 'https://www.easy-mock.com/mock/5cd3d62bd0717344110ebfb4/lark',
-        // target: 'http://10.11.24.126:8765',
+        // target: 'http://10.11.24.30:8765',
         target: 'http://localhost:8765',
         // target: 'http://localhost:8765',
         ws: false,

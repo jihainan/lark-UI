@@ -44,7 +44,8 @@ export default {
       data: []
     }
   },
-  created () {},
+  created () {
+  },
   watch: {
     activeOption (newValue) {
       if (newValue === 'userFile') {

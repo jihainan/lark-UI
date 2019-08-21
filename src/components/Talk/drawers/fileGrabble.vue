@@ -1,267 +1,311 @@
 <template>
   <div>
-    <!-- <input type="text" class="seek_inp" placeholder="输入要搜索内容" v-model="searchVal" >
-    <a-button type="primary" icon="search" style="border-radius:0 5px 5px 0"></a-button> -->
-    <a-input-search
-      placeholder="输入要搜索内容"
-      @search="onSearch"
-      enterButton
-      type="text"
-      v-model="searchVal"
-      style="margin-bottom: 20px"
-    />
-    <ul class="history_box">
-      <li>
-        <div class="nav_box">
-          <ul>
-            <li>文件名</li>
-            <li>上传者</li>
-            <li>上传时间</li>
-          </ul>
-        </div>
-        <p></p>
-      </li>
-      <li v-for="(newItem,index) in NewItems" class="history_cotent" :key="index" :value="newItem.value">
-        <!-- {{ NewItems }} -->
-        <a-list-item-meta class="file_name">
-          <a-tooltip slot="title" :title="newItem.fileName">
-            <a class="file_a" message="sss">{{ newItem.fileName }}</a> <!-- 文件名 -->
-          </a-tooltip> <!-- 文件图片 -->
-          <!-- <a-avatar slot="avatar" :src="newItem.url" style="border-radius:0" /> -->
-          <a-avatar slot="avatar" :src="newItem.url" style="border-radius:0;  font-size: 25px;" > <a-icon type="file"></a-icon> </a-avatar>
-          <!-- <a-icon class="content_icon" type="file"/> -->
-        </a-list-item-meta>
-        <a-tooltip :title="newItem.reviser">
-          <span class="file_sp">{{ newItem.reviser }}</span><!-- 人名  -->
-        </a-tooltip>
-        <a-tooltip :title="newItem.time">
-          <div class="file_time">{{ newItem.time }}</div> <!-- 上传时间 -->
-        </a-tooltip>
-        <a>
-          <div class="secret secret1">
-            <a-tag color="orange" v-if="newItem.levels === '40'">秘密</a-tag>
-            <a-tag color="tomato" v-if="newItem.levels === '60'">机密</a-tag>
-            <a-tag color v-if="newItem.levels === '30'">非密</a-tag>
-          </div>
-        </a>
-        <a :href="genDownLoadPath(newItem.fileId)" class="down">下载</a>
-      </li>
-      <li>
-        <div
-          v-if="showLoadingMore"
-          slot="loadMore"
-          :style="{ textAlign: 'center', marginTop: '12px', height: '32px', lineHeight: '32px' }"
+    <a-tabs size="small" @change="handleTabsChange">
+      <a-tab-pane tab="我的上传" key="1">
+        <a-table
+          size="small"
+          :columns="columns"
+          :rowKey="record => record.id"
+          :dataSource="myFile"
+          :loading="loading"
+          :pagination="false"
         >
-          <a-spin v-if="loadingMore"/>
-          <a-button v-else @click="onLoadMore">loading more</a-button>
-          <div class="login_img">
-            没有更多信息...
-          </div>
-        </div>
-      </li>
-    </ul>
-
+          <span slot="icon" slot-scope="text, record">
+            <template>
+              <a-avatar :src="getAvartarSrc(record.avartar)" :class="{'onlineStyle':record.online=='1','outlineStyle':record.online!='1'}">{{ record.name.substr(0, 4) }}</a-avatar>
+            </template>
+          </span>
+          <span slot="action" slot-scope="text, record">
+            <template>
+              <a :href="genDownLoadPath(record.fileId)" download>下载</a>
+            </template>
+          </span>
+        </a-table>
+        <a-pagination simple class="pageStyle" :total="total_myfile" @change="handleChange_myfile"/>
+      </a-tab-pane>
+      <a-tab-pane tab="我的审批" :disabled="!isGroupOwner" key="2">
+        <a-table
+          size="small"
+          :columns="columns"
+          :rowKey="record => record.id"
+          :dataSource="myApprovalFile"
+          :loading="loading"
+          :pagination="false"
+        >
+          <span slot="icon" slot-scope="text, record">
+            <template>
+              <a-avatar :src="getAvartarSrc(record.avartar)" :class="{'onlineStyle':record.online=='1','outlineStyle':record.online!='1'}">{{ record.name.substr(0, 4) }}</a-avatar>
+            </template>
+          </span>
+          <span slot="action" slot-scope="text, record">
+            <template>
+              <a :href="genDownLoadPath(record.fileId)" download>下载</a>
+              <a-divider type="vertical" />
+              <a-popconfirm title="请确认是否审批通过该文件?" @confirm="confirmPass(record)" okText="是" cancelText="否">
+                <a href="#">通过</a>
+              </a-popconfirm>
+              <!-- <a-divider type="vertical" />
+              <a @click="reject(record)">驳回</a> -->
+            </template>
+          </span>
+        </a-table>
+        <a-pagination simple class="pageStyle" :total="total_myapproval" @change="handleChange_myApproval"/>
+      </a-tab-pane>
+      <a-tab-pane tab="已审批" key="3">
+        <a-table
+          size="small"
+          :columns="columns"
+          :rowKey="record => record.id"
+          :dataSource="approvaledFile"
+          :loading="loading"
+          :pagination="false"
+        >
+          <span slot="icon" slot-scope="text, record">
+            <template>
+              <a-avatar :src="getAvartarSrc(record.avartar)" :class="{'onlineStyle':record.online=='1','outlineStyle':record.online!='1'}">{{ record.name.substr(0, 4) }}</a-avatar>
+            </template>
+          </span>
+          <span slot="action" slot-scope="text, record">
+            <template>
+              <a :href="genDownLoadPath(record.fileId)" download>下载</a>
+            </template>
+          </span>
+        </a-table>
+        <a-pagination simple class="pageStyle" :total="total_approvaled" @change="handleChange_approvaled"/>
+      </a-tab-pane>
+    </a-tabs>
+    <a-modal
+      title="审批驳回"
+      :visible="visible"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <a-input v-model="rejectReason" placeholder="请填写驳回原因"/>
+    </a-modal>
   </div>
-
 </template>
 <script>
-import { fileGrabble, fileDownload } from '@/api/talk.js'
+import { setFileApproveFLg, groupFileListByMe, groupFileListByPass, groupFileListByOwner } from '@/api/talk.js'
 import api from '@/api/talk'
-
 export default {
-  name: 'Rabble',
+  name: 'FileGrabble',
+  components: {
+  },
   props: {
-    groupId: {
+    contactId: {
       type: String,
-      default: ''
+      default: '',
+      required: true
     }
   },
   data () {
     return {
-      searchVal: '',
-      items: [],
-      data: [],
+      // 数据加载样式
       loading: false,
-      loadingMore: false,
-      showLoadingMore: true,
-      item: [],
-      pageNumber: 1,
-      flag: false
+      // 我的上传
+      myFile: [],
+      // 我的审批
+      myApprovalFile: [],
+      // 已审批
+      approvaledFile: [],
+      total_myfile: 0,
+      total_myapproval: 0,
+      total_approvaled: 0,
+      // 群主
+      isGroupOwner: true,
+      visible: false,
+      fileId: '',
+      rejectReason: '',
+      // 表头
+      columns: [
+        {
+          title: '文件名',
+          width: '100px',
+          dataIndex: 'fileName'
+        },
+        {
+          title: '上传者',
+          dataIndex: 'reviser'
+        },
+        {
+          title: '密级',
+          width: '50px',
+          dataIndex: 'levels',
+          key: 'levels',
+          customRender: function (levels) {
+            const config = {
+              '30': '非密',
+              '40': '秘密',
+              '60': '机密'
+            }
+            return config[levels]
+          }
+        },
+        {
+          title: '上传时间',
+          dataIndex: 'time'
+        },
+        {
+          title: '操作',
+          dataIndex: 'action',
+          scopedSlots: { customRender: 'action' }
+        }
+      ]
     }
   },
   created () {
   },
   mounted () {
-    this.getData(res => {
-      this.loading = false
-      this.data = res.results
-    })
+    this.loadData()
   },
   methods: {
     /** 生成下载路径 */
     genDownLoadPath (fileId) {
       return api.fileDownload + '?fileId=' + fileId
     },
-    onSearch (value) {
-      console.log(value)
+    loadData () {
+      this.loading = true
+      this.loadMyfile()
+      this.loadMyApproval()
+      this.loadApprovaled()
     },
-    // 提示
-    openNotification () {
-      this.$notification.warning({
-        message: '无法获取文件，稍后再试',
-        description: '',
-        onClick: () => {
-          console.log('Notification Clicked!')
-        }
-      })
-    },
-
-    getData (callback) {
-      fileGrabble(this.pageNumber, this.groupId).then(data => {
-        console.log('tag', this.groupId)
-        if (data.result.data.length < 5) {
-          this.showLoadingMore = false
-        }
-        // callback(data.result.data)
-        const datas = data.result.data
-        datas.map(item => {
-          this.data.push(item)
+    /**
+     * 加载我的上传文件
+     */
+    loadMyfile (params) {
+      let options = {
+        userId: this.$store.getters.userId,
+        groupId: this.contactId
+      }
+      options = Object.assign(options, params)
+      groupFileListByMe(options).then(res => {
+        this.myFile = res.result.data
+        this.total_myfile = res.result.totalCount
+      }).catch(() =>
+        this.$notification['error']({
+          message: '出现异常，请联系系统管理员',
+          duration: 4
         })
-      }).catch(res => {
-        this.openNotification()
-        // this.showLoadingMore = false
+      ).finally(() => {
+        this.loading = false
       })
     },
-    onLoadMore () {
-      this.loadingMore = true
-      this.pageNumber++
-      this.getData((res) => {
-        this.data = this.data.concat(res.results)
-        this.$nextTick(() => {
-          window.dispatchEvent(new Event('resize'))
+    /**
+     * 加载我的审批文件
+     */
+    loadMyApproval (params) {
+      let options = {
+        userId: this.$store.getters.userId,
+        groupId: this.contactId
+      }
+      options = Object.assign(options, params)
+      groupFileListByOwner(options).then(res => {
+        this.myApprovalFile = res.result.data
+        this.total_myapproval = res.result.totalCount
+      }).catch(() =>
+        this.$notification['error']({
+          message: '出现异常，请联系系统管理员',
+          duration: 4
         })
+      ).finally(() => {
+        this.loading = false
       })
-      this.loadingMore = false
+    },
+    /**
+     * 加载已审批文件
+     */
+    loadApprovaled (params) {
+      let options = {
+        userId: this.$store.getters.userId,
+        groupId: this.contactId
+      }
+      options = Object.assign(options, params)
+      groupFileListByPass(options).then(res => {
+        this.approvaledFile = res.result.data
+        this.total_approvaled = res.result.totalCount
+      }).catch(() =>
+        this.$notification['error']({
+          message: '出现异常，请联系系统管理员',
+          duration: 4
+        })
+      ).finally(() => {
+        this.loading = false
+      })
+    },
+    /**
+     * 分页
+     */
+    handleChange_myfile (page, pageSize) {
+      this.loadMyfile({
+        size: pageSize,
+        page: page
+      })
+    },
+    handleChange_myApproval (page, pageSize) {
+      this.loadMyApproval({
+        size: pageSize,
+        page: page
+      })
+    },
+    handleChange_approvaled (page, pageSize) {
+      this.loadApprovaled({
+        size: pageSize,
+        page: page
+      })
+    },
+    /**
+     * 审批通过
+     */
+    confirmPass (record) {
+      const options = {
+        userId: this.$store.getters.userId,
+        fileId: record.fileId + ','
+      }
+      setFileApproveFLg(options).then(res => {
+        this.$notification['success']({
+          message: '审批通过',
+          duration: 2
+        })
+        this.loadData()
+      }).catch(() =>
+        this.$notification['error']({
+          message: '出现异常，请联系系统管理员',
+          duration: 4
+        })
+      )
+    },
+    /**
+     * 审批驳回
+     */
+    reject (record) {
+      this.fileId = record.fileId
+      this.visible = true
+    },
+    handleOk () {
+      // this.fileId this.rejectReason
+      // 回调函数
+      // this.loadData()
+      this.visible = false
+    },
+    handleCancel (e) {
+      this.visible = false
+    },
+    /**
+     * 切换面板的回调
+     */
+    handleTabsChange (activeKey) {
     },
     /** 抽屉关闭时触发closeDrawer事件 */
     onClose () {
       this.$emit('closeDrawer')
-    },
-    down (id) {
-      fileDownload(id).then(item => {
-        window.open('/api/chat/zzFileManage/downloadFile' + '?fileId=' + id, '_self')
-      })
-    }
-  },
-  computed: {
-    NewItems () {
-      var _this = this
-      var NewItems = []
-      this.data.map(function (item) {
-        if (item.fileName.search(_this.searchVal) !== -1) {
-          NewItems.push(item)
-        }
-      })
-      return NewItems
     }
   }
 }
 </script>
 
-<style lang="less" scoped>
-.seek_inp{
-  width: 90%;
-  height: 30px;
-  outline: none;
-  border: 1px solid #cccccc;
-  border-radius: 5px 0 0 5px;
-  margin-bottom: 20px;
-}
-.history_box{
-  margin-bottom: 100px;
-  overflow: hidden;
-  list-style: none;
-  padding: 0;
-  .history_cotent{
-    height: 55px;
-    margin-bottom: 5px;
-  }
-}
-.ant-list-item-meta{
-  float: left;
-  width: 144px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  line-height: 55px;
-  h4{
-    line-height: 55px;
-    width: 90px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-
-  }
-}
-.file_name{
-  float: left;
-  margin-right: 20px;
-  line-height: 55px;
-}
-.file_sp{
-  float: left;
-  display: block;
-  width: 70px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  box-sizing: border-box;
-  margin-right: 30px;
-  text-align: left;
-  // line-height: 55px
-  margin-top: 18px
-}
-
-.file_time{
-  float: left;
-  margin-right: 20px;
-  width: 100px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  // line-height: 55px
-  margin-top: 18px
-}
-.secret1{
-  float: left;
-  margin-right: 12px;
-  line-height: 55px
-}
-.down{
-  float:right;
-  line-height: 50px;
-}
-.nav_box {
-  width: 100%;
-  height: 20px;
-  ul {
-    width: 100%;
-    li {
-      list-style: none;
-      // width: 50px;
-      float: left;
-      font-size: 15px;
-      &:nth-child(1) {
-        margin-right: 55px;
-      }
-      &:nth-child(2) {
-        margin-right: 50px;
-      }
-    }
-  }
-}
-.login_img{
-  text-align: center;
-  color: #cccccc;
+<style lang="less">
+.pageStyle {
+  margin-top: 10px;
+  margin-left: 250px;
 }
 </style>

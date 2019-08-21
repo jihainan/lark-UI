@@ -12,13 +12,13 @@
       <a-spin :spinning="loadding">
         <a-list style="margin-left:20px">
           <a-list-item v-for="msg in msglist.slice(0,6)" :key="msg.id">
-            <router-link :to="{ name: 'myNotice' }">
+            <router-link :to="{ name: 'MyNotice' }">
               <a-list-item-meta :title="msg.title" @click="visible = false"></a-list-item-meta>
             </router-link>
           </a-list-item>
         </a-list>
         <span style="margin-left:60px;font-weight:bold">
-          <router-link :to="{ name: 'myNotice' }">查看全部</router-link>
+          <router-link :to="{ name: 'MyNotice' }">查看全部</router-link>
         </span>
       </a-spin>
     </template>

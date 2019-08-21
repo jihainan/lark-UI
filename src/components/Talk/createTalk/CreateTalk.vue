@@ -1,9 +1,10 @@
 <template>
   <a-modal
     v-model="visible"
-    style="top: 20px;"
+    style="top: 16px;"
+    :bodyStyle="{padding:'8px'}"
     :maskClosable="false"
-    :width="850"
+    :width="720"
     destroyOnClose
     :footer="null"
     @cancel="handleCloseModal"
@@ -12,15 +13,32 @@
       <div class="create-talk-title">创建研讨组</div>
     </template>
     <a-card :bordered="false">
-      <a-steps class="steps" :current="currentTab">
-        <a-step title="填写基本信息" />
-        <a-step title="选择群组成员" />
-        <a-step title="完成" />
-      </a-steps>
+      <div class="steps-container">
+        <a-steps class="steps" :current="currentTab" size="small">
+          <a-step title="填写基本信息" />
+          <a-step title="选择群组成员" />
+          <a-step title="完成" />
+        </a-steps>
+      </div>
       <div class="content">
-        <BaseInfo v-if="currentTab === 0" :groupInfo="baseInfo" @nextStep="nextStep" ref="baseInfo"/>
-        <UserSelect v-if="currentTab === 1" :groupInfo="baseInfo" @nextStep="nextStep" @prevStep="prevStep"/>
-        <ResultPage v-if="currentTab === 2" :groupInfo="baseInfo" @toTalk="toTalk" @finish="finish"/>
+        <BaseInfo
+          v-if="currentTab === 0"
+          :groupInfo="baseInfo"
+          @nextStep="nextStep"
+          ref="baseInfo"
+        />
+        <UserSelect
+          v-if="currentTab === 1"
+          :groupInfo="baseInfo"
+          @nextStep="nextStep"
+          @prevStep="prevStep"
+        />
+        <ResultPage
+          v-if="currentTab === 2"
+          :groupInfo="baseInfo"
+          @toTalk="toTalk"
+          @finish="finish"
+        />
       </div>
     </a-card>
   </a-modal>
@@ -70,14 +88,10 @@ export default {
       }
       if (step === 2) {
         Object.assign(this.baseInfo, { userList: values })
-        console.log('创建的数据：')
-        console.log(this.baseInfo)
         const createGroupMsg = new SocketMessage({
           code: 3,
           data: this.baseInfo
         }).toString()
-        console.log('发送的数据')
-        console.log(createGroupMsg)
         this.SocketGlobal.send(createGroupMsg)
       }
       if (this.currentTab < 2) {
@@ -111,11 +125,14 @@ export default {
 </script>
 
 <style lang="less" scoped>
-  .steps {
-    max-width: 750px;
-    margin: 16px auto;
-  }
-  .create-talk-title {
-    text-align: center;
-  }
+.steps {
+  max-width: 750px;
+  margin: 8px auto;
+}
+.steps-container {
+  padding: 0 16px 0 32px;
+}
+.create-talk-title {
+  text-align: center;
+}
 </style>

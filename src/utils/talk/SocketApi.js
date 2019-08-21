@@ -3,11 +3,11 @@
  */
 import store from '@/store'
 import notification from 'ant-design-vue/es/notification'
-import { LandingStatus } from '@/utils/constants'
+import { ONLINE_STATUS } from '@/utils/constants'
 import { messagePopup } from '@/utils/client'
 
 /** ws连通 */
-function handleWsOpen () {
+const handleWsOpen = () => {
   // 请求研讨相关的数据
   store.dispatch('GetTalkMap')
   store.dispatch('GetRecentContacts')
@@ -15,13 +15,15 @@ function handleWsOpen () {
   store.dispatch('GetContactsTree')
 
   // 设置在线状态为已连接
-  store.commit('SET_ONLINE_STATE', LandingStatus.ONLINE)
+  store.commit('SET_ONLINE_STATE', ONLINE_STATUS.ONLINE)
 }
 
 /** 处理私聊和群组消息 */
-function handleMessage (data) {
+const handleMessage = (data) => {
+  // 自己发送的消息，不处理
+  if (data.fromId === store.getters.userId) return
   store
-    .dispatch('UpdateTalkMap', data)
+    .dispatch('UpdateTalkMap', { direction: 'receive', message: data })
     .then(() => {
       store.dispatch('UpdateRecentContacts', {
         ...data.contactInfo,
@@ -60,14 +62,15 @@ function handleMessage (data) {
   // 向客户端发送提醒
   messagePopup(data)
 }
-
-function handleCreateGroup (data) {
+// 处理创建群组的消息
+const handleCreateGroup = (data) => {
   // 接收到创建群组的消息-->更新最近联系人-->更新群组列表
   const {
     groupId,
     groupName,
     groupImg,
-    levels
+    levels,
+    groupOwnerId
   } = data.zzGroup
   store
     .dispatch('UpdateRecentContacts', {
@@ -77,6 +80,7 @@ function handleCreateGroup (data) {
       secretLevel: levels,
       memberNum: data.userList.length,
       isGroup: true,
+      groupOwnerId,
       reOrder: true,
       addUnread: false
     })
@@ -111,6 +115,20 @@ function handleCreateGroup (data) {
         key
       })
     })
+}
+// 处理消息确认信息
+const handleMessageAck = (received) => {
+  // 删除定时任务 同时移出发送队列
+  store.commit('DEL_TIMING_TASK', received.oId)
+  // 判断消息是否发送成功
+  if (received.status === 200) {
+    // 发送成功 更新消息id
+    store.commit('RESET_MESSAGE_ID', received)
+  }
+  if (received.status === 201) {
+    // 发送失败 添加到失败列表
+    store.commit('ADD_FAIL_SET', received.oId)
+  }
 }
 
 class SocketApi {
@@ -160,7 +178,7 @@ class SocketApi {
     userId = userId || store.getters.userId
     const ws = new WebSocket(this.url + '?userId=' + userId)
     // 设置在线状态为连接中
-    store.commit('SET_ONLINE_STATE', LandingStatus.LANDING)
+    store.commit('SET_ONLINE_STATE', ONLINE_STATUS.LANDING)
     this.ws = ws
 
     ws.binaryType = this.binaryType
@@ -179,11 +197,14 @@ class SocketApi {
 
     // 收到websocket消息
     ws.onmessage = messageEvent => {
+      console.log(messageEvent)
       const time = new Date()
       const received = JSON.parse(messageEvent.data)
       switch (received.code) {
         // 处理消息 更新消息缓存-->最近联系人列表
         case 0:
+          handleMessage(received.data)
+          break
         case 1:
           handleMessage(received.data)
           break
@@ -193,6 +214,9 @@ class SocketApi {
         case 4:
           // 创建群组时给服务端返回code为4的数据
           this.ws.send(messageEvent.data)
+          break
+        case 11:
+          handleMessageAck(received)
           break
         default:
           break
@@ -205,7 +229,7 @@ class SocketApi {
     ws.onclose = closeEvent => {
       clearInterval(self.pingIntervalId)
       // 设置在线状态为已断开
-      store.commit('SET_ONLINE_STATE', LandingStatus.OFFLINE)
+      store.commit('SET_ONLINE_STATE', ONLINE_STATUS.OFFLINE)
       // 重连的处理逻辑
       self.reconn()
     }
@@ -255,7 +279,7 @@ class SocketApi {
    */
   close (code, reason) {
     // 设置登录状态为正在断开
-    store.commit('SET_ONLINE_STATE', LandingStatus.EXITING)
+    store.commit('SET_ONLINE_STATE', ONLINE_STATUS.EXITING)
 
     if (this.ws) {
       this.ws.close(code, reason)

@@ -27,7 +27,7 @@
         </div>
 
         <a-avatar class="avatar-img" shape="square" :src="contactsInfo.avatar" :size="75">
-          <span>{{ contactsInfo.name }}</span>
+          {{ contactsInfo.name }}
         </a-avatar>
 
       </div>
@@ -44,11 +44,11 @@
           </div>
           <div>
             <p class="attr">电话:</p>
-            <p class="val">{{ contactsInfo.phone }}</p>
+            <p class="val">{{ contactsInfo.otel }}</p>
           </div>
           <div>
-            <p class="attr">职称:</p>
-            <p class="val">{{ contactsInfo.proTitle }}</p>
+            <p class="attr">邮箱:</p>
+            <p class="val">{{ contactsInfo.oemail }}</p>
           </div>
         </div>
       </div>
@@ -61,11 +61,11 @@
 
 <script>
 import { getContactsInfo } from '@/api/talk'
-import { RecentContact } from '@/utils/talk'
+
 export default {
   name: 'ContactsInfo',
   props: {
-    // the selected group
+    // the selected contact
     selected: {
       type: String,
       default: '',
@@ -74,7 +74,7 @@ export default {
   },
   data () {
     return {
-      /** 群组信息 */
+      /** 联系人信息 */
       contactsInfo: {},
       /** 加载状态 */
       loadingState: false
@@ -102,16 +102,18 @@ export default {
         this.loadingState = false
       })
     },
+    /** 跳转到研讨页 */
     sendMessage () {
       this.$emit('clickSend')
       const contactItem = this.contactsInfo
-      this.$router.push({
-        path: '/talk/ChatPanel/ChatBox',
-        query: new RecentContact(contactItem)
-      })
+      this.$router.push({ name: 'ChatBox' })
+      contactItem.groupOwnerId = ''
       contactItem.reOrder = true
       contactItem.addUnread = false
       this.$store.dispatch('UpdateRecentContacts', contactItem)
+        .then(() => {
+          this.$store.commit('SET_CURRENT_TALK', contactItem.id)
+        })
     }
   }
 }
@@ -185,7 +187,7 @@ export default {
         right: 0;
         top: 0;
         border-radius: 2px;
-        background-color: rgb(0, 162, 174);
+        background-color: #4da6fa;
 
         span {
           color: #fff;

@@ -4,12 +4,12 @@
       <div class="table-page-search-wrapper">
         <a-form layout="inline">
           <a-row :gutter="32" type="flex" justify="end">
-            <a-col :md="6" :sm="24">
+            <a-col :md="4" :sm="24">
               <a-form-item label="标题">
-                <a-input v-model="queryParam.title"/>
+                <a-input v-model="queryParam.title" />
               </a-form-item>
             </a-col>
-            <a-col :md="6" :sm="24">
+            <a-col :md="4" :sm="24">
               <a-form-item label="消息类型">
                 <a-select placeholder="请选择" v-model="queryParam.type">
                   <a-select-option value="admin">管理员公告</a-select-option>
@@ -17,7 +17,16 @@
                 </a-select>
               </a-form-item>
             </a-col>
-            <a-col :md="6" :sm="24">
+            <a-col :md="4" :sm="24">
+              <a-form-item label="密级">
+                <a-select placeholder="请选择" v-model="queryParam.secretLevel">
+                  <a-select-option value="30">非密</a-select-option>
+                  <a-select-option value="40">秘密</a-select-option>
+                  <a-select-option value="60">机密</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :md="4" :sm="24">
               <a-form-item label="发布状态">
                 <a-select placeholder="请选择" v-model="queryParam.isSend">
                   <a-select-option value="0">未发布</a-select-option>
@@ -29,19 +38,18 @@
               <span class="table-page-search-submitButtons">
                 <a-button type="primary" @click="search">查询</a-button>
                 <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
-                <a-button type="primary" style="margin-left: 30px" @click="openModal('1')" v-action:add>新增消息</a-button>
+                <a-button
+                  type="primary"
+                  style="margin-left: 30px"
+                  @click="openModal('1')"
+                  v-action:add
+                >新增消息</a-button>
               </span>
             </a-col>
           </a-row>
         </a-form>
       </div>
-      <s-table
-        ref="stable"
-        size="default"
-        :columns="columns"
-        :data="loadData"
-        :alert="false"
-      >
+      <s-table ref="stable" size="default" :columns="columns" :data="loadData" :alert="false">
         <span slot="action" slot-scope="text, record">
           <template>
             <a v-if="record.isSend==='0'">
@@ -67,12 +75,10 @@
       :confirmLoading="confirmLoading"
     >
       <a-form :form="detailForm">
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="标题"
-        >
-          <a-input v-decorator="['title',{rules: [{ required: true, message: '请填写标题' },{ max: 100, message: '最多填写100个字' }]}]" />
+        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="标题">
+          <a-input
+            v-decorator="['title',{rules: [{ required: true, message: '请填写标题' },{ max: 100, message: '最多填写100个字' }]}]"
+          />
         </a-form-item>
         <!-- <a-form-item
           :labelCol="labelCol"
@@ -80,25 +86,30 @@
           label="附件"
         >
           <a>文件名|支持点击下载</a>
-        </a-form-item> -->
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="消息类型"
-        >
-          <a-select placeholder="请选择" v-decorator="['type',{rules: [{ required: true, message: '请填写消息类型' }]}]" >
+        </a-form-item>-->
+        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="消息类型">
+          <a-select
+            placeholder="请选择"
+            v-decorator="['type',{rules: [{ required: true, message: '请填写消息类型' }]}]"
+          >
             <a-select-option value="admin">管理员公告</a-select-option>
             <a-select-option value="system">系统消息</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="组织机构"
-        >
+        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="密级">
+          <a-select
+            placeholder="请选择"
+            v-decorator="['secretLevel',{rules: [{ required: true, message: '请填写消息密级' }]}]"
+          >
+            <a-select-option value="30">非密</a-select-option>
+            <a-select-option value="40">秘密</a-select-option>
+            <a-select-option value="60">机密</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="组织机构">
           <org-tree-select :values="orgCode" @ok="getOrgCode"></org-tree-select>
         </a-form-item>
-        <a-form-item
+        <!-- <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
           label="附件"
@@ -115,13 +126,12 @@
               <a-icon type="upload" />上传
             </a-button>
           </a-upload>
-        </a-form-item>
-        <a-form-item
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-          label="内容"
-        >
-          <a-textarea :rows="5" v-decorator="['content',{rules: [{ max: 100, message: '最多填写2000个字' }]}]" />
+        </a-form-item>-->
+        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="内容">
+          <a-textarea
+            :rows="5"
+            v-decorator="['content',{rules: [{ max: 100, message: '最多填写2000个字' }]}]"
+          />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -160,13 +170,26 @@ export default {
           dataIndex: 'content'
         },
         {
+          title: '密级',
+          dataIndex: 'secretLevel',
+          key: 'secretLevel',
+          customRender: function (secretLevel) {
+            const config = {
+              '30': '非密',
+              '40': '秘密',
+              '60': '机密'
+            }
+            return config[secretLevel]
+          }
+        },
+        {
           title: '消息类型',
           dataIndex: 'type',
           key: 'type',
           customRender: function (type) {
             const config = {
-              'admin': '管理员公告',
-              'system': '系统消息'
+              admin: '管理员公告',
+              system: '系统消息'
             }
             return config[type]
           }
@@ -238,7 +261,7 @@ export default {
         this.noticeid = record.id
         this.$nextTick(() => {
           // 表单中绑定信息项
-          this.detailForm.setFieldsValue(pick(record, 'title', 'content', 'type'))
+          this.detailForm.setFieldsValue(pick(record, 'title', 'content', 'type', 'secretLevel'))
         })
       }
     },
@@ -294,30 +317,31 @@ export default {
           if (!err) {
             this.confirmLoading = true
             values.orgCode = this.orgCode
-            return addNotice(
-              values
-            ).then(res => {
-              if (res.status === 200) {
-                this.$notification['success']({
-                  message: '保存成功',
-                  duration: 2
-                })
-                this.visiable = false
-                this.search()
-              } else {
+            return addNotice(values)
+              .then(res => {
+                if (res.status === 200) {
+                  this.$notification['success']({
+                    message: '保存成功',
+                    duration: 2
+                  })
+                  this.visiable = false
+                  this.search()
+                } else {
+                  this.$notification['error']({
+                    message: res.message,
+                    duration: 4
+                  })
+                }
+              })
+              .catch(() =>
                 this.$notification['error']({
-                  message: res.message,
+                  message: '出现异常，请联系系统管理员',
                   duration: 4
                 })
-              }
-            }).catch(() =>
-              this.$notification['error']({
-                message: '出现异常，请联系系统管理员',
-                duration: 4
+              )
+              .finally(() => {
+                this.confirmLoading = false
               })
-            ).finally(() => {
-              this.confirmLoading = false
-            })
           }
         })
       } else if (this.type === '2') {
@@ -326,28 +350,31 @@ export default {
             values.orgCode = this.orgCode
             values.id = this.noticeid
             this.confirmLoading = true
-            return updateNotice(values).then(res => {
-              if (res.status === 200) {
-                this.$notification['success']({
-                  message: '保存成功',
-                  duration: 2
-                })
-                this.visiable = false
-                this.search()
-              } else {
+            return updateNotice(values)
+              .then(res => {
+                if (res.status === 200) {
+                  this.$notification['success']({
+                    message: '保存成功',
+                    duration: 2
+                  })
+                  this.visiable = false
+                  this.search()
+                } else {
+                  this.$notification['error']({
+                    message: res.message,
+                    duration: 4
+                  })
+                }
+              })
+              .catch(() =>
                 this.$notification['error']({
-                  message: res.message,
+                  message: '出现异常，请联系系统管理员',
                   duration: 4
                 })
-              }
-            }).catch(() =>
-              this.$notification['error']({
-                message: '出现异常，请联系系统管理员',
-                duration: 4
+              )
+              .finally(() => {
+                this.confirmLoading = false
               })
-            ).finally(() => {
-              this.confirmLoading = false
-            })
           }
         })
       } else {
@@ -367,10 +394,8 @@ export default {
         cancelText: '取消',
         onOk () {
           // 在这里调用删除接口
-          return delNotice(
-            record.id
-          ).then(
-            res => {
+          return delNotice(record.id)
+            .then(res => {
               if (res.status === 200) {
                 _this.$notification['success']({
                   message: '删除成功',
@@ -383,13 +408,13 @@ export default {
                   duration: 4
                 })
               }
-            }
-          ).catch(() =>
-            _this.$notification['error']({
-              message: '删除异常，请联系系统管理员',
-              duration: 4
             })
-          )
+            .catch(() =>
+              _this.$notification['error']({
+                message: '删除异常，请联系系统管理员',
+                duration: 4
+              })
+            )
         },
         onCancel: () => {
           _this.$notification['info']({
@@ -405,27 +430,30 @@ export default {
     sendNotice (record) {
       record.orgCode = this.orgCode
       this.confirmLoading = true
-      return sendNotice(record).then(res => {
-        if (res.status === 200) {
-          this.$notification['success']({
-            message: '发布成功',
-            duration: 2
-          })
-          this.search()
-        } else {
+      return sendNotice(record)
+        .then(res => {
+          if (res.status === 200) {
+            this.$notification['success']({
+              message: '发布成功',
+              duration: 2
+            })
+            this.search()
+          } else {
+            this.$notification['error']({
+              message: res.message,
+              duration: 4
+            })
+          }
+        })
+        .catch(() =>
           this.$notification['error']({
-            message: res.message,
+            message: '出现异常，请联系系统管理员',
             duration: 4
           })
-        }
-      }).catch(() =>
-        this.$notification['error']({
-          message: '出现异常，请联系系统管理员',
-          duration: 4
+        )
+        .finally(() => {
+          this.confirmLoading = false
         })
-      ).finally(() => {
-        this.confirmLoading = false
-      })
     },
     /**
      * 获取组织树下拉框返回值
