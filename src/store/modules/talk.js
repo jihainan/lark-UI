@@ -253,10 +253,10 @@ const talk = {
       if (index > -1) {
         // 更新当前研讨
         const {
-          id, name, avatar, secretLevel, memberNum, isGroup
+          id, name, avatar, secretLevel, memberNum, isGroup, groupOwnerId
         } = state.recentContacts[index]
         state.currentTalk = {
-          id, name, avatar, secretLevel, memberNum, isGroup
+          id, name, avatar, secretLevel, memberNum, isGroup, groupOwnerId
         }
       }
     },

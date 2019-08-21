@@ -1,8 +1,12 @@
 <template>
   <!-- 聊天消息框 -->
-  <div :class="['message-piece', {send: isMe(), receive: !isMe()}]" :key="messageInfo.id">
-    <!-- 消息时间 需要判断显示时间的条件 -->
-    <div class="time-stamp">
+  <div
+    :class="['message-piece', {send: isMe(), receive: !isMe()}]"
+    :key="messageInfo.id"
+    :id="messageInfo.id"
+  >
+    <!-- 消息时间 -->
+    <div v-if="isTimeVisible" class="time-stamp">
       <div>{{ messageInfo.time | timeFormat }}</div>
     </div>
 
@@ -142,6 +146,12 @@ export default {
       default: () => ({}),
       required: true
     },
+    /** 是否显示消息时间 */
+    isTimeVisible: {
+      type: Boolean,
+      default: true,
+      required: false
+    },
     /** 是否为群组消息 */
     isGroup: {
       type: Boolean,
@@ -153,6 +163,7 @@ export default {
     return {
       // 图片加载状态 0:无状态 1:加载中 2:加载成功 3:加载失败
       imgLoading: 0,
+      // 图片预览状态
       previewVisible: false
     }
   },

@@ -44,6 +44,10 @@
             <p class="val">{{ groupInfo.subject }}</p>
           </div>
           <div>
+            <p class="attr">群主</p>
+            <p class="val">{{ groupInfo.groupOwnerName }}</p>
+          </div>
+          <div>
             <p class="attr">创建人</p>
             <p class="val">{{ groupInfo.creatorName }}</p>
           </div>
@@ -106,7 +110,7 @@ export default {
     /** 跳转到研讨页 */
     sendMessage () {
       this.$emit('clickSend')
-      const { id, name, avatar, securityClass, memberNum } = this.groupInfo
+      const { id, name, avatar, securityClass, memberNum, groupOwnerId } = this.groupInfo
       const groupItem = {
         id,
         name,
@@ -114,6 +118,7 @@ export default {
         memberNum,
         secretLevel: JSON.parse(securityClass),
         isGroup: true,
+        groupOwnerId,
         reOrder: true,
         addUnread: false
       }
