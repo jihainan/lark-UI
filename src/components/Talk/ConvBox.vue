@@ -38,6 +38,14 @@
     <a-layout-content class="conv-box-message">
       <div class="talk-main-box">
         <div v-if="messageList.length" class="talk-main">
+          <div class="view-history">
+            <a-tag
+              color="#f0f2f5"
+              @click="triggerDrawer('talkHistory', '聊天历史')"
+              style="color: #b2b2b2"
+            >历史消息
+            </a-tag>
+          </div>
           <div v-for="(item, index) in messageList" :key="index" class="talk-item">
             <message-piece
               :messageInfo="item"
@@ -423,9 +431,7 @@ export default {
 
       return isGroup ? optionList : optionList.filter(item => !item.group)
     },
-    /**
-     * 根据drawerName打开对应的抽屉
-     */
+    /** 根据drawerName打开对应的抽屉 */
     triggerDrawer (drawerType, drawerName) {
       this.activeOption = { 'drawerType': drawerType, 'drawerName': drawerName }
       // 组成员抽屉
@@ -628,6 +634,9 @@ export default {
           display: flex;
           flex-direction: row-reverse;
           flex-shrink: 0;
+        }
+        .view-history {
+          text-align: center;
         }
 
         .empty-tip {
