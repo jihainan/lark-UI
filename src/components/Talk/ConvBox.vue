@@ -43,7 +43,8 @@
               color="#f0f2f5"
               @click="triggerDrawer('talkHistory', '聊天历史')"
               style="color: #b2b2b2"
-            >历史消息
+            >
+              <a-icon type="bars" /> 历史消息
             </a-tag>
           </div>
           <div v-for="(item, index) in messageList" :key="index" class="talk-item">
